@@ -59,15 +59,6 @@ const MatchGameCard: React.FC<{ game: MatchGame; onGameComplete: () => void; }> 
     
     const isFinished = matchedPairs.length === game.items.length;
 
-    useEffect(() => {
-        if (isFinished) {
-            const timer = setTimeout(() => {
-                onGameComplete();
-            }, 2000);
-            return () => clearTimeout(timer);
-        }
-    }, [isFinished, onGameComplete]);
-
     return (
         <GameCard title={game.title} description={game.description} icon="fa-puzzle-piece">
             <div className="grid grid-cols-2 gap-4 flex-grow content-center">
@@ -93,8 +84,11 @@ const MatchGameCard: React.FC<{ game: MatchGame; onGameComplete: () => void; }> 
                 })}
             </div>
              {isFinished && (
-                <div className="mt-4 p-3 text-center rounded-lg bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-200 font-bold animate-fadeIn">
-                    🎉 أحسنت! سيتم تحميل لعبة جديدة...
+                <div className="mt-4 p-3 text-center rounded-lg bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-200 font-bold animate-fadeIn flex flex-col items-center gap-2">
+                    <span>🎉 أحسنت!</span>
+                    <button onClick={onGameComplete} className="btn bg-green-500 hover:bg-green-600 text-white py-2 px-6 rounded-full font-bold transition-transform hover:scale-105">
+                        اللعبة التالية
+                    </button>
                 </div>
             )}
         </GameCard>
@@ -108,15 +102,6 @@ const MissingWordGameCard: React.FC<{ game: MissingWordGame; onGameComplete: () 
     const hasAnswered = selectedAnswer !== null;
 
     const sentenceParts = game.sentence.split('{blank}');
-
-    useEffect(() => {
-        if (isCorrect) {
-            const timer = setTimeout(() => {
-                onGameComplete();
-            }, 2000);
-            return () => clearTimeout(timer);
-        }
-    }, [isCorrect, onGameComplete]);
 
     return (
         <GameCard title={game.title} description={game.description} icon="fa-question-circle">
@@ -147,8 +132,11 @@ const MissingWordGameCard: React.FC<{ game: MissingWordGame; onGameComplete: () 
                     })}
                 </div>
                 {isCorrect && hasAnswered && (
-                    <div className="mt-4 p-3 text-center rounded-lg bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-200 font-bold animate-fadeIn">
-                        🎉 إجابة صحيحة! سيتم تحميل لعبة جديدة...
+                    <div className="mt-4 p-3 text-center rounded-lg bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-200 font-bold animate-fadeIn flex flex-col items-center gap-2">
+                        <span>🎉 إجابة صحيحة!</span>
+                        <button onClick={onGameComplete} className="btn bg-green-500 hover:bg-green-600 text-white py-2 px-6 rounded-full font-bold transition-transform hover:scale-105">
+                           اللعبة التالية
+                        </button>
                     </div>
                 )}
             </div>
@@ -184,9 +172,6 @@ const SentenceScrambleGameCard: React.FC<{ game: SentenceScrambleGame; onGameCom
         const userAnswer = builtSentence.join(' ');
         if (userAnswer === game.correctSentence) {
             setFeedback('correct');
-            setTimeout(() => {
-                onGameComplete();
-            }, 2000);
         } else {
             setFeedback('incorrect');
             setTimeout(() => {
@@ -232,8 +217,11 @@ const SentenceScrambleGameCard: React.FC<{ game: SentenceScrambleGame; onGameCom
                 </div>
                 
                  {feedback === 'correct' && (
-                    <div className="mt-4 p-3 text-center rounded-lg bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-200 font-bold animate-fadeIn">
-                        🎉 رائع! إجابة صحيحة!
+                    <div className="mt-4 p-3 text-center rounded-lg bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-200 font-bold animate-fadeIn flex flex-col items-center gap-2">
+                        <span>🎉 رائع! إجابة صحيحة!</span>
+                        <button onClick={onGameComplete} className="btn bg-green-500 hover:bg-green-600 text-white py-2 px-6 rounded-full font-bold transition-transform hover:scale-105">
+                           اللعبة التالية
+                        </button>
                     </div>
                 )}
                  {feedback === 'incorrect' && (

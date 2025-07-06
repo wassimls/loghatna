@@ -1,7 +1,6 @@
-
 import { GeneratedContent, GamesCollection, CategoryId, CategoryContent, Quiz, QuizQuestion, Word } from '../types';
 import { CATEGORIES } from '../constants';
-import * as openrouterService from './openrouterService';
+import * as geminiService from './geminiService';
 import { ENGLISH_CONTENT } from './data/en';
 import { FRENCH_CONTENT } from './data/fr';
 import { SPANISH_CONTENT } from './data/es';
@@ -120,12 +119,11 @@ export const getCategoryContent = (languageCode: string, categoryId: CategoryId)
 /**
  * Gets mini-games for a specific language from the AI service.
  * @param language The target language for the games.
- * @param apiKey The OpenRouter API key.
  * @returns A promise that resolves to the games collection.
  */
-export const getGames = async (language: string, apiKey: string): Promise<GamesCollection | null> => {
+export const getGames = async (language: string): Promise<GamesCollection | null> => {
     try {
-        const generatedGames = await openrouterService.generateGamesForLanguage(language, apiKey);
+        const generatedGames = await geminiService.generateGamesForLanguage(language);
         if (generatedGames && generatedGames.games && generatedGames.games.length > 0) {
             return generatedGames;
         }

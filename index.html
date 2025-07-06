@@ -3,21 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لغتنا - مدعوم بـ OpenRouter</title>
+    <title>لغتنا - استكشف اللغات</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Tajawal', sans-serif;
+            overflow-x: hidden;
         }
-        @keyframes pulse-bg {
-            0%, 100% { background-color: rgba(67, 97, 238, 0.05); }
-            50% { background-color: rgba(67, 97, 238, 0.15); }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background-image:
+                radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.1) 0.5px, transparent 1px),
+                radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 0.5px, transparent 1px),
+                radial-gradient(circle at 50% 90%, rgba(255, 255, 255, 0.05) 1px, transparent 2px);
+            background-size: 50px 50px;
+            animation: moveStars 60s linear infinite;
         }
-        .pulse-bg-animation {
-            animation: pulse-bg 2s infinite;
+
+        @keyframes moveStars {
+            from { background-position: 0 0; }
+            to { background-position: -1000px 500px; }
         }
+
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
@@ -47,12 +62,13 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: '#4361ee',
-                        secondary: '#ff3e78',
-                        accent: '#00d9a6',
-                        purple: '#a855f7',
-                        dark: '#1e293b',
-                        light: '#f8fafc',
+                        primary: '#4D3E8E', // Deep purple
+                        secondary: '#FFC700', // Yellow/Gold
+                        accent: '#F95A77', // Pinkish
+                        dark: '#1A113A',
+                        light: '#F8FAFC',
+                        'space-start': '#1A113A',
+                        'space-end': '#3D2F72',
                     },
                     fontFamily: {
                         sans: ['Tajawal', 'sans-serif'],
@@ -75,14 +91,14 @@
     "react-dom/": "https://esm.sh/react-dom@^19.1.0/",
     "react/": "https://esm.sh/react@^19.1.0/",
     "react": "https://esm.sh/react@^19.1.0",
-    "@google/genai": "https://esm.sh/@google/genai@^1.8.0",
-    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@^2.50.2"
+    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@^2.50.2",
+    "@google/genai": "https://esm.sh/@google/genai@^1.8.0"
   }
 }
 </script>
 <link rel="stylesheet" href="/index.css">
 </head>
-<body class="bg-gradient-to-br from-[#f0f4ff] to-[#f8f0ff] dark:from-slate-900 dark:to-slate-800 text-dark dark:text-light p-5 transition-colors duration-500">
+<body class="bg-gradient-to-br from-space-start to-space-end text-light p-4 transition-colors duration-500">
     <div id="root"></div>
 <script type="module" src="/index.tsx"></script>
 </body>

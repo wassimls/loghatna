@@ -1,17 +1,15 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Language, User, ChatMessage } from '../../types';
-import { streamChatResponse, translateText } from '../../services/openrouterService';
+import { streamChatResponse, translateText } from '../../services/geminiService';
 import * as userService from '../../services/userService';
 import { speak } from '../../services/audioService';
 
 interface ChatSectionProps {
     language: Language;
     user: User;
-    openRouterApiKey: string;
 }
 
-const ChatSection: React.FC<ChatSectionProps> = ({ language, user, openRouterApiKey }) => {
+const ChatSection: React.FC<ChatSectionProps> = ({ language, user }) => {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -27,7 +25,7 @@ const ChatSection: React.FC<ChatSectionProps> = ({ language, user, openRouterApi
     const systemInstruction = `You are a helpful and friendly language practice partner. Converse with the user, whose name is ${user.name}, in ${language.name}. Keep your responses concise, friendly, and appropriate for a language learner. The user is a native Arabic speaker. You can gently correct their mistakes.`;
 
      useEffect(() => {
-        setIsReady(!!openRouterApiKey);
+        setIsReady(!!process.env.API_KEY);
         
         const loadHistory = async () => {
             if (!user?.id) {
@@ -50,7 +48,7 @@ const ChatSection: React.FC<ChatSectionProps> = ({ language, user, openRouterApi
         setTranslations({});
         setTranslatingIndex(null);
         setSpeakingIndex(null);
-    }, [language, user, openRouterApiKey]);
+    }, [language, user]);
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -66,10 +64,10 @@ const ChatSection: React.FC<ChatSectionProps> = ({ language, user, openRouterApi
     };
 
     const handleTranslate = async (text: string, index: number) => {
-        if (translatingIndex !== null || translations[index] || !isReady) return;
+        if (translatingIndex !== null || translations[index]) return;
         setTranslatingIndex(index);
         try {
-            const translation = await translateText(openRouterApiKey, text, language.name, 'Arabic');
+            const translation = await translateText(text, language.name, 'Arabic');
             setTranslations(prev => ({...prev, [index]: translation}));
         } catch (e) {
             const errorMessage = e instanceof Error ? e.message : "فشل في الترجمة.";
@@ -93,7 +91,7 @@ const ChatSection: React.FC<ChatSectionProps> = ({ language, user, openRouterApi
         setMessages(prev => [...prev, placeholderMessage]);
 
         try {
-            const stream = streamChatResponse(openRouterApiKey, newMessages, systemInstruction);
+            const stream = streamChatResponse(newMessages, systemInstruction);
             
             let currentModelMessage = '';
             for await (const chunk of stream) {
@@ -137,8 +135,8 @@ const ChatSection: React.FC<ChatSectionProps> = ({ language, user, openRouterApi
                 ) : !isReady ? (
                     <div className="flex-1 flex flex-col justify-center items-center text-center">
                         <i className="fas fa-key text-accent text-5xl mb-4"></i>
-                        <h3 className="text-2xl font-bold text-white mb-2">مفتاح API مطلوب</h3>
-                        <p className="text-gray-300 mb-6 max-w-md">يرجى إضافة مفتاح OpenRouter API الخاص بك في قسم الإعدادات بالشريط الجانبي لتفعيل هذه الميزة.</p>
+                        <h3 className="text-2xl font-bold text-white mb-2">مفتاح API غير مكوّن</h3>
+                        <p className="text-gray-300 mb-6 max-w-md">هذه الميزة تتطلب من مطور التطبيق تكوين مفتاح API للذكاء الاصطناعي.</p>
                     </div>
                 ) : (
                     <div className="messages-area flex-1 overflow-y-auto pr-2 space-y-4">
@@ -196,7 +194,7 @@ const ChatSection: React.FC<ChatSectionProps> = ({ language, user, openRouterApi
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-                        placeholder={isReady ? `اكتب شيئًا باللغة ${language.name}...` : 'الدردشة تتطلب مفتاح API'}
+                        placeholder={isReady ? `اكتب شيئًا باللغة ${language.name}...` : 'الدردشة غير متاحة حالياً'}
                         className="flex-1 p-4 rounded-full bg-white dark:bg-slate-700 border-2 text-dark dark:text-light border-transparent focus:border-secondary focus:outline-none transition-colors"
                         disabled={isLoading || !isReady}
                     />

@@ -1,12 +1,9 @@
-
-
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Language, GamesCollection, MatchGame, MissingWordGame, SentenceScrambleGame } from '../../types';
 import { getGames } from '../../services/dataService';
 
 interface GamesSectionProps {
     language: Language;
-    openRouterApiKey: string;
 }
 
 const GameCard: React.FC<{ title: string; description: string; icon: string; children: React.ReactNode }> = ({ title, description, icon, children }) => (
@@ -237,21 +234,16 @@ const SentenceScrambleGameCard: React.FC<{ game: SentenceScrambleGame; onGameCom
 };
 
 
-const GamesSection: React.FC<GamesSectionProps> = ({ language, openRouterApiKey }) => {
+const GamesSection: React.FC<GamesSectionProps> = ({ language }) => {
     const [games, setGames] = useState<GamesCollection | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     const loadGames = useCallback(async () => {
-        if (!openRouterApiKey) {
-            setError("يرجى إعداد مفتاح OpenRouter API في الشريط الجانبي أولاً.");
-            setIsLoading(false);
-            return;
-        }
         setIsLoading(true);
         setError(null);
         try {
-            const gamesData = await getGames(language.name, openRouterApiKey);
+            const gamesData = await getGames(language.name);
              if (!gamesData || gamesData.games.length === 0) {
                  throw new Error(`فشل الذكاء الاصطناعي في توليد ألعاب صالحة للغة ${language.name}.`);
             }
@@ -261,7 +253,7 @@ const GamesSection: React.FC<GamesSectionProps> = ({ language, openRouterApiKey 
         } finally {
             setIsLoading(false);
         }
-    }, [language, openRouterApiKey]);
+    }, [language]);
 
     useEffect(() => {
         loadGames();

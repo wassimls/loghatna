@@ -1,10 +1,9 @@
-import { GoogleGenAI, Content } from "@google/genai";
+
+import { GoogleGenAI } from "@google/genai";
 import { GamesCollection, ChatMessage } from '../types';
 
-// The API key is sourced from environment variables, as per security best practices.
-// The hosting environment (e.g., Vercel, Netlify, or a custom server) should be configured
-// with the `API_KEY` environment variable.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY! });
+// The API key is sourced from environment variables.
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 const GEMINI_MODEL = 'gemini-2.5-flash-preview-04-17';
 
 /**
@@ -21,9 +20,7 @@ const parseJsonResponse = <T>(jsonString: string): T | null => {
     }
 
     try {
-        // A simple cleanup for trailing commas which can invalidate JSON.
-        const validJsonString = processedString.replace(/,\s*([}\]])/g, "$1");
-        return JSON.parse(validJsonString) as T;
+        return JSON.parse(processedString) as T;
     } catch (e) {
         console.error("Failed to parse JSON response:", e);
         console.error("Original string:", jsonString);
@@ -66,14 +63,12 @@ export const generateGamesForLanguage = async (language: string): Promise<GamesC
         if (error instanceof Error) {
             throw new Error(`حدث خطأ أثناء الاتصال بالذكاء الاصطناعي: ${error.message}`);
         }
-        throw new Error("حدث خطأ أثناء توليد الألعاب. تحقق من إعدادات مفتاح API الخاص بك.");
+        throw new Error("حدث خطأ أثناء توليد الألعاب.");
     }
 };
 
 export async function* streamChatResponse(history: ChatMessage[], systemInstruction: string): AsyncGenerator<string> {
-    
-    // Map the simple ChatMessage array to the Gemini Content array format.
-    const contents: Content[] = history.map(msg => ({
+    const contents = history.map(msg => ({
         role: msg.role,
         parts: [{ text: msg.text }]
     }));
@@ -88,7 +83,6 @@ export async function* streamChatResponse(history: ChatMessage[], systemInstruct
         });
 
         for await (const chunk of responseStream) {
-            // In streaming, we get text directly from the chunk.
             if (chunk.text) {
                 yield chunk.text;
             }

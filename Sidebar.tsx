@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Category, CategoryId, Language } from '../types';
 
 interface SidebarProps {
@@ -11,29 +10,13 @@ interface SidebarProps {
     onCategoryChange: (categoryId: CategoryId) => void;
     theme: 'light' | 'dark';
     onThemeChange: () => void;
-    openRouterApiKey: string;
-    onApiKeyChange: (key: string) => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ 
     languages, selectedLanguage, onLanguageChange, 
     categories, activeCategory, onCategoryChange, 
-    theme, onThemeChange,
-    openRouterApiKey, onApiKeyChange
+    theme, onThemeChange
 }) => {
-    const [localApiKey, setLocalApiKey] = useState(openRouterApiKey);
-    const [saved, setSaved] = useState(false);
-
-    useEffect(() => {
-        setLocalApiKey(openRouterApiKey);
-    }, [openRouterApiKey]);
-
-    const handleSaveApiKey = () => {
-        onApiKeyChange(localApiKey);
-        setSaved(true);
-        setTimeout(() => setSaved(false), 2000);
-    };
-
     return (
         <aside className="w-full md:w-80 bg-dark/20 backdrop-blur-sm p-6 border-l border-white/10 flex flex-col gap-6 transition-colors duration-500">
              <div className="sidebar-section bg-white/10 dark:bg-dark/50 rounded-2xl p-5 shadow-lg border border-white/10">
@@ -54,7 +37,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                         </div>
                     </div>
                 </div>
-                <div className="flex items-center justify-between mt-4">
+                 <div className="flex items-center justify-between mt-4">
                     <span className="font-medium text-white">الوضع</span>
                     <div className="flex items-center gap-2 rounded-full p-1 bg-dark/70">
                         <button onClick={() => theme !== 'light' && onThemeChange()} className={`p-2 rounded-full transition-colors ${theme === 'light' ? 'bg-secondary' : 'bg-transparent'}`}>
@@ -64,35 +47,6 @@ const Sidebar: React.FC<SidebarProps> = ({
                              <i className="fas fa-moon text-white"></i>
                         </button>
                     </div>
-                </div>
-                <div className="api-key-manager mt-6">
-                    <label htmlFor="apiKey" className="block mb-2 font-medium text-white">
-                        <i className="fas fa-key mr-2"></i>
-                        مفتاح OpenRouter API
-                    </label>
-                    <div className="flex gap-2">
-                        <input
-                            id="apiKey"
-                            type="password"
-                            value={localApiKey}
-                            onChange={(e) => setLocalApiKey(e.target.value)}
-                            className="flex-1 p-3 border-none rounded-xl font-sans text-base bg-dark/70 text-white cursor-pointer transition-all duration-300 shadow-inner appearance-none focus:outline-none focus:ring-2 focus:ring-secondary/50"
-                            placeholder="sk-or-..."
-                        />
-                        <button
-                            onClick={handleSaveApiKey}
-                            className={`p-3 px-5 rounded-xl font-bold transition-colors duration-300 ${saved ? 'bg-green-500 text-white' : 'bg-secondary text-dark'}`}
-                            title="حفظ المفتاح"
-                        >
-                            {saved ? <i className="fas fa-check"></i> : <i className="fas fa-save"></i>}
-                        </button>
-                    </div>
-                     <p className="text-xs text-gray-400 mt-2">
-                       المفتاح يُحفظ في متصفحك فقط. 
-                        <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer" className="text-secondary hover:underline ml-1">
-                            احصل على مفتاح
-                        </a>
-                    </p>
                 </div>
             </div>
 

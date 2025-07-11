@@ -1,4 +1,5 @@
 
+
 import { GeneratedContent, GamesCollection, CategoryId, CategoryContent, Quiz, QuizQuestion, Word } from '../types';
 import { CATEGORIES } from '../constants';
 import * as openrouterService from './openrouterService';
@@ -6,6 +7,7 @@ import { ENGLISH_CONTENT } from './data/en';
 import { FRENCH_CONTENT } from './data/fr';
 import { SPANISH_CONTENT } from './data/es';
 import { ITALIAN_CONTENT } from './data/it';
+import { GERMAN_CONTENT } from './data/de';
 import { RUSSIAN_CONTENT } from './data/ru';
 import { TURKISH_CONTENT } from './data/tr';
 import { CHINESE_CONTENT } from './data/zh';
@@ -28,6 +30,7 @@ const languageContentMap: { [key: string]: { [key: string]: CategoryContent } } 
     'fr-FR': FRENCH_CONTENT,
     'es-ES': SPANISH_CONTENT,
     'it-IT': ITALIAN_CONTENT,
+    'de-DE': GERMAN_CONTENT,
     'ru-RU': RUSSIAN_CONTENT,
     'tr-TR': TURKISH_CONTENT,
     'zh-CN': CHINESE_CONTENT,

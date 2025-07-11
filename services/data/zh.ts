@@ -18,6 +18,63 @@ const listeningExercise = (audioWord: string, hint: string, otherOptions: string
 });
 
 export const CHINESE_CONTENT: { [categoryName: string]: CategoryContent; } = {
+    alphabet: {
+        words: [
+            { word: "b", translation: "ب", pronunciation: "b", emoji: "🔊" },
+            { word: "p", translation: "پ", pronunciation: "p", emoji: "🔊" },
+            { word: "m", translation: "م", pronunciation: "m", emoji: "🔊" },
+            { word: "f", translation: "ف", pronunciation: "f", emoji: "🔊" },
+            { word: "d", translation: "د", pronunciation: "d", emoji: "🔊" },
+            { word: "t", translation: "ت", pronunciation: "t", emoji: "🔊" },
+            { word: "n", translation: "ن", pronunciation: "n", emoji: "🔊" },
+            { word: "l", translation: "ل", pronunciation: "l", emoji: "🔊" },
+            { word: "g", translation: "گ", pronunciation: "g", emoji: "🔊" },
+            { word: "k", translation: "ك", pronunciation: "k", emoji: "🔊" },
+            { word: "h", translation: "هـ", pronunciation: "h", emoji: "🔊" },
+            { word: "j", translation: "ج (تش)", pronunciation: "j", emoji: "🔊" },
+            { word: "q", translation: "تش (شديدة)", pronunciation: "q", emoji: "🔊" },
+            { word: "x", translation: "ش (خفيفة)", pronunciation: "x", emoji: "🔊" },
+            { word: "zh", translation: "دج (مفخمة)", pronunciation: "zh", emoji: "🔊" },
+            { word: "ch", translation: "تش (مفخمة)", pronunciation: "ch", emoji: "🔊" },
+            { word: "sh", translation: "ش (مفخمة)", pronunciation: "sh", emoji: "🔊" },
+            { word: "r", translation: "ر", pronunciation: "r", emoji: "🔊" },
+            { word: "z", translation: "دز", pronunciation: "z", emoji: "🔊" },
+            { word: "c", translation: "تس", pronunciation: "c", emoji: "🔊" },
+            { word: "s", translation: "س", pronunciation: "s", emoji: "🔊" },
+            { word: "a", translation: "آ", pronunciation: "a", emoji: "🎶" },
+            { word: "o", translation: "أو", pronunciation: "o", emoji: "🎶" },
+            { word: "e", translation: "إيه", pronunciation: "e", emoji: "🎶" },
+            { word: "i", translation: "إي", pronunciation: "i", emoji: "🎶" },
+            { word: "u", translation: "أو (مضمومة)", pronunciation: "u", emoji: "🎶" },
+            { word: "ü", translation: "أو (مرققة)", pronunciation: "ü", emoji: "🎶" },
+            { word: "ai", translation: "آي", pronunciation: "ai", emoji: "🎶" },
+            { word: "ei", translation: "إيه", pronunciation: "ei", emoji: "🎶" },
+            { word: "ui", translation: "واي", pronunciation: "ui", emoji: "🎶" },
+            { word: "ao", translation: "آو", pronunciation: "ao", emoji: "🎶" },
+            { word: "ou", translation: "أو", pronunciation: "ou", emoji: "🎶" },
+            { word: "iu", translation: "إيو", pronunciation: "iu", emoji: "🎶" },
+            { word: "ie", translation: "ييه", pronunciation: "ie", emoji: "🎶" },
+            { word: "üe", translation: "يويه", pronunciation: "üe", emoji: "🎶" },
+            { word: "er", translation: "آر", pronunciation: "er", emoji: "🎶" },
+            { word: "an", translation: "آن", pronunciation: "an", emoji: "🎶" },
+            { word: "en", translation: "إن", pronunciation: "en", emoji: "🎶" },
+            { word: "in", translation: "إين", pronunciation: "in", emoji: "🎶" },
+            { word: "un", translation: "أون", pronunciation: "un", emoji: "🎶" },
+            { word: "ün", translation: "أون (مرققة)", pronunciation: "ün", emoji: "🎶" },
+            { word: "ang", translation: "آنغ", pronunciation: "ang", emoji: "🎶" },
+            { word: "eng", translation: "إنغ", pronunciation: "eng", emoji: "🎶" },
+            { word: "ing", translation: "إينغ", pronunciation: "ing", emoji: "🎶" },
+            { word: "ong", translation: "أونغ", pronunciation: "ong", emoji: "🎶" },
+        ],
+        readingExercises: [
+            readingExercise("nǐ hǎo (你好)", "Pinyin لكلمة 'مرحباً'", "nǐ hǎo", ["wǒ ài nǐ", "xièxie", "zàijiàn"]),
+            readingExercise("b, p, m, f", "أول أربعة حروف ساكنة", "b, p, m, f", ["d, t, n, l", "g, k, h", "a, o, e"])
+        ],
+        listeningExercises: [
+            listeningExercise("mā", "النغمة الأولى", ["má", "mǎ", "mà"]),
+            listeningExercise("shì", "النغمة الرابعة", ["shí", "shǐ", "shī"])
+        ]
+    },
     basics: {
         words: [
             { word: "我", translation: "أنا", pronunciation: "wǒ", emoji: "👤" },

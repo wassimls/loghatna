@@ -18,6 +18,47 @@ const listeningExercise = (audioWord: string, hint: string, otherOptions: string
 });
 
 export const TURKISH_CONTENT: { [categoryName: string]: CategoryContent } = {
+    alphabet: {
+        words: [
+            { word: "a", translation: "أ", pronunciation: "a", emoji: "🍎" },
+            { word: "b", translation: "ب", pronunciation: "be", emoji: "🎈" },
+            { word: "c", translation: "ج", pronunciation: "ce", emoji: "👛" },
+            { word: "ç", translation: "تش", pronunciation: "çe", emoji: "🍓" },
+            { word: "d", translation: "د", pronunciation: "de", emoji: "🎲" },
+            { word: "e", translation: "إيه", pronunciation: "e", emoji: "🏠" },
+            { word: "f", translation: "ف", pronunciation: "fe", emoji: "🐘" },
+            { word: "g", translation: "غ", pronunciation: "ge", emoji: "☀️" },
+            { word: "ğ", translation: "يوموشاك غ (غ مخففة)", pronunciation: "yumuşak ge", emoji: "☁️" },
+            { word: "h", translation: "ه", pronunciation: "he", emoji: "🥕" },
+            { word: "ı", translation: "إه (مفخمة)", pronunciation: "ı", emoji: "💡" },
+            { word: "i", translation: "إي (مرققة)", pronunciation: "i", emoji: "🐄" },
+            { word: "j", translation: "ژ", pronunciation: "je", emoji: "🛩️" },
+            { word: "k", translation: "ك", pronunciation: "ke", emoji: "🔑" },
+            { word: "l", translation: "ل", pronunciation: "le", emoji: "🍋" },
+            { word: "m", translation: "م", pronunciation: "me", emoji: "🐒" },
+            { word: "n", translation: "ن", pronunciation: "ne", emoji: "👃" },
+            { word: "o", translation: "أو (مفخمة)", pronunciation: "o", emoji: "🚌" },
+            { word: "ö", translation: "أو (مرققة)", pronunciation: "ö", emoji: "🦆" },
+            { word: "p", translation: "پ", pronunciation: "pe", emoji: "🐧" },
+            { word: "r", translation: "ر", pronunciation: "re", emoji: "🤖" },
+            { word: "s", translation: "س", pronunciation: "se", emoji: "🐍" },
+            { word: "ş", translation: "ش", pronunciation: "şe", emoji: "🧢" },
+            { word: "t", translation: "ت", pronunciation: "te", emoji: "🐢" },
+            { word: "u", translation: "أو (مضمومة)", pronunciation: "u", emoji: "🪁" },
+            { word: "ü", translation: "أو (مضمومة مرققة)", pronunciation: "ü", emoji: "🍇" },
+            { word: "v", translation: "ڤ", pronunciation: "ve", emoji: "🎻" },
+            { word: "y", translation: "ي", pronunciation: "ye", emoji: "⭐" },
+            { word: "z", translation: "ز", pronunciation: "ze", emoji: "🦓" },
+        ],
+        readingExercises: [
+            readingExercise("a, b, c, ç, d", "أول 5 حروف", "أ، ب، ج، تش، د", ["e, f, g, ğ, h", "l, m, n, o, ö", "v, y, z"]),
+            readingExercise("Bu bir araba.", "مثال على حرف 'a'", "هذه سيارة.", ["هذا منزل.", "هذه طاولة.", "هذا كرسي."])
+        ],
+        listeningExercises: [
+            listeningExercise("e", "الحرف المستخدم في كلمة 'ev' (منزل)", ["a", "ı", "i"]),
+            listeningExercise("ş", "الحرف المستخدم في كلمة 'şapka' (قبعة)", ["s", "ç", "c"])
+        ]
+    },
     basics: {
         words: [
             { word: "Ben", translation: "أنا", pronunciation: "ben", emoji: "👤" },

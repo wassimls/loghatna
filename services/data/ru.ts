@@ -1,3 +1,4 @@
+
 import { CategoryContent, GamesCollection, ReadingExercise, ListeningExercise } from '../../types';
 
 const shuffle = <T,>(arr: T[]) => [...arr].sort(() => 0.5 - Math.random());
@@ -17,6 +18,51 @@ const listeningExercise = (audioWord: string, hint: string, otherOptions: string
 });
 
 export const RUSSIAN_CONTENT: { [categoryName: string]: CategoryContent; } = {
+    alphabet: {
+        words: [
+            { word: "а", translation: "أ", pronunciation: "a", emoji: "🍉" },
+            { word: "б", translation: "ب", pronunciation: "be", emoji: "🍌" },
+            { word: "в", translation: "ڤ", pronunciation: "ve", emoji: "🐺" },
+            { word: "г", translation: "گ", pronunciation: "ge", emoji: "🍇" },
+            { word: "д", translation: "د", pronunciation: "de", emoji: "🏡" },
+            { word: "е", translation: "ييه", pronunciation: "ye", emoji: "🦔" },
+            { word: "ё", translation: "يو", pronunciation: "yo", emoji: "🎄" },
+            { word: "ж", translation: "ژ", pronunciation: "zhe", emoji: "🐞" },
+            { word: "з", translation: "ز", pronunciation: "ze", emoji: "🦓" },
+            { word: "и", translation: "إي", pronunciation: "i", emoji: "🪡" },
+            { word: "й", translation: "إي قصيرة", pronunciation: "iy kratkoye", emoji: "🧘" },
+            { word: "к", translation: "ك", pronunciation: "ka", emoji: "👑" },
+            { word: "л", translation: "ل", pronunciation: "el", emoji: "🍋" },
+            { word: "м", translation: "م", pronunciation: "em", emoji: "🐻" },
+            { word: "н", translation: "ن", pronunciation: "en", emoji: "👃" },
+            { word: "о", translation: "أو", pronunciation: "o", emoji: "🍊" },
+            { word: "п", translation: "پ", pronunciation: "pe", emoji: "🐧" },
+            { word: "р", translation: "ر", pronunciation: "er", emoji: "🤖" },
+            { word: "с", translation: "س", pronunciation: "es", emoji: "☀️" },
+            { word: "т", translation: "ت", pronunciation: "te", emoji: "🐢" },
+            { word: "у", translation: "أو (مضمومة)", pronunciation: "u", emoji: "🐌" },
+            { word: "ф", translation: "ف", pronunciation: "ef", emoji: " фонарь" },
+            { word: "х", translation: "خ", pronunciation: "kha", emoji: "🍞" },
+            { word: "ц", translation: "تس", pronunciation: "tse", emoji: "👑" },
+            { word: "ч", translation: "تش", pronunciation: "che", emoji: " чайник" },
+            { word: "ш", translation: "ش", pronunciation: "sha", emoji: " шапка" },
+            { word: "щ", translation: "شْشَ", pronunciation: "shcha", emoji: " щётка" },
+            { word: "ъ", translation: "علامة التفخيم", pronunciation: "tvordyy znak", emoji: "🧱" },
+            { word: "ы", translation: "إي (مفخمة)", pronunciation: "yery", emoji: "🧀" },
+            { word: "ь", translation: "علامة الترقيق", pronunciation: "myagkiy znak", emoji: "🪶" },
+            { word: "э", translation: "إيه", pronunciation: "e", emoji: " экскаватор" },
+            { word: "ю", translation: "يو", pronunciation: "yu", emoji: " юбка" },
+            { word: "я", translation: "يا", pronunciation: "ya", emoji: " яблоко" },
+        ],
+        readingExercises: [
+            readingExercise("Это мой дом.", "مثال على حرف 'д'", "هذا منزلي.", ["هذا كتاب.", "هذا قط.", "هذه سيارة."]),
+            readingExercise("Мама мыла раму.", "جملة سهلة للقراءة", "الأم غسلت الإطار.", ["القطة تشرب الحليب.", "أنا أقرأ كتاباً.", "هو يلعب بالكرة."])
+        ],
+        listeningExercises: [
+            listeningExercise("а", "أول حرف في الأبجدية.", ["б", "в", "г"]),
+            listeningExercise("я", "آخر حرف في الأبجدية.", ["ю", "э", "ь"])
+        ]
+    },
     basics: {
         words: [
             { word: "Я", translation: "أنا", pronunciation: "يا", emoji: "👤" },

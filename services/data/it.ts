@@ -1,3 +1,4 @@
+
 import { CategoryContent, GamesCollection, ReadingExercise, ListeningExercise } from '../../types';
 
 const shuffle = <T,>(arr: T[]) => [...arr].sort(() => 0.5 - Math.random());
@@ -17,6 +18,39 @@ const listeningExercise = (audioWord: string, hint: string, otherOptions: string
 });
 
 export const ITALIAN_CONTENT: { [categoryName: string]: CategoryContent; } = {
+    alphabet: {
+        words: [
+            { word: "a", translation: "آ", pronunciation: "/a/", emoji: "✈️" },
+            { word: "b", translation: "بي", pronunciation: "/bi/", emoji: "🎈" },
+            { word: "c", translation: "تشي", pronunciation: "/tʃi/", emoji: "🍰" },
+            { word: "d", translation: "دي", pronunciation: "/di/", emoji: "🎲" },
+            { word: "e", translation: "إيه", pronunciation: "/e/", emoji: "🐘" },
+            { word: "f", translation: "إفّي", pronunciation: "/ˈɛffe/", emoji: "🌸" },
+            { word: "g", translation: "جي", pronunciation: "/dʒi/", emoji: "🦒" },
+            { word: "h", translation: "آكّا", pronunciation: "(صامت)", emoji: "🏨" },
+            { word: "i", translation: "إي", pronunciation: "/i/", emoji: "🏝️" },
+            { word: "l", translation: "إلّي", pronunciation: "/ˈɛlle/", emoji: "🌙" },
+            { word: "m", translation: "إمّي", pronunciation: "/ˈɛmme/", emoji: "🍎" },
+            { word: "n", translation: "إنّي", pronunciation: "/ˈɛnne/", emoji: "👃" },
+            { word: "o", translation: "أو", pronunciation: "/o/", emoji: "🍊" },
+            { word: "p", translation: "پي", pronunciation: "/pi/", emoji: "🍕" },
+            { word: "q", translation: "كو", pronunciation: "/ku/", emoji: "👑" },
+            { word: "r", translation: "إرّي", pronunciation: "/ˈɛrre/", emoji: "🤖" },
+            { word: "s", translation: "إسّي", pronunciation: "/ˈɛsse/", emoji: "☀️" },
+            { word: "t", translation: "تي", pronunciation: "/ti/", emoji: "🐢" },
+            { word: "u", translation: "أو", pronunciation: "/u/", emoji: "🍇" },
+            { word: "v", translation: "ڤو/ڤي", pronunciation: "/vu/", emoji: "🎻" },
+            { word: "z", translation: "دزيتا", pronunciation: "/ˈdzɛta/", emoji: "🦓" },
+        ],
+        readingExercises: [
+            readingExercise("a come ancona", "حرف الألف في الإيطالية", "a مثل ancona", ["b come bologna", "c come como", "d come domodossola"]),
+            readingExercise("z come zara", "حرف الزاي في الإيطالية", "z مثل zara", ["b come bari", "r come roma", "p come pisa"])
+        ],
+        listeningExercises: [
+            listeningExercise("a", "La prima lettera dell'alfabeto.", ["b", "e", "o"]),
+            listeningExercise("z", "L'ultima lettera dell'alfabeto.", ["s", "t", "v"])
+        ]
+    },
     basics: {
         words: [
             { word: "Io", translation: "أنا", pronunciation: "إيو", emoji: "👤" },
@@ -537,7 +571,7 @@ export const ITALIAN_CONTENT: { [categoryName: string]: CategoryContent; } = {
             { word: "giardinaggio", translation: "بستنة", pronunciation: "جاردينادجو", emoji: "🪴" },
         ],
         readingExercises: [
-            readingExercise("Il mio hobby è leggere libri e ascoltare musica.", "ابحث عن الهوايات المذكورة.", "هوايتي هي قراءة الكتب والاستماع إلى الموسيقى.", ["A lui piace fare sport e nuotare.", "Lei è brava a cucinare e a disegnare.", "Ti piace viaggiare e giocare ai videogiochi?"]),
+            readingExercise("Il mio hobby è leggere libri e ascoltare musica.", "ابحث عن الهوايات المذكورة.", "هوايتي هي قراءة الكتب والاستماع للموسيقى.", ["A lui piace fare sport e nuotare.", "Lei è brava a cucinare e a disegnare.", "Ti piace viaggiare e giocare ai videogiochi?"]),
             readingExercise("Guardare film è divertente, ma preferisco correre fuori.", "ابحث عن الهواية الداخلية والخارجية.", "مشاهدة الأفلام ممتعة، لكني أفضل الجري في الخارج.", ["Cantare e ballare richiedono talento.", "La scrittura è un hobby creativo.", "La fotografia cattura bei momenti."])
         ],
         listeningExercises: [

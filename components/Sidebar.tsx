@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react';
 import { Category, CategoryId, Language } from '../types';
 
@@ -68,7 +69,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 <div className="api-key-manager mt-6">
                     <label htmlFor="apiKey" className="block mb-2 font-medium text-white">
                         <i className="fas fa-key mr-2"></i>
-                        مفتاح OpenRouter API
+                        ضع مفتاحك هنا
                     </label>
                     <div className="flex gap-2">
                         <input
@@ -89,9 +90,6 @@ const Sidebar: React.FC<SidebarProps> = ({
                     </div>
                      <p className="text-xs text-gray-400 mt-2">
                        المفتاح يُحفظ في متصفحك فقط. 
-                        <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer" className="text-secondary hover:underline ml-1">
-                            احصل على مفتاح
-                        </a>
                     </p>
                 </div>
             </div>

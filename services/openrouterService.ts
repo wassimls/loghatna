@@ -13,8 +13,8 @@ const executeRequest = async (apiKey: string, body: object) => {
         headers: {
             'Authorization': `Bearer ${apiKey}`,
             'Content-Type': 'application/json',
-            'HTTP-Referer': 'https://loghatna.info', // Required by OpenRouter free tier
-            'X-Title': 'Loghatna', // Required by OpenRouter free tier
+            'HTTP-Referer': 'https://mindlingo.info', // Required by OpenRouter free tier
+            'X-Title': 'MindLingo', // Required by OpenRouter free tier
         },
         body: JSON.stringify(body),
     });

@@ -18,6 +18,64 @@ const listeningExercise = (audioWord: string, hint: string, otherOptions: string
 });
 
 export const JAPANESE_CONTENT: { [categoryName: string]: CategoryContent; } = {
+    alphabet: {
+        words: [
+            { word: "あ", translation: "أ", pronunciation: "a", emoji: "☀️" },
+            { word: "い", translation: "إي", pronunciation: "i", emoji: "🐕" },
+            { word: "う", translation: "أو", pronunciation: "u", emoji: "🐄" },
+            { word: "え", translation: "إيه", pronunciation: "e", emoji: "✏️" },
+            { word: "お", translation: "أو", pronunciation: "o", emoji: "🍙" },
+            { word: "か", translation: "كا", pronunciation: "ka", emoji: "☂️" },
+            { word: "き", translation: "كي", pronunciation: "ki", emoji: "🌳" },
+            { word: "く", translation: "كو", pronunciation: "ku", emoji: "👟" },
+            { word: "け", translation: "كيه", pronunciation: "ke", emoji: "🐛" },
+            { word: "こ", translation: "كو", pronunciation: "ko", emoji: "🧒" },
+            { word: "さ", translation: "سا", pronunciation: "sa", emoji: "🐟" },
+            { word: "し", translation: "شي", pronunciation: "shi", emoji: "🚦" },
+            { word: "す", translation: "سو", pronunciation: "su", emoji: "🍉" },
+            { word: "せ", translation: "سيه", pronunciation: "se", emoji: "🌍" },
+            { word: "そ", translation: "سو", pronunciation: "so", emoji: "☁️" },
+            { word: "た", translation: "تا", pronunciation: "ta", emoji: "🐙" },
+            { word: "ち", translation: "تشي", pronunciation: "chi", emoji: "🗺️" },
+            { word: "つ", translation: "تسو", pronunciation: "tsu", emoji: "🌙" },
+            { word: "て", translation: "تيه", pronunciation: "te", emoji: "✋" },
+            { word: "と", translation: "تو", pronunciation: "to", emoji: "⏰" },
+            { word: "な", translation: "نا", pronunciation: "na", emoji: "🍆" },
+            { word: "に", translation: "ني", pronunciation: "ni", emoji: "🌈" },
+            { word: "ぬ", translation: "نو", pronunciation: "nu", emoji: "布" },
+            { word: "ね", translation: "نيه", pronunciation: "ne", emoji: "🐈" },
+            { word: "の", translation: "نو", pronunciation: "no", emoji: "🍙" },
+            { word: "は", translation: "ها", pronunciation: "ha", emoji: "🌸" },
+            { word: "ひ", translation: "هي", pronunciation: "hi", emoji: "✈️" },
+            { word: "ふ", translation: "فو", pronunciation: "fu", emoji: "🚢" },
+            { word: "へ", translation: "هيه", pronunciation: "he", emoji: "🐍" },
+            { word: "ほ", translation: "هو", pronunciation: "ho", emoji: "⭐" },
+            { word: "ま", translation: "ما", pronunciation: "ma", emoji: "🪟" },
+            { word: "み", translation: "مي", pronunciation: "mi", emoji: "💧" },
+            { word: "む", translation: "مو", pronunciation: "mu", emoji: "🐞" },
+            { word: "め", translation: "ميه", pronunciation: "me", emoji: "👀" },
+            { word: "も", translation: "مو", pronunciation: "mo", emoji: "🍑" },
+            { word: "や", translation: "يا", pronunciation: "ya", emoji: "⛰️" },
+            { word: "ゆ", translation: "يو", pronunciation: "yu", emoji: "❄️" },
+            { word: "よ", translation: "يو", pronunciation: "yo", emoji: "🌃" },
+            { word: "ら", translation: "را", pronunciation: "ra", emoji: "🐪" },
+            { word: "り", translation: "ري", pronunciation: "ri", emoji: "🍎" },
+            { word: "る", translation: "رو", pronunciation: "ru", emoji: "🏠" },
+            { word: "れ", translation: "ريه", pronunciation: "re", emoji: "🍋" },
+            { word: "ろ", translation: "رو", pronunciation: "ro", emoji: "🕯️" },
+            { word: "わ", translation: "وا", pronunciation: "wa", emoji: "🐊" },
+            { word: "を", translation: "أو (أداة)", pronunciation: "o", emoji: "✏️" },
+            { word: "ん", translation: "ن", pronunciation: "n", emoji: "🔚" },
+        ],
+        readingExercises: [
+            readingExercise("あ い う え お", "أول خمسة حروف هيراغانا", "a i u e o", ["ka ki ku ke ko", "sa shi su se so", "ta chi tsu te to"]),
+            readingExercise("こんにちは", "كلمة شائعة تعني مرحبا", "Konnichiwa", ["Sayōnara", "Arigatō", "Sumimasen"])
+        ],
+        listeningExercises: [
+            listeningExercise("か", "The 'ka' sound.", ["さ", "た", "な"]),
+            listeningExercise("の", "The 'no' sound, also a particle.", ["め", "ね", "わ"])
+        ]
+    },
     basics: {
         words: [
             { word: "私", translation: "أنا", pronunciation: "watashi", emoji: "👤" },

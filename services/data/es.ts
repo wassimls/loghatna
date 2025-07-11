@@ -1,4 +1,5 @@
-import { CategoryContent, GamesCollection, ReadingExercise, ListeningExercise } from '../../types';
+
+import { CategoryContent, ReadingExercise, ListeningExercise } from '../../types';
 
 const shuffle = <T,>(arr: T[]) => [...arr].sort(() => 0.5 - Math.random());
 
@@ -17,6 +18,45 @@ const listeningExercise = (audioWord: string, hint: string, otherOptions: string
 });
 
 export const SPANISH_CONTENT: { [categoryName: string]: CategoryContent; } = {
+    alphabet: {
+        words: [
+            { word: "a", translation: "آ", pronunciation: "/a/", emoji: "✈️" },
+            { word: "b", translation: "بيه", pronunciation: "/be/", emoji: "🎈" },
+            { word: "c", translation: "ثيه", pronunciation: "/θe/", emoji: "🏠" },
+            { word: "d", translation: "ديه", pronunciation: "/de/", emoji: "🎲" },
+            { word: "e", translation: "إيه", pronunciation: "/e/", emoji: "🐘" },
+            { word: "f", translation: "إيفيه", pronunciation: "/ˈefe/", emoji: "🌸" },
+            { word: "g", translation: "خيه", pronunciation: "/xe/", emoji: "🐈" },
+            { word: "h", translation: "آتشيه", pronunciation: "(صامت)", emoji: "🏨" },
+            { word: "i", translation: "إي", pronunciation: "/i/", emoji: "🏝️" },
+            { word: "j", translation: "خوتا", pronunciation: "/ˈxota/", emoji: "🦒" },
+            { word: "k", translation: "كا", pronunciation: "/ka/", emoji: "🥝" },
+            { word: "l", translation: "إيليه", pronunciation: "/ˈele/", emoji: "🌙" },
+            { word: "m", translation: "إيميه", pronunciation: "/ˈeme/", emoji: "🦋" },
+            { word: "n", translation: "إينيه", pronunciation: "/ˈene/", emoji: "👃" },
+            { word: "ñ", translation: "إينييه", pronunciation: "/ˈeɲe/", emoji: "🧒" },
+            { word: "o", translation: "أو", pronunciation: "/o/", emoji: "🐻" },
+            { word: "p", translation: "پيه", pronunciation: "/pe/", emoji: "🐧" },
+            { word: "q", translation: "كو", pronunciation: "/ku/", emoji: "🧀" },
+            { word: "r", translation: "إرّيه", pronunciation: "/ˈerre/", emoji: "🤖" },
+            { word: "s", translation: "إيسيه", pronunciation: "/ˈese/", emoji: "☀️" },
+            { word: "t", translation: "تيه", pronunciation: "/te/", emoji: "🐢" },
+            { word: "u", translation: "أو", pronunciation: "/u/", emoji: "🍇" },
+            { word: "v", translation: "أوبيه", pronunciation: "/ˈube/", emoji: "🎻" },
+            { word: "w", translation: "أوبيه دوبليه", pronunciation: "/ube ˈdoble/", emoji: "🍉" },
+            { word: "x", translation: "إيكيس", pronunciation: "/ˈekis/", emoji: " xylophone" },
+            { word: "y", translation: "إي غرييغا", pronunciation: "/i ˈɣɾjeɣa/", emoji: " yogurt" },
+            { word: "z", translation: "ثيتا", pronunciation: "/ˈθeta/", emoji: "🦓" },
+        ],
+        readingExercises: [
+            readingExercise("El niño come una manzana.", "لاحظ حرف 'ñ' في كلمة 'niño'.", "الطفل يأكل تفاحة.", ["El perro corre.", "La casa es grande.", "Bebo agua."]),
+            readingExercise("¿Qué queso quieres?", "صوت حرف 'q'.", "أي جبن تريد؟", ["Hola, ¿cómo estás?", "Adiós.", "Gracias."])
+        ],
+        listeningExercises: [
+            listeningExercise("b", "صوته مثل 'v'.", ["v", "p", "d"]),
+            listeningExercise("ñ", "حرف فريد في الإسبانية.", ["n", "m", "l"])
+        ]
+    },
     basics: {
         words: [
             { word: "Yo", translation: "أنا", pronunciation: "يو", emoji: "👤" },
@@ -125,7 +165,7 @@ export const SPANISH_CONTENT: { [categoryName: string]: CategoryContent; } = {
         ],
         readingExercises: [
             readingExercise("El cielo es azul y la hierba es verde.", "ركز على ترجمة 'azul' و 'verde'.", "السماء زرقاء والعشب أخضر.", ["La manzana es roja y el plátano es amarillo.", "Me gusta el blanco y el negro.", "Su coche nuevo es rojo."]),
-            readingExercise("Ella tiene un vestido rosa y zapatos blancos.", "ابحث عن 'rosa' و 'blancos'.", "لديها فستان وردي وحذاء أبيض.", ["El gato es negro y el perro es marrón.", "¿Te gusta el color morado?", "El oro y la plata son metales preciosos."])
+            readingExercise("Tiene un vestido rosa y zapatos blancos.", "ابحث عن 'rosa' و 'blancos'.", "لديها فستان وردي وحذاء أبيض.", ["El gato es negro y el perro es marrón.", "¿Te gusta el color morado?", "El oro y la plata son metales preciosos."])
         ],
         listeningExercises: [
             listeningExercise("Rojo", "لون الدم أو الفراولة.", ["Azul", "Verde", "Amarillo"]),
@@ -143,11 +183,11 @@ export const SPANISH_CONTENT: { [categoryName: string]: CategoryContent; } = {
             { word: "Niño", translation: "طفل", pronunciation: "نينيو", emoji: "👶" },
             { word: "Hermano", translation: "أخ", pronunciation: "إرمانو", emoji: "👱‍♂️" },
             { word: "Hermana", translation: "أخت", pronunciation: "إرمانا", emoji: "👱‍♀️" },
-            { word: "Abuelo", translation: "جد", pronunciation: "آبويلو", emoji: "👴" },
-            { word: "Abuela", translation: "جدة", pronunciation: "آبويلا", emoji: "👵" },
+            { word: "Abuelo", translation: "جد", pronunciation: "أبويلو", emoji: "👴" },
+            { word: "Abuela", translation: "جدة", pronunciation: "أبويلا", emoji: "👵" },
             { word: "Tío", translation: "عم/خال", pronunciation: "تيو", emoji: "👨‍" },
             { word: "Tía", translation: "عمة/خالة", pronunciation: "تيا", emoji: "👩‍" },
-            { word: "Primo/Prima", translation: "ابن/بنت العم/الخال", pronunciation: "پريمو/پريما", emoji: "🧑" },
+            { word: "Primo", translation: "ابن/بنت العم/الخال", pronunciation: "پريمو", emoji: "🧑" },
             { word: "Esposo", translation: "زوج", pronunciation: "إسبوسو", emoji: "🤵" },
             { word: "Esposa", translation: "زوجة", pronunciation: "إسبوسا", emoji: "👰" },
         ],
@@ -167,20 +207,20 @@ export const SPANISH_CONTENT: { [categoryName: string]: CategoryContent; } = {
             { word: "Agua", translation: "ماء", pronunciation: "آغوا", emoji: "💧" },
             { word: "Café", translation: "قهوة", pronunciation: "كافيه", emoji: "☕" },
             { word: "Té", translation: "شاي", pronunciation: "تيه", emoji: "🍵" },
-            { word: "Jugo", translation: "عصير", pronunciation: "خوگو", emoji: "🧃" },
+            { word: "Jugo", translation: "عصير", pronunciation: "خوغو", emoji: "🧃" },
             { word: "Leche", translation: "حليب", pronunciation: "ليتشي", emoji: "🥛" },
             { word: "Pan", translation: "خبز", pronunciation: "پان", emoji: "🍞" },
             { word: "Queso", translation: "جبن", pronunciation: "كيسو", emoji: "🧀" },
-            { word: "Arroz", translation: "أرز", pronunciation: "آروث", emoji: "🍚" },
+            { word: "Arroz", translation: "أرز", pronunciation: "آرّوث", emoji: "🍚" },
             { word: "Pollo", translation: "دجاج", pronunciation: "پويو", emoji: "🍗" },
-            { word: "Carne", translation: "لحم", pronunciation: "كارني", emoji: "🥩" },
-            { word: "Pescado", translation: "سمك", pronunciation: "بيسكادو", emoji: "🐟" },
+            { word: "Carne", translation: "لحم", pronunciation: "كارني", emoji: "������" },
+            { word: "Pescado", translation: "سمك", pronunciation: "پيسكادو", emoji: "🐟" },
             { word: "Fruta", translation: "فاكهة", pronunciation: "فروتا", emoji: "🍎" },
             { word: "Manzana", translation: "تفاحة", pronunciation: "مانثانا", emoji: "🍎" },
             { word: "Plátano", translation: "موزة", pronunciation: "پلاتانو", emoji: "🍌" },
             { word: "Naranja", translation: "برتقالة", pronunciation: "نارانخا", emoji: "🍊" },
             { word: "Verdura", translation: "خضروات", pronunciation: "بيردورا", emoji: "🥕" },
-            { word: "Zanahoria", translation: "جزرة", pronunciation: "ثانآوريا", emoji: "🥕" },
+            { word: "Zanahoria", translation: "جزرة", pronunciation: "ثاناوريا", emoji: "🥕" },
             { word: "Patata", translation: "بطاطس", pronunciation: "پاتاتا", emoji: "🥔" },
             { word: "Tomate", translation: "طماطم", pronunciation: "توماتي", emoji: "🍅" },
             { word: "Azúcar", translation: "سكر", pronunciation: "آثوكار", emoji: "🍬" },
@@ -208,7 +248,7 @@ export const SPANISH_CONTENT: { [categoryName: string]: CategoryContent; } = {
             { word: "Semana", translation: "أسبوع", pronunciation: "سيمانا", emoji: "🗓️" },
             { word: "Mes", translation: "شهر", pronunciation: "ميس", emoji: "🈷️" },
             { word: "Año", translation: "سنة", pronunciation: "آنيو", emoji: "🎉" },
-            { word: "Lunes", translation: "الإثنين", pronunciation: "لونيس", emoji: " M" },
+            { word: "Lunes", translation: "الإثنين", pronunciation: "لونس", emoji: " M" },
             { word: "Martes", translation: "الثلاثاء", pronunciation: "مارتيس", emoji: "T" },
             { word: "Miércoles", translation: "الأربعاء", pronunciation: "مييركوليس", emoji: "W" },
             { word: "Jueves", translation: "الخميس", pronunciation: "خويبيس", emoji: "T" },
@@ -224,7 +264,7 @@ export const SPANISH_CONTENT: { [categoryName: string]: CategoryContent; } = {
         ],
         readingExercises: [
             readingExercise("Hoy es lunes y mañana es martes.", "ترجم 'Hoy', 'lunes', 'mañana', 'martes'.", "اليوم هو الإثنين، وغداً هو الثلاثاء.", ["Ayer fue domingo.", "Tengo una reunión el viernes.", "Un mes tiene cuatro semanas."]),
-            readingExercise("La reunión es a las diez de la mañana.", "ابحث عن الوقت والجزء من اليوم.", "الاجتماع في الساعة العاشرة صباحاً.", ["Te veo por la noche.", "Espera un minuto, por favor.", "Un año tiene doce meses."])
+            readingExercise("La reunión es a las diez de la mañana.", "ابحث عن الوقت والجزء من اليوم.", "الاجتماع في الساعة العاشرة صباحاً.", ["Nos vemos por la noche.", "Espera un minuto, por favor.", "Un año tiene doce meses."])
         ],
         listeningExercises: [
             listeningExercise("Viernes", "اليوم الذي يسبق عطلة نهاية الأسبوع.", ["Lunes", "Domingo", "Semana"]),
@@ -241,23 +281,21 @@ export const SPANISH_CONTENT: { [categoryName: string]: CategoryContent; } = {
             { word: "Lluvia", translation: "مطر", pronunciation: "يوبيا", emoji: "🌧️" },
             { word: "Lluvioso", translation: "ممطر", pronunciation: "يوبيوسو", emoji: "🌧️" },
             { word: "Viento", translation: "رياح", pronunciation: "بيينتو", emoji: "💨" },
-            { word: "Ventoso", translation: "عاصف", pronunciation: "بينتوسو", emoji: "💨" },
             { word: "Nieve", translation: "ثلج", pronunciation: "نييبي", emoji: "❄️" },
-            { word: "Nevado", translation: "مثلج", pronunciation: "نيبادو", emoji: "❄️" },
-            { word: "Caliente", translation: "حار", pronunciation: "كاليينتي", emoji: "🌡️" },
+            { word: "Calor", translation: "حار", pronunciation: "كالور", emoji: "🌡️" },
             { word: "Frío", translation: "بارد", pronunciation: "فريو", emoji: "🥶" },
-            { word: "Templado", translation: "دافئ", pronunciation: "تيمپلادو", emoji: "😊" },
-            { word: "Fresco", translation: "معتدل البرودة", pronunciation: "فريسكو", emoji: "😎" },
+            { word: "Cálido", translation: "دافئ", pronunciation: "كاليدو", emoji: "😊" },
+            { word: "Fresco", translation: "معتدل البرودة", pronunciation: "فريسك", emoji: "😎" },
             { word: "Tormenta", translation: "عاصفة", pronunciation: "تورمينتا", emoji: "⛈️" },
             { word: "Niebla", translation: "ضباب", pronunciation: "نييبلا", emoji: "🌫️" },
         ],
         readingExercises: [
-            readingExercise("Hace sol y calor hoy.", "ابحث عن الكلمات التي تصف الشمس والحرارة.", "الجو مشمس وحار اليوم.", ["Está nublado y frío.", "Mañana va a llover.", "Me gusta el tiempo nevado."]),
-            readingExercise("En invierno, hace frío y nieva.", "ابحث عن كلمات الشتاء.", "في الشتاء، يكون الجو بارداً ويتساقط الثلج.", ["El viento es fuerte hoy.", "Toma tu paraguas, está lloviendo.", "Hay niebla por la mañana."])
+            readingExercise("Hace sol y calor hoy.", "ابحث عن الكلمات التي تصف الشمس والحرارة.", "الجو مشمس وحار اليوم.", ["Está nublado y hace frío.", "Mañana va a llover.", "Me gusta el tiempo con nieve."]),
+            readingExercise("En invierno, hace frío y nieva.", "ابحث عن كلمات الشتاء.", "في الشتاء، يكون الجو بارداً ويتساقط الثلج.", ["El viento es fuerte hoy.", "Coge tu paraguas, está lloviendo.", "Hay niebla por la mañana."])
         ],
         listeningExercises: [
-            listeningExercise("Lluvioso", "عندما يسقط الماء من السماء.", ["Soleado", "Nublado", "Ventoso"]),
-            listeningExercise("Frío", "عكس كلمة 'حار'.", ["Caliente", "Templado", "Fresco"])
+            listeningExercise("Lluvia", "عندما يسقط الماء من السماء.", ["Sol", "Nube", "Viento"]),
+            listeningExercise("Frío", "عكس كلمة 'حار'.", ["Calor", "Cálido", "Fresco"])
         ]
     },
     home: {
@@ -267,11 +305,11 @@ export const SPANISH_CONTENT: { [categoryName: string]: CategoryContent; } = {
             { word: "Habitación", translation: "غرفة", pronunciation: "آبيتاسيون", emoji: "🚪" },
             { word: "Dormitorio", translation: "غرفة نوم", pronunciation: "دورميتوريو", emoji: "🛏️" },
             { word: "Baño", translation: "حمام", pronunciation: "بانيو", emoji: "🛁" },
-            { word: "Cocina", translation: "مطبخ", pronunciation: "كوثينا", emoji: "🍳" },
-            { word: "Sala de estar", translation: "غرفة معيشة", pronunciation: "سالا دي إستار", emoji: "🛋️" },
+            { word: "Cocina", translation: "مطبخ", pronunciation: "كوسينا", emoji: "🍳" },
+            { word: "Salón", translation: "غرفة معيشة", pronunciation: "سالون", emoji: "🛋️" },
             { word: "Comedor", translation: "غرفة طعام", pronunciation: "كوميدور", emoji: "🍽️" },
             { word: "Jardín", translation: "حديقة", pronunciation: "خاردين", emoji: "🌳" },
-            { word: "Puerta", translation: "باب", pronunciation: "بويرتا", emoji: "🚪" },
+            { word: "Puerta", translation: "باب", pronunciation: "پويرتا", emoji: "🚪" },
             { word: "Ventana", translation: "نافذة", pronunciation: "بينتانا", emoji: "🪟" },
             { word: "Suelo", translation: "أرضية", pronunciation: "سويلو", emoji: "👣" },
             { word: "Techo", translation: "سقف", pronunciation: "تيتشو", emoji: "🧱" },
@@ -279,13 +317,13 @@ export const SPANISH_CONTENT: { [categoryName: string]: CategoryContent; } = {
             { word: "Mesa", translation: "طاولة", pronunciation: "ميسا", emoji: "🪵" },
             { word: "Silla", translation: "كرسي", pronunciation: "سييا", emoji: "🪑" },
             { word: "Cama", translation: "سرير", pronunciation: "كاما", emoji: "🛏️" },
-            { word: "Sofá", translation: "أريكة", pronunciation: "سوفا", emoji: "🛋️" },
+            { word: "Sofá", translation: "أريكة", pronunciation: "صوفا", emoji: "🛋️" },
             { word: "Lámpara", translation: "مصباح", pronunciation: "لامپارا", emoji: "💡" },
-            { word: "Llave", translation: "مفتاح", pronunciation: "يابي", emoji: "🔑" },
+            { word: "Llave", translation: "مفتاح", pronunciation: "ياβي", emoji: "🔑" },
         ],
         readingExercises: [
-            readingExercise("La cocina tiene una mesa y una ventana.", "ترجم 'cocina', 'mesa', و 'ventana'.", "المطبخ به طاولة ونافذة.", ["El dormitorio tiene una cama y una puerta.", "La sala de estar tiene una silla.", "La llave de la casa está en el jardín."]),
-            readingExercise("Duermo en el dormitorio y veo la tele en la sala de estar.", "ابحث عن أماكن النوم ومشاهدة التلفاز.", "أنا أنام في غرفة النوم وأشاهد التلفاز في غرفة المعيشة.", ["Comemos en el comedor.", "El baño está al final del pasillo.", "El apartamento está en el tercer piso."])
+            readingExercise("La cocina tiene una mesa y una ventana.", "ترجم 'cocina', 'mesa', و 'ventana'.", "المطبخ به طاولة ونافذة.", ["El dormitorio tiene una cama y una puerta.", "El salón tiene una silla.", "La llave de la casa está en el jardín."]),
+            readingExercise("Duermo en el dormitorio y veo la tele en el salón.", "ابحث عن أماكن النوم ومشاهدة التلفاز.", "أنا أنام في غرفة النوم وأشاهد التلفاز في غرفة المعيشة.", ["Comemos en el comedor.", "El baño está al final del pasillo.", "El apartamento está en el tercer piso."])
         ],
         listeningExercises: [
             listeningExercise("Cocina", "المكان الذي نطبخ فيه الطعام.", ["Dormitorio", "Baño", "Jardín"]),
@@ -301,7 +339,7 @@ export const SPANISH_CONTENT: { [categoryName: string]: CategoryContent; } = {
             { word: "Precio", translation: "سعر", pronunciation: "پريثيو", emoji: "💲" },
             { word: "Comprar", translation: "يشتري", pronunciation: "كومبرار", emoji: "🛍️" },
             { word: "Vender", translation: "يبيع", pronunciation: "بيندير", emoji: "🏷️" },
-            { word: "Pagar", translation: "يدفع", pronunciation: "پاگار", emoji: "💳" },
+            { word: "Pagar", translation: "يدفع", pronunciation: "پاغار", emoji: "💳" },
             { word: "Caro", translation: "غالي", pronunciation: "كارو", emoji: "💎" },
             { word: "Barato", translation: "رخيص", pronunciation: "باراتو", emoji: "🪙" },
             { word: "Factura", translation: "فاتورة", pronunciation: "فاكتورا", emoji: "🧾" },
@@ -341,7 +379,7 @@ export const SPANISH_CONTENT: { [categoryName: string]: CategoryContent; } = {
             { word: "Estómago", translation: "معدة", pronunciation: "إستوماغو", emoji: "🍔" },
         ],
         readingExercises: [
-            readingExercise("Tengo dos ojos, una nariz y una boca.", "عد أجزاء الوجه المذكورة.", "لدي عينان وأنف واحد وفم واحد.", ["Me lavo las manos con agua y jabón.", "Me duele la cabeza.", "Él tiene el pelo negro y los ojos azules."]),
+            readingExercise("Tengo dos ojos, una nariz y una boca.", "عد أجزاء الوجه المذكورة.", "لدي عينان وأنف واحد وفم واحد.", ["Me lavo las manos con agua y jabón.", "Me duele la cabeza.", "Tiene el pelo negro y los ojos azules."]),
             readingExercise("Me duele el estómago después de comer.", "ابحث عن الجزء الذي يؤلم.", "معدتي تؤلمني بعد الأكل.", ["Mi corazón late rápido.", "Tengo cinco dedos en cada mano.", "Mi brazo es fuerte."])
         ],
         listeningExercises: [
@@ -371,7 +409,7 @@ export const SPANISH_CONTENT: { [categoryName: string]: CategoryContent; } = {
         ],
         readingExercises: [
             readingExercise("Llevo una camisa azul y pantalones negros.", "ابحث عن 'camisa' و 'pantalones' وألوانها.", "أنا أرتدي قميصاً أزرق وبنطالاً أسود.", ["Mis zapatos nuevos son blancos.", "Necesito comprar una chaqueta para el invierno.", "Este sombrero es muy bonito."]),
-            readingExercise("En invierno, llevo un abrigo, una bufanda y guantes.", "ابحث عن ملابس الشتاء.", "في الشتاء، أرتدي معطفًا ووشاحًا وقفازات.", ["Ella lleva un vestido rojo precioso.", "¿Has visto mis calcetines?", "Esta camiseta es demasiado grande."])
+            readingExercise("En invierno, llevo un abrigo, una bufanda y guantes.", "ابحث عن ملابس الشتاء.", "في الشتاء، أرتدي معطفًا ووشاحًا وقفازات.", ["Ella lleva un bonito vestido rojo.", "¿Has visto mis calcetines?", "Esta camiseta es demasiado grande."])
         ],
         listeningExercises: [
             listeningExercise("Zapatos", "ما ترتديه في قدميك.", ["Camisa", "Sombrero", "Calcetines"]),
@@ -380,17 +418,17 @@ export const SPANISH_CONTENT: { [categoryName: string]: CategoryContent; } = {
     },
     verbs: {
         words: [
-            { word: "ser/estar", translation: "يكون", pronunciation: "سير/إستار", emoji: "🧘" },
+            { word: "ser", translation: "يكون (دائم)", pronunciation: "سير", emoji: "🧘" },
+            { word: "estar", translation: "يكون (مؤقت)", pronunciation: "إستار", emoji: "📍" },
             { word: "tener", translation: "يملك", pronunciation: "تينير", emoji: "🤲" },
             { word: "hacer", translation: "يفعل/يصنع", pronunciation: "آثير", emoji: "💪" },
-            { word: "decir", translation: "يقول", pronunciation: "ديثيير", emoji: "🗣️" },
+            { word: "decir", translation: "يقول", pronunciation: "ديثيو", emoji: "🗣️" },
             { word: "ir", translation: "يذهب", pronunciation: "إير", emoji: "🚶" },
             { word: "poder", translation: "يستطيع", pronunciation: "پودير", emoji: "🏋️" },
             { word: "querer", translation: "يريد", pronunciation: "كيرير", emoji: "🙋" },
             { word: "saber", translation: "يعرف", pronunciation: "سابير", emoji: "🧠" },
             { word: "ver", translation: "يرى", pronunciation: "بير", emoji: "👀" },
             { word: "venir", translation: "يأتي", pronunciation: "بينير", emoji: "👋" },
-            { word: "deber", translation: "يجب", pronunciation: "ديبير", emoji: "📋" },
             { word: "creer", translation: "يصدق", pronunciation: "كريير", emoji: "🙏" },
             { word: "encontrar", translation: "يجد", pronunciation: "إنكونترار", emoji: "🔍" },
             { word: "dar", translation: "يعطي", pronunciation: "دار", emoji: "🎁" },
@@ -403,7 +441,7 @@ export const SPANISH_CONTENT: { [categoryName: string]: CategoryContent; } = {
         ],
         readingExercises: [
             readingExercise("Tengo que ir al trabajo, pero quiero quedarme en casa.", "ابحث عن الأفعال المتناقضة.", "يجب أن أذهب إلى العمل، لكني أريد أن أبقى في المنزل.", ["Él puede ver y oír todo.", "¿Puedes ayudarme a llevar esto?", "Ella intenta aprender un nuevo idioma."]),
-            readingExercise("Sabe leer y escribir en tres idiomas.", "ابحث عن المهارات اللغوية.", "هو يعرف القراءة والكتابة بثلاث لغات.", ["No hables y comas al mismo tiempo.", "Volveré en una hora.", "Ellos siempre juegan y ganan."])
+            readingExercise("Él sabe leer y escribir en tres idiomas.", "ابحث عن المهارات اللغوية.", "هو يعرف القراءة والكتابة بثلاث لغات.", ["No hables y comas al mismo tiempo.", "Volveré en una hora.", "Ellos siempre juegan y ganan."])
         ],
         listeningExercises: [
             listeningExercise("pensar", "استخدام العقل للتفكير في شيء ما.", ["comer", "dormir", "hablar"]),
@@ -434,11 +472,11 @@ export const SPANISH_CONTENT: { [categoryName: string]: CategoryContent; } = {
             { word: "lento", translation: "بطيء", pronunciation: "لينتو", emoji: "🐢" },
         ],
         readingExercises: [
-            readingExercise("El coche nuevo es rápido, pero el coche viejo es lento.", "ابحث عن الصفات المتضادة.", "السيارة الجديدة سريعة، لكن السيارة القديمة بطيئة.", ["Este libro es bueno y ese es malo.", "¿La pregunta es fácil o difícil?", "Hace mucho calor hoy."]),
+            readingExercise("El coche nuevo es rápido, pero el coche viejo es lento.", "ابحث عن الصفات المتضادة.", "السيارة الجديدة سريعة، لكن السيارة القديمة بطيئة.", ["Este libro es bueno y ese es malo.", "¿La pregunta es fácil o difícil?", "Hoy hace mucho calor."]),
             readingExercise("Ella tiene una voz bonita y un corazón bueno.", "ابحث عن الصفات الإيجابية.", "لديها صوت جميل وقلب طيب.", ["El hombre fuerte ayuda al hombre débil.", "La habitación está limpia ahora.", "La historia es larga pero no importante."])
         ],
         listeningExercises: [
-            listeningExercise("importante", "صفة لشيء ذي قيمة أو أهمية كبيرة.", ["fácil", "diferente", "falso"]),
+            listeningExercise("importante", "صفة لشيء ذي قيمة أو أهمية كبيرة.", ["fácil", "diferente", "incorrecto"]),
             listeningExercise("feliz", "الشعور بالفرح أو الرضا.", ["triste", "enfadado", "cansado"])
         ]
     },
@@ -459,21 +497,21 @@ export const SPANISH_CONTENT: { [categoryName: string]: CategoryContent; } = {
             { word: "playa", translation: "شاطئ", pronunciation: "پلايا", emoji: "🏖️" },
             { word: "biblioteca", translation: "مكتبة", pronunciation: "بيبليوتيكا", emoji: "📚" },
             { word: "banco", translation: "بنك", pronunciation: "بانكو", emoji: "🏦" },
-            { word: "oficina", translation: "مكتب", pronunciation: "أوفيثينا", emoji: "🏢" },
-            { word: "calle", translation: "شارع", pronunciation: "كاييه", emoji: "🛣️" },
-            { word: "carretera", translation: "طريق", pronunciation: "كاريتيرا", emoji: "🛤️" },
+            { word: "oficina", translation: "مكتب", pronunciation: "أوفيسينا", emoji: "🏢" },
+            { word: "calle", translation: "شارع", pronunciation: "كايي", emoji: "🛣️" },
+            { word: "carretera", translation: "طريق", pronunciation: "كارّيتيرا", emoji: "🛤️" },
             { word: "granja", translation: "مزرعة", pronunciation: "غرانخا", emoji: "🚜" },
             { word: "bosque", translation: "غابة", pronunciation: "بوسكي", emoji: "🌲" },
             { word: "montaña", translation: "جبل", pronunciation: "مونتانيا", emoji: "⛰️" },
             { word: "río", translation: "نهر", pronunciation: "ريو", emoji: "🏞️" },
             { word: "mar", translation: "بحر", pronunciation: "مار", emoji: "🌊" },
             { word: "edificio", translation: "مبنى", pronunciation: "إديفيثيو", emoji: "🏢" },
-            { word: "iglesia", translation: "كنيسة", pronunciation: "إغليسا", emoji: "⛪" },
+            { word: "iglesia", translation: "كنيسة", pronunciation: "إغليسيا", emoji: "⛪" },
             { word: "mezquita", translation: "مسجد", pronunciation: "ميثكيتا", emoji: "🕌" },
         ],
         readingExercises: [
-            readingExercise("Voy a la escuela en autobús, y luego voy a la biblioteca.", "ابحث عن أماكن التعلم.", "أذهب إلى المدرسة بالحافلة، ثم أذهب إلى المكتبة.", ["El hospital está al lado del banco.", "¿Hay un buen restaurante en esta ciudad?", "Vivimos en un apartamento en un edificio grande."]),
-            readingExercise("En verano, nos gusta ir a la playa o al parque.", "ابحث عن أماكن الترفيه الصيفية.", "في الصيف، نحب أن نذهب إلى الشاطئ أو الحديقة.", ["El aeropuerto está lejos del centro de la ciudad.", "Hay un mercado nuevo en la siguiente calle.", "El hotel está situado sobre el río."])
+            readingExercise("Voy a la escuela en autobús, y luego voy a la biblioteca.", "ابحث عن أماكن التعلم.", "أذهب إلى المدرسة بالحافلة، ثم أذهب إلى المكتبة.", ["El hospital está al lado del banco.", "¿Hay un buen restaurante en esta ciudad?", "Vivimos en un apartamento en un gran edificio."]),
+            readingExercise("En verano, nos gusta ir a la playa o al parque.", "ابحث عن أماكن الترفيه الصيفية.", "في الصيف، نحب أن نذهب إلى الشاطئ أو الحديقة.", ["El aeropuerto está lejos del centro de la ciudad.", "Hay un nuevo mercado en la siguiente calle.", "El hotel está situado sobre el río."])
         ],
         listeningExercises: [
             listeningExercise("hospital", "المكان الذي تذهب إليه عندما تكون مريضاً.", ["escuela", "hotel", "banco"]),
@@ -504,11 +542,11 @@ export const SPANISH_CONTENT: { [categoryName: string]: CategoryContent; } = {
             { word: "gato", translation: "قطة", pronunciation: "غاتو", emoji: "🐈" },
             { word: "pájaro", translation: "طائر", pronunciation: "پاخارو", emoji: "🐦" },
             { word: "roca", translation: "صخرة", pronunciation: "روكا", emoji: "🪨" },
-            { word: "arena", translation: "رمل", pronunciation: "آرينا", emoji: "🏖️" },
+            { word: "arena", translation: "رمل", pronunciation: "أرينا", emoji: "🏖️" },
         ],
         readingExercises: [
             readingExercise("El sol está en el cielo, y el pez está en el mar.", "ابحث عن مكونات السماء والبحر.", "الشمس في السماء، والسمكة في البحر.", ["La montaña es alta y el río es largo.", "Los árboles son verdes en el bosque.", "Me gusta el sonido de la lluvia y el viento."]),
-            readingExercise("Un pájaro pequeño se sienta en un árbol grande.", "ابحث عن الكائن الصغير والكبير.", "طائر صغير يجلس على شجرة كبيرة.", ["El gato juega con la pelota.", "Las flores son bonitas en primavera.", "El desierto es caliente y seco."])
+            readingExercise("Un pájaro pequeño se sienta en un árbol grande.", "ابحث عن الكائن الصغير والكبير.", "طائر صغير يجلس على شجرة كبيرة.", ["El gato juega con la pelota.", "Las flores son bonitas en primavera.", "El desierto es caluroso y seco."])
         ],
         listeningExercises: [
             listeningExercise("árbol", "نبات كبير له جذع وأغصان.", ["flor", "hierba", "montaña"]),
@@ -517,50 +555,50 @@ export const SPANISH_CONTENT: { [categoryName: string]: CategoryContent; } = {
     },
     hobbies: {
         words: [
-            { word: "afición", translation: "هواية", pronunciation: "آفيسيون", emoji: "🎨" },
-            { word: "lectura", translation: "قراءة", pronunciation: "ليكتورا", emoji: "📖" },
-            { word: "escritura", translation: "كتابة", pronunciation: "إسكريتورا", emoji: "✍️" },
+            { word: "pasatiempo", translation: "هواية", pronunciation: "پاساتييمپو", emoji: "🎨" },
+            { word: "leer", translation: "قراءة", pronunciation: "ليير", emoji: "📖" },
+            { word: "escribir", translation: "كتابة", pronunciation: "إسكريبير", emoji: "✍️" },
             { word: "música", translation: "موسيقى", pronunciation: "موسيكا", emoji: "🎵" },
             { word: "arte", translation: "فن", pronunciation: "آرتي", emoji: "🖼️" },
-            { word: "dibujo", translation: "رسم", pronunciation: "ديبوخو", emoji: "✏️" },
-            { word: "pintura", translation: "تلوين", pronunciation: "پينتورا", emoji: "🎨" },
+            { word: "dibujar", translation: "رسم", pronunciation: "ديبوخار", emoji: "✏️" },
+            { word: "pintar", translation: "تلوين", pronunciation: "پينتار", emoji: "🎨" },
             { word: "deporte", translation: "رياضة", pronunciation: "ديپورتي", emoji: "⚽" },
-            { word: "natación", translation: "سباحة", pronunciation: "ناتاثيون", emoji: "🏊" },
+            { word: "nadar", translation: "سباحة", pronunciation: "نادار", emoji: "🏊" },
             { word: "correr", translation: "جري", pronunciation: "كورّير", emoji: "🏃" },
-            { word: "cocinar", translation: "طبخ", pronunciation: "كوثينار", emoji: "🍳" },
+            { word: "cocinar", translation: "طبخ", pronunciation: "كوسينار", emoji: "🍳" },
             { word: "ver películas", translation: "مشاهدة أفلام", pronunciation: "بير پيليكولاس", emoji: "🎬" },
-            { word: "jugar a videojuegos", translation: "لعب ألعاب", pronunciation: "خوگار آه بيديوخويغوس", emoji: "🎮" },
+            { word: "jugar videojuegos", translation: "لعب ألعاب الفيديو", pronunciation: "خوغار بيديويخويغوس", emoji: "🎮" },
             { word: "viajar", translation: "سفر", pronunciation: "بياخار", emoji: "✈️" },
-            { word: "bailar", translation: "رقص", pronunciation: "باييلار", emoji: "💃" },
+            { word: "bailar", translation: "رقص", pronunciation: "بايلار", emoji: "💃" },
             { word: "cantar", translation: "غناء", pronunciation: "كانتار", emoji: "🎤" },
             { word: "fotografía", translation: "تصوير فوتوغرافي", pronunciation: "فوتوغرافيا", emoji: "📸" },
             { word: "jardinería", translation: "بستنة", pronunciation: "خاردينيريا", emoji: "🪴" },
         ],
         readingExercises: [
-            readingExercise("Mi afición es leer libros y escuchar música.", "ابحث عن الهوايات المذكورة.", "هوايتي هي قراءة الكتب والاستماع إلى الموسيقى.", ["A él le gusta hacer deporte y nadar.", "Ella es buena cocinando y dibujando.", "¿Te gusta viajar y jugar a videojuegos?"]),
-            readingExercise("Ver películas es divertido, pero prefiero correr afuera.", "ابحث عن الهواية الداخلية والخارجية.", "مشاهدة الأفلام ممتعة، لكني أفضل الجري في الخارج.", ["Cantar y bailar requieren talento.", "La escritura es una afición creativa.", "La fotografía captura momentos hermosos."])
+            readingExercise("Mi pasatiempo es leer libros y escuchar música.", "ابحث عن الهوايات المذكورة.", "هوايتي هي قراءة الكتب والاستماع للموسيقى.", ["A él le gusta hacer deporte y nadar.", "Ella es buena cocinando y dibujando.", "¿Te gusta viajar y jugar videojuegos?"]),
+            readingExercise("Ver películas es divertido, pero prefiero correr afuera.", "ابحث عن الهواية الداخلية والخارجية.", "مشاهدة الأفلام ممتعة، لكني أفضل الجري في الخارج.", ["Cantar y bailar requieren talento.", "Escribir es un pasatiempo creativo.", "La fotografía captura momentos hermosos."])
         ],
         listeningExercises: [
-            listeningExercise("música", "فن تنظيم الأصوات في الوقت المناسب.", ["arte", "deporte", "lectura"]),
-            listeningExercise("cocinar", "تحضير الطعام عن طريق تسخينه.", ["natación", "escritura", "viajar"])
+            listeningExercise("música", "فن تنظيم الأصوات في الوقت المناسب.", ["arte", "deporte", "leer"]),
+            listeningExercise("cocinar", "تحضير الطعام عن طريق تسخينه.", ["nadar", "escribir", "viajar"])
         ]
     },
     emotions: {
         words: [
-            { word: "sentimiento", translation: "شعور", pronunciation: "سينتيميينتو", emoji: "❤️" },
+            { word: "sentimiento", translation: "شعور", pronunciation: "سنتيميينتو", emoji: "❤️" },
             { word: "feliz", translation: "سعيد", pronunciation: "فيليث", emoji: "😄" },
             { word: "triste", translation: "حزين", pronunciation: "تريستي", emoji: "😢" },
             { word: "enfadado", translation: "غاضب", pronunciation: "إنفادادو", emoji: "😠" },
-            { word: "sorprendido", translation: "متفاجئ", pronunciation: "سورپرينديدو", emoji: "😲" },
-            { word: "asustado", translation: "خائف", pronunciation: "آسوستادو", emoji: "😨" },
+            { word: "sorprendido", translation: "متفاجئ", pronunciation: "سوربرينديدو", emoji: "😲" },
+            { word: "asustado", translation: "خائف", pronunciation: "أسوستادو", emoji: "😨" },
             { word: "cansado", translation: "متعب", pronunciation: "كانسادو", emoji: "😴" },
-            { word: "aburrido", translation: "ملل", pronunciation: "آبورّيدو", emoji: "😒" },
-            { word: "emocionado", translation: "متحمس", pronunciation: "إيموثيونادو", emoji: "🤩" },
+            { word: "aburrido", translation: "ملل", pronunciation: "أبورّيدو", emoji: "😒" },
+            { word: "emocionado", translation: "متحمس", pronunciation: "إيموسيونادو", emoji: "🤩" },
             { word: "amor", translation: "حب", pronunciation: "آمور", emoji: "❤️" },
             { word: "odio", translation: "كره", pronunciation: "أوديو", emoji: "💔" },
-            { word: "esperanza", translation: "أمل", pronunciation: "إسپرانثا", emoji: "🙏" },
+            { word: "esperanza", translation: "أمل", pronunciation: "إسبيرانثا", emoji: "🙏" },
             { word: "miedo", translation: "خوف", pronunciation: "مييدو", emoji: "😨" },
-            { word: "alegría", translation: "فرح", pronunciation: "آليغريا", emoji: "😊" },
+            { word: "alegría", translation: "فرح", pronunciation: "أليغريا", emoji: "😊" },
             { word: "orgulloso", translation: "فخور", pronunciation: "أورغويوسو", emoji: "ภูมิใจ" },
             { word: "tímido", translation: "خجول", pronunciation: "تيميدو", emoji: "😊" },
             { word: "tranquilo", translation: "هادئ", pronunciation: "ترانكيلو", emoji: "😌" },
@@ -579,14 +617,14 @@ export const SPANISH_CONTENT: { [categoryName: string]: CategoryContent; } = {
         words: [
             { word: "Trabajo", translation: "عمل", pronunciation: "تراباخو", emoji: "🏢" },
             { word: "Empleo", translation: "وظيفة", pronunciation: "إمبليو", emoji: "💼" },
-            { word: "Oficina", translation: "مكتب", pronunciation: "أوفيثينا", emoji: "🏢" },
+            { word: "Oficina", translation: "مكتب", pronunciation: "أوفيسينا", emoji: "🏢" },
             { word: "Empresa", translation: "شركة", pronunciation: "إمبريسا", emoji: "🏭" },
             { word: "Gerente", translation: "مدير", pronunciation: "خيرينتي", emoji: "👨‍💼" },
             { word: "Empleado", translation: "موظف", pronunciation: "إمبليادو", emoji: "🧑‍💼" },
             { word: "Colega", translation: "زميل", pronunciation: "كوليغا", emoji: "👥" },
             { word: "Salario", translation: "راتب", pronunciation: "سالاريو", emoji: "💵" },
             { word: "Reunión", translation: "اجتماع", pronunciation: "ريونيون", emoji: "🤝" },
-            { word: "Correo electrónico", translation: "بريد إلكتروني", pronunciation: "كوريو إليكترونيكو", emoji: "📧" },
+            { word: "Correo electrónico", translation: "بريد إلكتروني", pronunciation: "كورّيو إليكترونيكو", emoji: "📧" },
             { word: "Ordenador", translation: "حاسوب", pronunciation: "أوردينادور", emoji: "💻" },
             { word: "Teléfono", translation: "هاتف", pronunciation: "تيليفونو", emoji: "📱" },
             { word: "Proyecto", translation: "مشروع", pronunciation: "پروييكتو", emoji: "📈" },
@@ -606,7 +644,7 @@ export const SPANISH_CONTENT: { [categoryName: string]: CategoryContent; } = {
     travel: {
         words: [
             { word: "Viaje", translation: "سفر", pronunciation: "بياخي", emoji: "🌍" },
-            { word: "Vacaciones", translation: "عطلة", pronunciation: "باكاثيونيس", emoji: "🏖️" },
+            { word: "Vacaciones", translation: "عطلة", pronunciation: "باكاسيونيس", emoji: "🏖️" },
             { word: "Aeropuerto", translation: "مطار", pronunciation: "آيروپويرتو", emoji: "✈️" },
             { word: "Avión", translation: "طائرة", pronunciation: "آبيون", emoji: "✈️" },
             { word: "Pasaporte", translation: "جواز سفر", pronunciation: "پاساپورتي", emoji: "🛂" },
@@ -631,28 +669,4 @@ export const SPANISH_CONTENT: { [categoryName: string]: CategoryContent; } = {
             listeningExercise("Coche", "وسيلة نقل خاصة بأربع عجلات.", ["Autobús", "Tren", "Avión"])
         ]
     }
-};
-
-export const SPANISH_GAMES: GamesCollection = {
-    games: [
-        {
-            type: 'match',
-            title: 'Juego de Pares',
-            description: 'Empareja la palabra en español con su traducción al árabe.',
-            items: [
-                { id: 'es_match_1', word: 'Casa', translation: 'منزل' },
-                { id: 'es_match_2', word: 'Gato', translation: 'قطة' },
-                { id: 'es_match_3', word: 'Libro', translation: 'كتاب' },
-                { id: 'es_match_4', word: 'Comer', translation: 'يأكل' },
-            ]
-        },
-        {
-            type: 'missing_word',
-            title: 'Palabra Faltante',
-            description: 'Elige la palabra correcta para completar la oración.',
-            sentence: 'El sol es {blank} y caliente.',
-            correctWord: 'amarillo',
-            options: ['amarillo', 'azul', 'frío', 'triste']
-        }
-    ]
 };

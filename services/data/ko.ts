@@ -18,6 +18,42 @@ const listeningExercise = (audioWord: string, hint: string, otherOptions: string
 });
 
 export const KOREAN_CONTENT: { [categoryName: string]: CategoryContent; } = {
+    alphabet: {
+        words: [
+            { word: "ㄱ", translation: "g/k", pronunciation: "giyeok", emoji: "🔊" },
+            { word: "ㄴ", translation: "n", pronunciation: "nieun", emoji: "🔊" },
+            { word: "ㄷ", translation: "d/t", pronunciation: "digeut", emoji: "🔊" },
+            { word: "ㄹ", translation: "r/l", pronunciation: "rieul", emoji: "🔊" },
+            { word: "ㅁ", translation: "m", pronunciation: "mieum", emoji: "🔊" },
+            { word: "ㅂ", translation: "b/p", pronunciation: "bieup", emoji: "🔊" },
+            { word: "ㅅ", translation: "s", pronunciation: "siot", emoji: "🔊" },
+            { word: "ㅇ", translation: "ng / silent", pronunciation: "ieung", emoji: "🔊" },
+            { word: "ㅈ", translation: "j", pronunciation: "jieut", emoji: "🔊" },
+            { word: "ㅊ", translation: "ch", pronunciation: "chieut", emoji: "🔊" },
+            { word: "ㅋ", translation: "k", pronunciation: "kieuk", emoji: "🔊" },
+            { word: "ㅌ", translation: "t", pronunciation: "tieut", emoji: "🔊" },
+            { word: "ㅍ", translation: "p", pronunciation: "pieup", emoji: "🔊" },
+            { word: "ㅎ", translation: "h", pronunciation: "hieut", emoji: "🔊" },
+            { word: "ㅏ", translation: "a", pronunciation: "a", emoji: "🎶" },
+            { word: "ㅑ", translation: "ya", pronunciation: "ya", emoji: "🎶" },
+            { word: "ㅓ", translation: "eo", pronunciation: "eo", emoji: "🎶" },
+            { word: "ㅕ", translation: "yeo", pronunciation: "yeo", emoji: "🎶" },
+            { word: "ㅗ", translation: "o", pronunciation: "o", emoji: "🎶" },
+            { word: "ㅛ", translation: "yo", pronunciation: "yo", emoji: "🎶" },
+            { word: "ㅜ", translation: "u", pronunciation: "u", emoji: "🎶" },
+            { word: "ㅠ", translation: "yu", pronunciation: "yu", emoji: "🎶" },
+            { word: "ㅡ", translation: "eu", pronunciation: "eu", emoji: "🎶" },
+            { word: "ㅣ", translation: "i", pronunciation: "i", emoji: "🎶" },
+        ],
+        readingExercises: [
+            readingExercise("가나다라", "أول أربعة مقاطع أساسية", "ga-na-da-ra", ["마바사아", "자차카타", "파하"]),
+            readingExercise("아이", "كلمة تعني 'طفل'", "ai", ["오이", "우유", "이유"])
+        ],
+        listeningExercises: [
+            listeningExercise("가", "The 'ga' sound.", ["나", "다", "라"]),
+            listeningExercise("어", "The 'eo' vowel sound.", ["아", "오", "우"])
+        ]
+    },
     basics: {
         words: [
             { word: "저", translation: "أنا (رسمي)", pronunciation: "jeo", emoji: "👤" },

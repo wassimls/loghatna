@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useEffect } from 'react';
 import { CategoryId, Language, GeneratedContent, User, Word } from './types';
 import { CATEGORIES, LANGUAGES } from './constants';
@@ -10,9 +9,21 @@ import GamesSection from './components/content/GamesSection';
 import AuthPage from './components/auth/AuthPage';
 import Lesson from './components/Lesson';
 import ChatSection from './components/content/ChatSection';
+import GrammarSection from './components/content/GrammarSection';
+import FrenchGrammarSection from './components/content/FrenchGrammarSection';
+import ItalianGrammarSection from './components/content/ItalianGrammarSection';
+import SpanishGrammarSection from './components/content/SpanishGrammarSection';
+import GermanGrammarSection from './components/content/GermanGrammarSection';
+import RussianGrammarSection from './components/content/RussianGrammarSection';
+import KoreanGrammarSection from './components/content/KoreanGrammarSection';
+import ChineseGrammarSection from './components/content/ChineseGrammarSection';
+import JapaneseGrammarSection from './components/content/JapaneseGrammarSection';
+import TurkishGrammarSection from './components/content/TurkishGrammarSection';
+import PlaceholderSection from './components/content/PlaceholderSection';
+
 
 type Theme = 'light' | 'dark';
-type View = 'dashboard' | 'lesson' | 'games' | 'chat';
+type View = 'dashboard' | 'lesson' | 'games' | 'chat' | 'grammar';
 
 const App: React.FC = () => {
     const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -107,6 +118,19 @@ const App: React.FC = () => {
         setOpenRouterApiKey(key);
         localStorage.setItem('openRouterApiKey', key);
     }, []);
+    
+    const handleUpdateName = async (newName: string) => {
+        if (!currentUser) throw new Error("لا يوجد مستخدم مسجل الدخول.");
+        
+        try {
+            const updatedUser = await userService.updateUserName(newName.trim());
+            setCurrentUser(updatedUser);
+        } catch (err) {
+            console.error("Failed to update name in App.tsx:", err);
+            // Re-throw the error so the calling component (Header) can handle it locally.
+            throw err;
+        }
+    };
 
     const handleLogout = async () => {
         await userService.logout();
@@ -204,6 +228,18 @@ const App: React.FC = () => {
                 return <GamesSection language={selectedLanguage} openRouterApiKey={openRouterApiKey} />;
             case 'chat':
                 return currentUser ? <ChatSection language={selectedLanguage} user={currentUser} openRouterApiKey={openRouterApiKey} /> : renderDashboard();
+            case 'grammar':
+                if (selectedLanguage.code === 'en-US') return <GrammarSection />;
+                if (selectedLanguage.code === 'fr-FR') return <FrenchGrammarSection />;
+                if (selectedLanguage.code === 'it-IT') return <ItalianGrammarSection />;
+                if (selectedLanguage.code === 'es-ES') return <SpanishGrammarSection />;
+                if (selectedLanguage.code === 'de-DE') return <GermanGrammarSection />;
+                if (selectedLanguage.code === 'ru-RU') return <RussianGrammarSection />;
+                if (selectedLanguage.code === 'ko-KR') return <KoreanGrammarSection />;
+                if (selectedLanguage.code === 'zh-CN') return <ChineseGrammarSection />;
+                if (selectedLanguage.code === 'ja-JP') return <JapaneseGrammarSection />;
+                if (selectedLanguage.code === 'tr-TR') return <TurkishGrammarSection />;
+                return <PlaceholderSection title="مركز القواعد" icon="fa-spell-check" badge={selectedLanguage.name} />;
             case 'dashboard':
             default:
                 return renderDashboard();
@@ -231,10 +267,14 @@ const App: React.FC = () => {
                 <Header 
                     user={currentUser}
                     onLogout={handleLogout}
+                    onUpdateName={handleUpdateName}
                 />
                 <nav className="bg-dark/50 p-2 flex justify-center gap-2 border-b border-t border-white/10 backdrop-blur-sm">
                     <button onClick={() => setCurrentView('dashboard')} className={`px-4 py-2 text-sm font-bold rounded-full transition-colors ${currentView === 'dashboard' || currentView === 'lesson' ? 'bg-secondary text-dark' : 'text-white hover:bg-white/10'}`}>
                         <i className="fas fa-book-open mr-2"></i>الدروس
+                    </button>
+                     <button onClick={() => setCurrentView('grammar')} className={`px-4 py-2 text-sm font-bold rounded-full transition-colors ${currentView === 'grammar' ? 'bg-secondary text-dark' : 'text-white hover:bg-white/10'}`}>
+                        <i className="fas fa-spell-check mr-2"></i>القواعد
                     </button>
                     <button onClick={() => setCurrentView('games')} className={`px-4 py-2 text-sm font-bold rounded-full transition-colors ${currentView === 'games' ? 'bg-secondary text-dark' : 'text-white hover:bg-white/10'}`}>
                         <i className="fas fa-gamepad mr-2"></i>الألعاب
@@ -261,7 +301,7 @@ const App: React.FC = () => {
                     </div>
                 </main>
                 <footer className="text-center p-4 bg-dark/50 text-gray-400 text-sm border-t border-white/10">
-                    <p>© 2024 لغتنا - جميع الحقوق محفوظة | استكشف اللغات بأسلوب جديد</p>
+                    <p>© 2024 MindLingo - جميع الحقوق محفوظة | استكشف اللغات بأسلوب جديد</p>
                 </footer>
             </div>
         </div>

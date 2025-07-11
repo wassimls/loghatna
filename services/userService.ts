@@ -97,6 +97,32 @@ export const onAuthChange = (callback: (user: User | null) => void): () => void 
     return () => subscription.unsubscribe();
 };
 
+// Update the current user's name
+export const updateUserName = async (name: string): Promise<User> => {
+    ensureSupabaseIsConfigured();
+
+    const { data, error } = await supabase!.auth.updateUser({
+        data: { name }
+    });
+
+    if (error) {
+        console.error("Supabase update user error: ", error);
+        throw new Error('فشل في تحديث الاسم. يرجى المحاولة مرة أخرى.');
+    }
+    
+    if (!data.user) {
+         throw new Error('لم يتم العثور على المستخدم لتحديثه.');
+    }
+
+    // Return a user object that matches our app's User type
+    return {
+        id: data.user.id,
+        email: data.user.email!,
+        name: data.user.user_metadata.name || 'مستخدم',
+        avatar: data.user.user_metadata.avatar || '😊'
+    };
+};
+
 
 // --- Chat History ---
 

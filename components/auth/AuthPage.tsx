@@ -77,7 +77,7 @@ const AuthPage: React.FC = () => {
                     <i className="fas fa-language"></i>
                 </div>
                 <div>
-                    <h1 className="text-4xl md:text-6xl font-extrabold text-white tracking-tight">لغتنا</h1>
+                    <h1 className="text-4xl md:text-6xl font-extrabold text-white tracking-tight">MindLingo</h1>
                     <p className="text-lg text-gray-300 mt-1">بوابتك لتعلم اللغات بذكاء ومتعة</p>
                 </div>
             </div>
@@ -159,7 +159,7 @@ const AuthPage: React.FC = () => {
             </div>
 
             <footer className="mt-8 text-gray-400 text-sm">
-                <p>© 2024 لغتنا - جميع الحقوق محفوظة</p>
+                <p>© 2024 MindLingo - جميع الحقوق محفوظة</p>
             </footer>
         </div>
     );

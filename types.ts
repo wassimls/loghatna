@@ -11,7 +11,7 @@ export type TabId = 'words' | 'reading' | 'writing' | 'listening' | 'speaking' |
 
 /** Defines the unique identifiers for each learning category. */
 export type CategoryId = 
-    'basics' | 'greetings' | 'food' | 'family' | 'home' | 'work' | 
+    'alphabet' | 'basics' | 'greetings' | 'food' | 'family' | 'home' | 'work' | 
     'travel' | 'numbers' | 'colors' | 'time' | 'weather' | 'shopping' | 
     'body' | 'clothing' | 'verbs' | 'adjectives' | 'places' | 'nature' | 'hobbies' | 'emotions';
 

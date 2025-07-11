@@ -1,6 +1,7 @@
 import { Category, Language } from './types';
 
 export const CATEGORIES: Category[] = [
+    { id: 'alphabet', name: 'الحروف الأبجدية', icon: 'fas fa-font' },
     { id: 'basics', name: 'الكلمات الأساسية', icon: 'fas fa-star' },
     { id: 'greetings', name: 'التحيات والتعارف', icon: 'fas fa-handshake' },
     { id: 'numbers', name: 'الأرقام', icon: 'fas fa-sort-numeric-down' },
@@ -28,6 +29,7 @@ export const LANGUAGES: Language[] = [
     { code: 'fr-FR', name: 'French' },
     { code: 'it-IT', name: 'Italian' },
     { code: 'es-ES', name: 'Spanish' },
+    { code: 'de-DE', name: 'German' },
     { code: 'ru-RU', name: 'Russian' },
     { code: 'tr-TR', name: 'Turkish' },
     { code: 'zh-CN', name: 'Chinese' },

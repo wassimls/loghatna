@@ -17,6 +17,47 @@ const listeningExercise = (audioWord: string, hint: string, otherOptions: string
 });
 
 export const FRENCH_CONTENT: { [categoryName: string]: CategoryContent; } = {
+    alphabet: {
+        words: [
+            { word: "a", translation: "آ", pronunciation: "/a/", emoji: "✈️" },
+            { word: "b", translation: "بيه", pronunciation: "/be/", emoji: "🎈" },
+            { word: "c", translation: "سيه", pronunciation: "/se/", emoji: "🍰" },
+            { word: "d", translation: "ديه", pronunciation: "/de/", emoji: "🎲" },
+            { word: "e", translation: "أو", pronunciation: "/ə/", emoji: "🐘" },
+            { word: "f", translation: "إف", pronunciation: "/ɛf/", emoji: "🌸" },
+            { word: "g", translation: "جيه", pronunciation: "/ʒe/", emoji: "🦒" },
+            { word: "h", translation: "آش", pronunciation: "(صامت)", emoji: "🏨" },
+            { word: "i", translation: "إي", pronunciation: "/i/", emoji: "🏝️" },
+            { word: "j", translation: "جي", pronunciation: "/ʒi/", emoji: " Jardin" },
+            { word: "k", translation: "كا", pronunciation: "/ka/", emoji: "🥝" },
+            { word: "l", translation: "إل", pronunciation: "/ɛl/", emoji: "🌙" },
+            { word: "m", translation: "إم", pronunciation: "/ɛm/", emoji: " Maison" },
+            { word: "n", translation: "إن", pronunciation: "/ɛn/", emoji: "👃" },
+            { word: "o", translation: "أو", pronunciation: "/o/", emoji: "🍊" },
+            { word: "p", translation: "پيه", pronunciation: "/pe/", emoji: "🐧" },
+            { word: "q", translation: "كو", pronunciation: "/ky/", emoji: "👑" },
+            { word: "r", translation: "إر", pronunciation: "/ɛʁ/", emoji: "🤖" },
+            { word: "s", translation: "إس", pronunciation: "/ɛs/", emoji: "☀️" },
+            { word: "t", translation: "تيه", pronunciation: "/te/", emoji: "🐢" },
+            { word: "u", translation: "أو", pronunciation: "/y/", emoji: "🍇" },
+            { word: "v", translation: "ڤيه", pronunciation: "/ve/", emoji: "🎻" },
+            { word: "w", translation: "دوبل ڤيه", pronunciation: "/dublə ve/", emoji: " Wagon" },
+            { word: "x", translation: "إكس", pronunciation: "/iks/", emoji: " xylophone" },
+            { word: "y", translation: "إيغريك", pronunciation: "/iɡʁɛk/", emoji: " yogurt" },
+            { word: "z", translation: "زد", pronunciation: "/zɛd/", emoji: "🦓" },
+            { word: "é", translation: "أو (accent aigu)", pronunciation: "/e/", emoji: " école" },
+            { word: "è", translation: "إي (accent grave)", pronunciation: "/ɛ/", emoji: " mère" },
+            { word: "ç", translation: "س (cédille)", pronunciation: "/s/", emoji: " garçon" },
+        ],
+        readingExercises: [
+            readingExercise("leçon (lesson)", "Notice the cédille on 'ç'.", "درس", ["lecon", "leson", "lekon"]),
+            readingExercise("père (father)", "Notice the accent grave on 'è'.", "أب", ["pere", "pére", "perè"])
+        ],
+        listeningExercises: [
+            listeningExercise("a", "The first letter.", ["b", "e", "o"]),
+            listeningExercise("z", "The last letter.", ["s", "t", "y"])
+        ]
+    },
     basics: {
         words: [
             { word: "Je", translation: "أنا", pronunciation: "جو", emoji: "👤" },

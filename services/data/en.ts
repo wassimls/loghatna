@@ -17,6 +17,44 @@ const listeningExercise = (audioWord: string, hint: string, otherOptions: string
 });
 
 export const ENGLISH_CONTENT: { [categoryName: string]: CategoryContent; } = {
+    alphabet: {
+        words: [
+            { word: "a", translation: "أي", pronunciation: "/eɪ/", emoji: "🍎" },
+            { word: "b", translation: "بي", pronunciation: "/biː/", emoji: "🐝" },
+            { word: "c", translation: "سي", pronunciation: "/siː/", emoji: "🐈" },
+            { word: "d", translation: "دي", pronunciation: "/diː/", emoji: "🐕" },
+            { word: "e", translation: "إي", pronunciation: "/iː/", emoji: "🐘" },
+            { word: "f", translation: "إف", pronunciation: "/ɛf/", emoji: "🐟" },
+            { word: "g", translation: "جي", pronunciation: "/dʒiː/", emoji: "🍇" },
+            { word: "h", translation: "إيتش", pronunciation: "/eɪtʃ/", emoji: "🏠" },
+            { word: "i", translation: "آي", pronunciation: "/aɪ/", emoji: "🧊" },
+            { word: "j", translation: "جاي", pronunciation: "/dʒeɪ/", emoji: "잼" },
+            { word: "k", translation: "كاي", pronunciation: "/keɪ/", emoji: "🔑" },
+            { word: "l", translation: "إل", pronunciation: "/ɛl/", emoji: "🦁" },
+            { word: "m", translation: "إم", pronunciation: "/ɛm/", emoji: "🐒" },
+            { word: "n", translation: "إن", pronunciation: "/ɛn/", emoji: "👃" },
+            { word: "o", translation: "أو", pronunciation: "/oʊ/", emoji: "🐙" },
+            { word: "p", translation: "بي", pronunciation: "/piː/", emoji: "🐷" },
+            { word: "q", translation: "كيو", pronunciation: "/kjuː/", emoji: "👸" },
+            { word: "r", translation: "آر", pronunciation: "/ɑːr/", emoji: "🐇" },
+            { word: "s", translation: "إس", pronunciation: "/ɛs/", emoji: "☀️" },
+            { word: "t", translation: "تي", pronunciation: "/tiː/", emoji: "🐯" },
+            { word: "u", translation: "يو", pronunciation: "/juː/", emoji: "☂️" },
+            { word: "v", translation: "ڤي", pronunciation: "/viː/", emoji: "🎻" },
+            { word: "w", translation: "دبليو", pronunciation: "/ˈdʌbəl.juː/", emoji: "🍉" },
+            { word: "x", translation: "إكس", pronunciation: "/ɛks/", emoji: " xylophone" },
+            { word: "y", translation: "واي", pronunciation: "/waɪ/", emoji: " yogurt" },
+            { word: "z", translation: "زد", pronunciation: "/ziː/", emoji: "🦓" },
+        ],
+        readingExercises: [
+            readingExercise("a is for apple.", "Find the word for 'a'.", "a للتفاحة.", ["b is for ball.", "c is for cat.", "d is for dog."]),
+            readingExercise("the quick brown fox jumps over the lazy dog.", "This sentence contains all letters.", "الثعلب البني السريع يقفز فوق الكلب الكسول.", ["hello world.", "my name is loghatna.", "learn languages."])
+        ],
+        listeningExercises: [
+            listeningExercise("a", "The first letter of the alphabet.", ["b", "c", "d"]),
+            listeningExercise("z", "The last letter of the alphabet.", ["x", "y", "w"])
+        ]
+    },
     basics: {
             words: [
                 { word: "I", translation: "أنا", pronunciation: "آي", emoji: "👤" },
@@ -579,7 +617,7 @@ export const ENGLISH_CONTENT: { [categoryName: string]: CategoryContent; } = {
                 { word: "country", translation: "دولة / ريف", pronunciation: "كانتري", emoji: "🏞️" },
                 { word: "world", translation: "عالم", pronunciation: "وورلد", emoji: "🌍" },
                 { word: "school", translation: "مدرسة", pronunciation: "سكول", emoji: "🏫" },
-                { word: "university", translation: "جامعة", pronunciation: "يونيفيرسيتي", emoji: "������" },
+                { word: "university", translation: "جامعة", pronunciation: "يونيفيرسيتي", emoji: "🎓" },
                 { word: "hospital", translation: "مستشفى", pronunciation: "هوسبيتال", emoji: "🏥" },
                 { word: "restaurant", translation: "مطعم", pronunciation: "ريستورانت", emoji: "🍔" },
                 { word: "hotel", translation: "فندق", pronunciation: "هوتيل", emoji: "🏨" },

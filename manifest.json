@@ -1,0 +1,17 @@
+{
+  "short_name": "MindLingo",
+  "name": "MindLingo - استكشف اللغات",
+  "description": "بوابتك لتعلم اللغات بذكاء ومتعة",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#4D3E8E",
+  "background_color": "#1A113A"
+}

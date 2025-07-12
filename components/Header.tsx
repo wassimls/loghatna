@@ -48,9 +48,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onUpdateName, onSetting
     return (
         <header className="bg-dark/20 backdrop-blur-sm p-3 flex justify-between items-center relative z-20 border-b border-white/10">
             <div className="flex items-center gap-3 z-10">
-                 <div className="w-12 h-12 bg-secondary rounded-xl flex items-center justify-center text-2xl text-dark shadow-lg transform -rotate-12">
-                    <i className="fas fa-language"></i>
-                </div>
+                 <img src="icon.svg" alt="MindLingo Logo" className="w-12 h-12" />
                 <div className="text-right">
                     <h1 className="text-2xl font-extrabold tracking-wide text-white">MindLingo</h1>
                 </div>

@@ -15,24 +15,17 @@ const AuthPage: React.FC = () => {
         setError(null);
         setIsLoading(true);
 
-        try {
-            if (isLoginView) {
+        // Only handle login since signup form is disabled
+        if (isLoginView) {
+            try {
                 await userService.login(email, password);
-                // On successful login, onAuthChange will redirect.
-            } else {
-                if (name.length < 3) throw new Error('يجب أن يتكون الاسم من 3 أحرف على الأقل.');
-                if (password.length < 6) throw new Error('يجب أن تتكون كلمة المرور من 6 أحرف على الأقل.');
-                
-                const { confirmationSent } = await userService.signup(name, email, password);
-                
-                if (confirmationSent) {
-                    setSignupSuccess(true);
-                }
-                // If confirmation is NOT needed, onAuthChange will handle the redirect automatically.
+            } catch (err) {
+                setError(err instanceof Error ? err.message : 'حدث خطأ غير متوقع.');
+            } finally {
+                setIsLoading(false);
             }
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'حدث خطأ غير متوقع.');
-        } finally {
+        } else {
+            // Signup logic is effectively disabled as the form is not rendered
             setIsLoading(false);
         }
     };
@@ -73,9 +66,7 @@ const AuthPage: React.FC = () => {
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-space-start to-space-end p-4 animate-fadeIn">
             <div className="flex items-center gap-4 z-10 mb-8">
-                 <div className="w-20 h-20 bg-secondary rounded-3xl flex items-center justify-center text-4xl text-dark shadow-2xl transform -rotate-12">
-                    <i className="fas fa-language"></i>
-                </div>
+                 <img src="icon.svg" alt="MindLingo Logo" className="w-20 h-20 rounded-3xl shadow-2xl transform -rotate-12" />
                 <div>
                     <h1 className="text-4xl md:text-6xl font-extrabold text-white tracking-tight">MindLingo</h1>
                     <p className="text-lg text-gray-300 mt-1">بوابتك لتعلم اللغات بذكاء ومتعة</p>
@@ -87,65 +78,70 @@ const AuthPage: React.FC = () => {
                     {isLoginView ? 'تسجيل الدخول' : 'إنشاء حساب جديد'}
                 </h2>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    {!isLoginView && (
+                {isLoginView ? (
+                    <form onSubmit={handleSubmit} className="space-y-6">
                         <div>
-                            <label htmlFor="name" className="block text-sm font-medium text-gray-200 mb-2">الاسم</label>
+                            <label htmlFor="email" className="block text-sm font-medium text-gray-200 mb-2">البريد الإلكتروني</label>
                             <div className="relative">
-                                <span className="absolute inset-y-0 left-0 flex items-center pl-3"><i className="fas fa-user text-gray-400"></i></span>
+                                <span className="absolute inset-y-0 left-0 flex items-center pl-3"><i className="fas fa-envelope text-gray-400"></i></span>
                                 <input
-                                    id="name"
-                                    type="text"
-                                    value={name}
-                                    onChange={e => setName(e.target.value)}
+                                    id="email"
+                                    type="email"
+                                    value={email}
+                                    onChange={e => setEmail(e.target.value)}
                                     required
                                     className="w-full p-3 pl-10 rounded-lg bg-dark/70 text-white border-2 border-transparent focus:border-secondary focus:outline-none transition-colors"
-                                    placeholder="أدخل اسمك"
+                                    placeholder="example@email.com"
                                 />
                             </div>
                         </div>
-                    )}
-                    <div>
-                        <label htmlFor="email" className="block text-sm font-medium text-gray-200 mb-2">البريد الإلكتروني</label>
-                        <div className="relative">
-                            <span className="absolute inset-y-0 left-0 flex items-center pl-3"><i className="fas fa-envelope text-gray-400"></i></span>
-                            <input
-                                id="email"
-                                type="email"
-                                value={email}
-                                onChange={e => setEmail(e.target.value)}
-                                required
-                                className="w-full p-3 pl-10 rounded-lg bg-dark/70 text-white border-2 border-transparent focus:border-secondary focus:outline-none transition-colors"
-                                placeholder="example@email.com"
-                            />
+                        <div>
+                            <label htmlFor="password"  className="block text-sm font-medium text-gray-200 mb-2">كلمة المرور</label>
+                            <div className="relative">
+                                <span className="absolute inset-y-0 left-0 flex items-center pl-3"><i className="fas fa-lock text-gray-400"></i></span>
+                                <input
+                                    id="password"
+                                    type="password"
+                                    value={password}
+                                    onChange={e => setPassword(e.target.value)}
+                                    required
+                                    className="w-full p-3 pl-10 rounded-lg bg-dark/70 text-white border-2 border-transparent focus:border-secondary focus:outline-none transition-colors"
+                                    placeholder="********"
+                                />
+                            </div>
                         </div>
+                        
+                        {error && <p className="text-sm text-center text-red-300 font-bold bg-red-500/20 p-3 rounded-lg animate-shake">{error}</p>}
+                        
+                        <button
+                            type="submit"
+                            disabled={isLoading}
+                            className="w-full bg-gradient-to-r from-secondary to-yellow-400 text-dark py-3 rounded-lg font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-wait"
+                        >
+                            {isLoading ? <i className="fas fa-spinner fa-spin"></i> : 'تسجيل الدخول'}
+                        </button>
+                    </form>
+                ) : (
+                    <div className="text-center p-6 bg-dark/70 rounded-lg border border-white/10 animate-fadeIn">
+                        <h3 className="text-lg font-bold text-white mb-3">
+                            <i className="fas fa-pause-circle text-secondary mr-2"></i>
+                            إنشاء حساب جديد متوقف مؤقتاً
+                        </h3>
+                        <p className="text-gray-300 mb-4">
+                            لإنشاء حساب، يرجى التواصل معنا مباشرة عبر صفحتنا على انستغرام.
+                        </p>
+                        <a
+                            href="https://www.instagram.com/mindl_ingo/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center justify-center gap-3 w-full bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 text-white py-3 rounded-lg font-bold text-lg transition-transform hover:scale-105 shadow-lg"
+                        >
+                            <i className="fab fa-instagram text-2xl"></i>
+                            <span>راسلنا على انستغرام</span>
+                        </a>
                     </div>
-                    <div>
-                        <label htmlFor="password"  className="block text-sm font-medium text-gray-200 mb-2">كلمة المرور</label>
-                        <div className="relative">
-                            <span className="absolute inset-y-0 left-0 flex items-center pl-3"><i className="fas fa-lock text-gray-400"></i></span>
-                            <input
-                                id="password"
-                                type="password"
-                                value={password}
-                                onChange={e => setPassword(e.target.value)}
-                                required
-                                className="w-full p-3 pl-10 rounded-lg bg-dark/70 text-white border-2 border-transparent focus:border-secondary focus:outline-none transition-colors"
-                                placeholder="********"
-                            />
-                        </div>
-                    </div>
-                    
-                    {error && <p className="text-sm text-center text-red-300 font-bold bg-red-500/20 p-3 rounded-lg animate-shake">{error}</p>}
-                    
-                    <button
-                        type="submit"
-                        disabled={isLoading}
-                        className="w-full bg-gradient-to-r from-secondary to-yellow-400 text-dark py-3 rounded-lg font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-wait"
-                    >
-                        {isLoading ? <i className="fas fa-spinner fa-spin"></i> : (isLoginView ? 'تسجيل الدخول' : 'إنشاء الحساب')}
-                    </button>
-                </form>
+                )}
+
 
                 <p className="mt-6 text-center text-sm text-gray-400">
                     {isLoginView ? 'ليس لديك حساب؟' : 'لديك حساب بالفعل؟'}

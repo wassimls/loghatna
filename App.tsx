@@ -1,10 +1,9 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { CategoryId, Language, GeneratedContent, User, Word } from './types';
+import { CategoryId, Language, GeneratedContent, User, Word, Category } from './types';
 import { CATEGORIES, LANGUAGES } from './constants';
 import { getCategoryContent } from './services/dataService';
 import * as userService from './services/userService';
 import Header from './components/Header';
-import Sidebar from './components/Sidebar';
 import GamesSection from './components/content/GamesSection';
 import AuthPage from './components/auth/AuthPage';
 import Lesson from './components/Lesson';
@@ -20,10 +19,130 @@ import ChineseGrammarSection from './components/content/ChineseGrammarSection';
 import JapaneseGrammarSection from './components/content/JapaneseGrammarSection';
 import TurkishGrammarSection from './components/content/TurkishGrammarSection';
 import PlaceholderSection from './components/content/PlaceholderSection';
-
+import Sidebar from './components/Sidebar';
 
 type Theme = 'light' | 'dark';
 type View = 'dashboard' | 'lesson' | 'games' | 'chat' | 'grammar';
+
+const ApiKeyInput: React.FC<{ apiKey: string; onApiKeyChange: (key: string) => void; forModal?: boolean;}> = ({ apiKey, onApiKeyChange, forModal = false }) => {
+    const [showKey, setShowKey] = useState(false);
+    return (
+        <div className="api-key-section">
+            <label htmlFor={forModal ? "api-key-modal" : "api-key-sidebar"} className="block mb-2 font-medium text-white text-sm">مفتاح Gemini API:</label>
+            <div className="relative">
+                <input
+                    id={forModal ? "api-key-modal" : "api-key-sidebar"}
+                    type={showKey ? "text" : "password"}
+                    value={apiKey}
+                    onChange={(e) => onApiKeyChange(e.target.value)}
+                    className="w-full p-3 pl-10 pr-10 border-none rounded-xl font-mono text-xs bg-dark/70 text-white cursor-pointer transition-all duration-300 shadow-inner focus:outline-none focus:ring-2 focus:ring-secondary/50"
+                    placeholder="أدخل مفتاح API الخاص بك..."
+                />
+                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-secondary">
+                    <i className="fas fa-key"></i>
+                </div>
+                <button 
+                    type="button" 
+                    onClick={() => setShowKey(!showKey)} 
+                    className="absolute inset-y-0 left-0 flex items-center px-3 text-gray-400 hover:text-white"
+                    aria-label={showKey ? "إخفاء المفتاح" : "إظهار المفتاح"}
+                >
+                    <i className={`fas ${showKey ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                </button>
+            </div>
+        </div>
+    );
+};
+
+const SettingsModal: React.FC<{
+    onClose: () => void;
+    languages: Language[];
+    selectedLanguage: string;
+    onLanguageChange: (languageCode: string) => void;
+    theme: 'light' | 'dark';
+    onThemeChange: () => void;
+    apiKey: string;
+    onApiKeyChange: (key: string) => void;
+}> = ({ onClose, languages, selectedLanguage, onLanguageChange, theme, onThemeChange, apiKey, onApiKeyChange }) => {
+    return (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={onClose}>
+            <div className="bg-dark/80 backdrop-blur-lg rounded-2xl p-6 w-full max-w-sm border border-white/10 text-white animate-fadeIn" onClick={e => e.stopPropagation()}>
+                <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-secondary text-xl font-bold flex items-center gap-3"><i className="fas fa-cog"></i>الإعدادات</h2>
+                    <button onClick={onClose} className="text-gray-400 hover:text-white"><i className="fas fa-times text-xl"></i></button>
+                </div>
+                
+                <div className="space-y-6">
+                    <div className="language-selector">
+                        <label htmlFor="language-modal" className="block mb-2 font-medium">اختر اللغة:</label>
+                        <div className="relative">
+                            <select
+                                id="language-modal"
+                                value={selectedLanguage}
+                                onChange={(e) => onLanguageChange(e.target.value)}
+                                className="w-full p-3 pr-10 border-none rounded-xl font-sans text-base bg-dark/70 text-white cursor-pointer transition-all duration-300 shadow-inner appearance-none focus:outline-none focus:ring-2 focus:ring-secondary/50"
+                            >
+                                {languages.map(lang => <option key={lang.code} value={lang.code}>{lang.name}</option>)}
+                            </select>
+                             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center px-3 text-secondary">
+                                <i className="fas fa-chevron-down"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <ApiKeyInput apiKey={apiKey} onApiKeyChange={onApiKeyChange} forModal={true} />
+
+                    <div className="flex items-center justify-between">
+                        <span className="font-medium">الوضع</span>
+                        <div className="flex items-center gap-2 rounded-full p-1 bg-dark/70">
+                            <button onClick={() => theme !== 'light' && onThemeChange()} className={`p-2 rounded-full transition-colors ${theme === 'light' ? 'bg-secondary' : 'bg-transparent'}`}>
+                                <i className="fas fa-sun text-white"></i>
+                            </button>
+                            <button onClick={() => theme !== 'dark' && onThemeChange()} className={`p-2 rounded-full transition-colors ${theme === 'dark' ? 'bg-secondary' : 'bg-transparent'}`}>
+                                <i className="fas fa-moon text-white"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const BottomNav: React.FC<{
+    currentView: View;
+    onNavigate: (view: View) => void;
+    className?: string;
+}> = ({ currentView, onNavigate, className = '' }) => {
+    const navItems = [
+        { view: 'dashboard', icon: 'fa-book-open', label: 'الدروس' },
+        { view: 'grammar', icon: 'fa-spell-check', label: 'القواعد' },
+        { view: 'games', icon: 'fa-gamepad', label: 'الألعاب' },
+        { view: 'chat', icon: 'fa-comments', label: 'الدردشة' },
+    ];
+    
+    const isViewActive = (view: View) => {
+        if (view === 'dashboard') {
+            return currentView === 'dashboard' || currentView === 'lesson';
+        }
+        return currentView === view;
+    };
+
+    return (
+        <nav className={`bg-dark/70 backdrop-blur-md border-t border-white/10 flex justify-around ${className}`}>
+            {navItems.map(item => (
+                <button
+                    key={item.view}
+                    onClick={() => onNavigate(item.view as View)}
+                    className={`flex flex-col items-center justify-center gap-1 p-2 w-full transition-colors duration-300 ${isViewActive(item.view as View) ? 'text-secondary' : 'text-gray-400 hover:text-white'}`}
+                >
+                    <i className={`fas ${item.icon} text-xl h-6`}></i>
+                    <span className="text-xs font-bold">{item.label}</span>
+                </button>
+            ))}
+        </nav>
+    );
+};
 
 const App: React.FC = () => {
     const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -38,7 +157,13 @@ const App: React.FC = () => {
     const [currentView, setCurrentView] = useState<View>('dashboard');
 
     const [favoriteWords, setFavoriteWords] = useState<Word[]>([]);
-    const [openRouterApiKey, setOpenRouterApiKey] = useState<string>(() => localStorage.getItem('openRouterApiKey') || '');
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const [apiKey, setApiKey] = useState<string>(() => localStorage.getItem('geminiApiKey') || '');
+
+    const handleApiKeyChange = (newKey: string) => {
+        setApiKey(newKey);
+        localStorage.setItem('geminiApiKey', newKey);
+    };
 
     useEffect(() => {
         const root = window.document.documentElement;
@@ -76,7 +201,6 @@ const App: React.FC = () => {
         setError(null);
         try {
             await new Promise(resolve => setTimeout(resolve, 300));
-
             const result = getCategoryContent(selectedLanguage.code, category);
             
             if (!result) {
@@ -113,11 +237,6 @@ const App: React.FC = () => {
     const handleThemeChange = () => {
         setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
     };
-
-    const handleApiKeyChange = useCallback((key: string) => {
-        setOpenRouterApiKey(key);
-        localStorage.setItem('openRouterApiKey', key);
-    }, []);
     
     const handleUpdateName = async (newName: string) => {
         if (!currentUser) throw new Error("لا يوجد مستخدم مسجل الدخول.");
@@ -127,7 +246,6 @@ const App: React.FC = () => {
             setCurrentUser(updatedUser);
         } catch (err) {
             console.error("Failed to update name in App.tsx:", err);
-            // Re-throw the error so the calling component (Header) can handle it locally.
             throw err;
         }
     };
@@ -158,32 +276,35 @@ const App: React.FC = () => {
             }
         } catch (error) {
             console.error("Failed to toggle favorite:", error);
-            // Optionally, show an error to the user
         }
     };
-
-    const renderDashboard = () => (
-        <div className="p-8 flex-1 flex flex-col items-center justify-center text-center animate-fadeIn">
-            <div className="w-36 h-36 bg-gradient-to-br from-secondary/80 to-yellow-300 rounded-full flex items-center justify-center mb-6 shadow-2xl shadow-yellow-500/30">
-                <i className="fas fa-rocket text-6xl text-dark"></i>
-            </div>
-            <h2 className="text-4xl font-bold text-white mb-2">استكشف حدودك!</h2>
-            <p className="text-gray-300 text-lg max-w-md">
-                اختر فئة من القائمة الجانبية لبدء رحلتك في تعلم لغة جديدة، أو انطلق إلى الألعاب والدردشة.
-            </p>
-            <div className="flex gap-4 mt-8">
-                <button onClick={() => setCurrentView('games')} className="btn bg-secondary text-dark py-3 px-8 rounded-full font-bold transition-transform hover:scale-105 shadow-lg">
-                    <i className="fas fa-gamepad mr-2"></i>
-                    انطلق للألعاب
-                </button>
-                 <button onClick={() => setCurrentView('chat')} className="btn bg-accent text-white py-3 px-8 rounded-full font-bold transition-transform hover:scale-105 shadow-lg">
-                    <i className="fas fa-comments mr-2"></i>
-                    دردشة فضائية
-                </button>
+    
+    const renderCategoryList = () => (
+        <div className="p-4 md:p-6">
+            <h2 className="text-white mb-5 text-2xl font-bold flex items-center gap-3">
+                <i className="fas fa-book-open text-secondary"></i>
+                اختر درساً
+            </h2>
+            <div className="space-y-3">
+                {CATEGORIES.map(cat => (
+                    <button
+                        key={cat.id}
+                        onClick={() => handleCategoryChange(cat.id)}
+                        className="p-4 rounded-xl transition-all duration-300 flex items-center gap-4 text-right w-full bg-dark/50 text-white hover:bg-white/20 active:scale-95"
+                    >
+                        <div className="w-12 h-12 rounded-lg flex items-center justify-center text-xl bg-dark/70 text-secondary">
+                            <i className={cat.icon}></i>
+                        </div>
+                        <div className="flex-1">
+                            <span className="font-semibold text-lg">{cat.name}</span>
+                        </div>
+                        <i className="fas fa-chevron-left mr-auto text-gray-400"></i>
+                    </button>
+                ))}
             </div>
         </div>
     );
-    
+
     const renderContent = () => {
         if (isLoading) {
             return (
@@ -198,7 +319,7 @@ const App: React.FC = () => {
 
         if (error) {
             return (
-                <div className="flex-1 p-8 flex flex-col justify-center items-center text-center animate-fadeIn bg-white/10 rounded-2xl">
+                <div className="flex-1 p-8 flex flex-col justify-center items-center text-center animate-fadeIn bg-white/10 rounded-2xl m-4">
                     <i className="fas fa-exclamation-triangle text-accent text-5xl mb-4"></i>
                     <h3 className="text-2xl font-bold text-white mb-2">حدث خطأ</h3>
                     <p className="text-gray-300 mb-6 max-w-md">{error}</p>
@@ -223,11 +344,11 @@ const App: React.FC = () => {
                         favoriteWords={favoriteWords}
                         onToggleFavorite={handleToggleFavorite}
                     />
-                ) : renderDashboard();
+                ) : renderCategoryList();
             case 'games':
-                return <GamesSection language={selectedLanguage} openRouterApiKey={openRouterApiKey} />;
+                return <GamesSection language={selectedLanguage} apiKey={apiKey} />;
             case 'chat':
-                return currentUser ? <ChatSection language={selectedLanguage} user={currentUser} openRouterApiKey={openRouterApiKey} /> : renderDashboard();
+                return currentUser ? <ChatSection language={selectedLanguage} user={currentUser} apiKey={apiKey} /> : renderCategoryList();
             case 'grammar':
                 if (selectedLanguage.code === 'en-US') return <GrammarSection />;
                 if (selectedLanguage.code === 'fr-FR') return <FrenchGrammarSection />;
@@ -242,13 +363,13 @@ const App: React.FC = () => {
                 return <PlaceholderSection title="مركز القواعد" icon="fa-spell-check" badge={selectedLanguage.name} />;
             case 'dashboard':
             default:
-                return renderDashboard();
+                return renderCategoryList();
         }
     };
     
     if (appIsLoading) {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-space-start to-space-end p-4">
+            <div className="h-full w-full flex flex-col items-center justify-center bg-gradient-to-br from-space-start to-space-end p-4">
                  <div className="text-center">
                     <i className="fas fa-spinner fa-spin text-secondary text-6xl mb-6"></i>
                     <h2 className="text-2xl font-bold text-white">جاري التحقق من الهوية...</h2>
@@ -262,48 +383,49 @@ const App: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-space-start to-space-end text-white">
-            <div className="max-w-screen-2xl mx-auto">
+        <div className="flex flex-col md:flex-row h-full w-full bg-gradient-to-br from-space-start to-space-end text-white overflow-hidden">
+             <Sidebar
+                className="hidden md:flex"
+                currentView={currentView}
+                onNavigate={setCurrentView}
+                languages={LANGUAGES}
+                selectedLanguage={selectedLanguage.code}
+                onLanguageChange={handleLanguageChange}
+                theme={theme}
+                onThemeChange={handleThemeChange}
+                onLogout={handleLogout}
+                apiKey={apiKey}
+                onApiKeyChange={handleApiKeyChange}
+            />
+            <div className="flex-1 flex flex-col overflow-hidden">
                 <Header 
                     user={currentUser}
                     onLogout={handleLogout}
                     onUpdateName={handleUpdateName}
+                    onSettingsClick={() => setIsSettingsOpen(true)}
                 />
-                <nav className="bg-dark/50 p-2 flex justify-center gap-2 border-b border-t border-white/10 backdrop-blur-sm">
-                    <button onClick={() => setCurrentView('dashboard')} className={`px-4 py-2 text-sm font-bold rounded-full transition-colors ${currentView === 'dashboard' || currentView === 'lesson' ? 'bg-secondary text-dark' : 'text-white hover:bg-white/10'}`}>
-                        <i className="fas fa-book-open mr-2"></i>الدروس
-                    </button>
-                     <button onClick={() => setCurrentView('grammar')} className={`px-4 py-2 text-sm font-bold rounded-full transition-colors ${currentView === 'grammar' ? 'bg-secondary text-dark' : 'text-white hover:bg-white/10'}`}>
-                        <i className="fas fa-spell-check mr-2"></i>القواعد
-                    </button>
-                    <button onClick={() => setCurrentView('games')} className={`px-4 py-2 text-sm font-bold rounded-full transition-colors ${currentView === 'games' ? 'bg-secondary text-dark' : 'text-white hover:bg-white/10'}`}>
-                        <i className="fas fa-gamepad mr-2"></i>الألعاب
-                    </button>
-                    <button onClick={() => setCurrentView('chat')} className={`px-4 py-2 text-sm font-bold rounded-full transition-colors ${currentView === 'chat' ? 'bg-secondary text-dark' : 'text-white hover:bg-white/10'}`}>
-                        <i className="fas fa-comments mr-2"></i>الدردشة
-                    </button>
-                </nav>
-                <main className="flex flex-col md:flex-row min-h-[calc(100vh_-_200px)] relative z-10">
-                    <Sidebar
-                        languages={LANGUAGES}
-                        selectedLanguage={selectedLanguage.code}
-                        onLanguageChange={handleLanguageChange}
-                        categories={CATEGORIES}
-                        activeCategory={activeCategory}
-                        onCategoryChange={handleCategoryChange}
-                        theme={theme}
-                        onThemeChange={handleThemeChange}
-                        openRouterApiKey={openRouterApiKey}
-                        onApiKeyChange={handleApiKeyChange}
-                    />
-                    <div className="flex-1 flex flex-col bg-dark/20">
-                        {renderContent()}
-                    </div>
+                <main className="flex-1 overflow-y-auto">
+                    {renderContent()}
                 </main>
-                <footer className="text-center p-4 bg-dark/50 text-gray-400 text-sm border-t border-white/10">
-                    <p>© 2024 MindLingo - جميع الحقوق محفوظة | استكشف اللغات بأسلوب جديد</p>
-                </footer>
+                <BottomNav 
+                    className="md:hidden" 
+                    currentView={currentView} 
+                    onNavigate={(view) => setCurrentView(view)} 
+                />
             </div>
+            
+            {isSettingsOpen && (
+                <SettingsModal
+                    onClose={() => setIsSettingsOpen(false)}
+                    languages={LANGUAGES}
+                    selectedLanguage={selectedLanguage.code}
+                    onLanguageChange={handleLanguageChange}
+                    theme={theme}
+                    onThemeChange={handleThemeChange}
+                    apiKey={apiKey}
+                    onApiKeyChange={handleApiKeyChange}
+                />
+            )}
         </div>
     );
 };

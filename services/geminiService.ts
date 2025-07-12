@@ -1,10 +1,5 @@
-
 import { GoogleGenAI } from "@google/genai";
 import { GamesCollection, ChatMessage } from '../types';
-
-// The API key is sourced from environment variables.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-const GEMINI_MODEL = 'gemini-2.5-flash-preview-04-17';
 
 /**
  * Parses a JSON string from the model response, handling potential markdown code fences.
@@ -15,8 +10,9 @@ const parseJsonResponse = <T>(jsonString: string): T | null => {
     let processedString = jsonString.trim();
     const fenceRegex = /^```(?:json)?\s*\n?(.*?)\n?\s*```$/s;
     const match = processedString.match(fenceRegex);
-    if (match && match[2]) {
-        processedString = match[2].trim();
+
+    if (match && match.length > 1) {
+        processedString = match[1].trim();
     }
 
     try {
@@ -28,8 +24,13 @@ const parseJsonResponse = <T>(jsonString: string): T | null => {
     }
 };
 
+export const generateGamesForLanguage = async (language: string, apiKey: string): Promise<GamesCollection | null> => {
+    if (!apiKey) {
+        throw new Error("مفتاح API الخاص بـ Gemini غير متوفر. يرجى إضافته في الإعدادات.");
+    }
+    const ai = new GoogleGenAI({ apiKey });
+    const GEMINI_MODEL = 'gemini-2.5-flash';
 
-export const generateGamesForLanguage = async (language: string): Promise<GamesCollection | null> => {
     const systemInstruction = `You are a creative game designer. Your response MUST be a single, valid, minified JSON object with a 'games' key for an Arabic-speaking audience. All titles and descriptions must be in Arabic. Adhere strictly to JSON format rules.`;
     const userPrompt = `
         Generate a collection of TWO DIFFERENT mini-games for learning "${language}".
@@ -67,7 +68,13 @@ export const generateGamesForLanguage = async (language: string): Promise<GamesC
     }
 };
 
-export async function* streamChatResponse(history: ChatMessage[], systemInstruction: string): AsyncGenerator<string> {
+export async function* streamChatResponse(history: ChatMessage[], systemInstruction: string, apiKey: string): AsyncGenerator<string> {
+    if (!apiKey) {
+        throw new Error("مفتاح API الخاص بـ Gemini غير متوفر. يرجى إضافته في الإعدادات.");
+    }
+    const ai = new GoogleGenAI({ apiKey });
+    const GEMINI_MODEL = 'gemini-2.5-flash';
+    
     const contents = history.map(msg => ({
         role: msg.role,
         parts: [{ text: msg.text }]
@@ -96,7 +103,13 @@ export async function* streamChatResponse(history: ChatMessage[], systemInstruct
     }
 }
 
-export const translateText = async (text: string, sourceLang: string, targetLang: string): Promise<string> => {
+export const translateText = async (text: string, sourceLang: string, targetLang: string, apiKey: string): Promise<string> => {
+    if (!apiKey) {
+        throw new Error("مفتاح API الخاص بـ Gemini غير متوفر. يرجى إضافته في الإعدادات.");
+    }
+    const ai = new GoogleGenAI({ apiKey });
+    const GEMINI_MODEL = 'gemini-2.5-flash';
+
     const systemInstruction = `You are an expert translator. Provide ONLY the direct translation of the user's text, with no extra commentary, explanations, or quotation marks.`;
     const userPrompt = `Translate the following text from ${sourceLang} to ${targetLang}:\n\n"${text}"`;
 

@@ -160,6 +160,7 @@ export interface SpeechRecognition {
     continuous: boolean;
     interimResults: boolean;
     lang: string;
+    onstart: () => void;
     onresult: (event: SpeechRecognitionEvent) => void;
     onerror: (event: SpeechRecognitionErrorEvent) => void;
     onend: () => void;
@@ -170,6 +171,7 @@ export interface SpeechRecognition {
 
 /** The event fired by the SpeechRecognition API when speech is recognized. */
 export interface SpeechRecognitionEvent extends Event {
+    resultIndex: number;
     results: SpeechRecognitionResultList;
 }
 

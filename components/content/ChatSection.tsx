@@ -1,14 +1,13 @@
-
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Language, User, ChatMessage, SpeechRecognition, SpeechRecognitionEvent, SpeechRecognitionErrorEvent } from '../../types';
-import { streamChatResponse, translateText } from '../../services/openrouterService';
+import { streamChatResponse, translateText } from '../../services/geminiService';
 import * as userService from '../../services/userService';
 import { speak } from '../../services/audioService';
 
 interface ChatSectionProps {
     language: Language;
     user: User;
-    openRouterApiKey: string;
+    apiKey: string;
 }
 
 // ---- Start of new interactive avatar components ----
@@ -171,7 +170,7 @@ const useChatSpeechRecognition = (lang: string, onTranscriptUpdate: (transcript:
 };
 
 
-const ChatSection: React.FC<ChatSectionProps> = ({ language, user, openRouterApiKey }) => {
+const ChatSection: React.FC<ChatSectionProps> = ({ language, user, apiKey }) => {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -182,17 +181,15 @@ const ChatSection: React.FC<ChatSectionProps> = ({ language, user, openRouterApi
     const [translations, setTranslations] = useState<{ [key: number]: string }>({});
     const [translatingIndex, setTranslatingIndex] = useState<number | null>(null);
     const [speakingIndex, setSpeakingIndex] = useState<number | null>(null);
-    const [isReady, setIsReady] = useState(false);
+    const isReady = !!apiKey;
 
     const { isListening, startListening, speechError } = useChatSpeechRecognition(language.code, setInput);
 
     const systemInstruction = `You are a helpful and friendly language practice partner. Converse with the user, whose name is ${user.name}, in ${language.name}. Keep your responses concise, friendly, and appropriate for a language learner. The user is a native Arabic speaker. You can gently correct their mistakes.`;
 
      useEffect(() => {
-        setIsReady(!!openRouterApiKey);
-        
         const loadHistory = async () => {
-            if (!user?.id) {
+            if (!user?.id || !isReady) {
                 setIsHistoryLoading(false);
                 return;
             };
@@ -212,7 +209,7 @@ const ChatSection: React.FC<ChatSectionProps> = ({ language, user, openRouterApi
         setTranslations({});
         setTranslatingIndex(null);
         setSpeakingIndex(null);
-    }, [language, user, openRouterApiKey]);
+    }, [language, user, isReady]);
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -231,7 +228,7 @@ const ChatSection: React.FC<ChatSectionProps> = ({ language, user, openRouterApi
         if (translatingIndex !== null || translations[index] || !isReady) return;
         setTranslatingIndex(index);
         try {
-            const translation = await translateText(openRouterApiKey, text, language.name, 'Arabic');
+            const translation = await translateText(text, language.name, 'Arabic', apiKey);
             setTranslations(prev => ({...prev, [index]: translation}));
         } catch (e) {
             const errorMessage = e instanceof Error ? e.message : "فشل في الترجمة.";
@@ -255,7 +252,7 @@ const ChatSection: React.FC<ChatSectionProps> = ({ language, user, openRouterApi
         setMessages(prev => [...prev, placeholderMessage]);
 
         try {
-            const stream = streamChatResponse(openRouterApiKey, newMessages, systemInstruction);
+            const stream = streamChatResponse(newMessages, systemInstruction, apiKey);
             
             let currentModelMessage = '';
             for await (const chunk of stream) {
@@ -282,14 +279,7 @@ const ChatSection: React.FC<ChatSectionProps> = ({ language, user, openRouterApi
     };
     
     return (
-        <div className="p-4 md:p-8 flex-1 flex flex-col h-[calc(100%_-_1rem)] animate-fadeIn">
-            <div className="content-header mb-6">
-                <h2 className="text-secondary text-2xl font-bold flex items-center gap-3">
-                    <i className="fas fa-comments"></i>
-                    الدردشة مع الذكاء الاصطناعي
-                </h2>
-                <p className="text-gray-300">تدرب على {language.name} في محادثة حقيقية!</p>
-            </div>
+        <div className="flex-1 flex flex-col h-full animate-fadeIn p-4">
             <div className="flex-1 bg-dark/50 backdrop-blur-md rounded-2xl shadow-inner p-4 flex flex-col justify-between overflow-hidden border border-white/10">
                  {isHistoryLoading ? (
                     <div className="flex-1 flex justify-center items-center">
@@ -297,10 +287,10 @@ const ChatSection: React.FC<ChatSectionProps> = ({ language, user, openRouterApi
                         <p className="ml-4 text-white">جاري تحميل سجل الدردشة...</p>
                     </div>
                 ) : !isReady ? (
-                    <div className="flex-1 flex flex-col justify-center items-center text-center">
+                     <div className="flex-1 flex flex-col justify-center items-center text-center p-4">
                         <i className="fas fa-key text-accent text-5xl mb-4"></i>
                         <h3 className="text-2xl font-bold text-white mb-2">مفتاح API مطلوب</h3>
-                        <p className="text-gray-300 mb-6 max-w-md">يرجى إضافة مفتاح OpenRouter API الخاص بك في قسم الإعدادات بالشريط الجانبي لتفعيل هذه الميزة.</p>
+                        <p className="text-gray-300 mb-6 max-w-md">الرجاء إدخال مفتاح API الخاص بـ Gemini في الإعدادات لتفعيل ميزة الدردشة.</p>
                     </div>
                 ) : (
                     <div className="messages-area flex-1 overflow-y-auto pr-2 space-y-4">
@@ -360,7 +350,7 @@ const ChatSection: React.FC<ChatSectionProps> = ({ language, user, openRouterApi
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-                        placeholder={isListening ? 'جاري الاستماع...' : (isReady ? `اكتب شيئًا باللغة ${language.name}...` : 'الدردشة تتطلب مفتاح API')}
+                        placeholder={isListening ? 'جاري الاستماع...' : (isReady ? `اكتب شيئًا باللغة ${language.name}...` : 'أدخل مفتاح API لتفعيل الدردشة')}
                         className="flex-1 p-4 rounded-xl bg-white dark:bg-slate-700 border-2 text-dark dark:text-light border-transparent focus:border-blue-500 focus:outline-none transition-colors"
                         disabled={isLoading || !isReady || isListening}
                     />

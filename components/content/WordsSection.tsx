@@ -37,7 +37,7 @@ const WordsSection: React.FC<WordsSectionProps> = ({ words, language, favoriteWo
     };
 
     return (
-        <div className="p-4 md:p-8 flex-1 flex flex-col animate-fadeIn h-full">
+        <div className="p-0 md:p-2 flex-1 flex flex-col animate-fadeIn h-full">
             <div className="content-header flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
                 <div className="flex items-center gap-4">
                     <h2 className="text-primary text-2xl font-bold flex items-center gap-3">
@@ -67,7 +67,7 @@ const WordsSection: React.FC<WordsSectionProps> = ({ words, language, favoriteWo
                     <p className="text-lg">لم يتم العثور على كلمات مطابقة.</p>
                 </div>
             ) : viewMode === 'grid' ? (
-                <div className="words-grid grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 flex-1 overflow-y-auto p-2">
+                <div className="words-grid grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-4 flex-1 overflow-y-auto p-1">
                     {filteredWords.map((word, index) => (
                         <WordCard 
                             key={`${word.word}-${index}`} 

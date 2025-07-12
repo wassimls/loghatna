@@ -1,12 +1,10 @@
-
-
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Language, GamesCollection, MatchGame, MissingWordGame, SentenceScrambleGame } from '../../types';
 import { getGames } from '../../services/dataService';
 
 interface GamesSectionProps {
     language: Language;
-    openRouterApiKey: string;
+    apiKey: string;
 }
 
 const GameCard: React.FC<{ title: string; description: string; icon: string; children: React.ReactNode }> = ({ title, description, icon, children }) => (
@@ -237,35 +235,36 @@ const SentenceScrambleGameCard: React.FC<{ game: SentenceScrambleGame; onGameCom
 };
 
 
-const GamesSection: React.FC<GamesSectionProps> = ({ language, openRouterApiKey }) => {
+const GamesSection: React.FC<GamesSectionProps> = ({ language, apiKey }) => {
     const [games, setGames] = useState<GamesCollection | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     const loadGames = useCallback(async () => {
-        if (!openRouterApiKey) {
-            setError("يرجى إعداد مفتاح OpenRouter API في الشريط الجانبي أولاً.");
-            setIsLoading(false);
-            return;
-        }
         setIsLoading(true);
         setError(null);
         try {
-            const gamesData = await getGames(language.name, openRouterApiKey);
+            const gamesData = await getGames(language.name, apiKey);
              if (!gamesData || gamesData.games.length === 0) {
                  throw new Error(`فشل الذكاء الاصطناعي في توليد ألعاب صالحة للغة ${language.name}.`);
             }
             setGames(gamesData);
         } catch (err) {
-            setError(err instanceof Error ? err.message : `فشل في تحميل الألعاب للغة ${language.name}.`);
+            const message = err instanceof Error ? err.message : `فشل في تحميل الألعاب للغة ${language.name}.`;
+            setError(message);
         } finally {
             setIsLoading(false);
         }
-    }, [language, openRouterApiKey]);
+    }, [language, apiKey]);
 
     useEffect(() => {
-        loadGames();
-    }, [loadGames]);
+        if (apiKey) {
+            loadGames();
+        } else {
+            setError("الرجاء إدخال مفتاح API في الإعدادات لتوليد الألعاب.");
+            setIsLoading(false);
+        }
+    }, [loadGames, apiKey]);
 
     if (isLoading) {
         return (
@@ -282,7 +281,7 @@ const GamesSection: React.FC<GamesSectionProps> = ({ language, openRouterApiKey 
     
     if (error) {
         return (
-             <div className="flex-1 p-8 flex flex-col justify-center items-center text-center animate-fadeIn bg-white/10 rounded-2xl">
+             <div className="flex-1 p-8 flex flex-col justify-center items-center text-center animate-fadeIn bg-white/10 rounded-2xl m-4">
                 <i className="fas fa-exclamation-triangle text-accent text-5xl mb-4"></i>
                 <h3 className="text-2xl font-bold text-white mb-2">حدث خطأ</h3>
                 <p className="text-gray-300 mb-6 max-w-md">{error}</p>
@@ -300,14 +299,13 @@ const GamesSection: React.FC<GamesSectionProps> = ({ language, openRouterApiKey 
 
     return (
         <div className="p-4 md:p-8 flex-1 animate-fadeIn">
-             <div className="content-header mb-8 flex justify-between items-center">
-                <h2 className="text-secondary text-3xl font-bold flex items-center gap-3">
-                    <i className="fas fa-gamepad"></i>
+             <div className="content-header mb-6 flex justify-between items-center">
+                <h2 className="text-secondary text-2xl font-bold">
                     ألعاب لغوية
                 </h2>
-                <button onClick={loadGames} className="text-secondary hover:text-yellow-300 transition-colors duration-300 font-bold flex items-center gap-2 disabled:opacity-50" title="توليد ألعاب جديدة" disabled={isLoading}>
+                <button onClick={loadGames} className="text-secondary hover:text-yellow-300 transition-colors duration-300 font-bold flex items-center gap-2 disabled:opacity-50" title="توليد ألعاب جديدة" disabled={isLoading || !apiKey}>
                     <i className="fas fa-redo-alt"></i>
-                    <span>ألعاب جديدة</span>
+                    <span className="hidden sm:inline">ألعاب جديدة</span>
                 </button>
             </div>
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">

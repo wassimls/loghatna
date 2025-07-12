@@ -91,7 +91,7 @@ const Lesson: React.FC<LessonProps> = ({ content, language, onComplete, favorite
 
     const renderStepContent = () => {
         const exerciseProps = {
-            className: "w-full max-w-3xl bg-white/90 dark:bg-dark/70 backdrop-blur-md rounded-3xl shadow-2xl p-6 md:p-8 border border-white/20"
+            className: "w-full max-w-3xl bg-white/5 dark:bg-dark/30 backdrop-blur-sm rounded-3xl shadow-2xl p-4 md:p-6 border border-white/10"
         };
         switch (currentStep.type) {
             case 'words':
@@ -123,8 +123,10 @@ const Lesson: React.FC<LessonProps> = ({ content, language, onComplete, favorite
     
     return (
         <div className="flex flex-col h-full">
-            <ProgressBar progress={progress} />
-            <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-2">
+            <div className="px-4 pt-2">
+                <ProgressBar progress={progress} />
+            </div>
+            <div className="flex-1 flex flex-col items-center justify-center p-2 md:p-4">
                  {renderStepContent()}
             </div>
         </div>

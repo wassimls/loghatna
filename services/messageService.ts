@@ -1,2 +1,1 @@
-// This service has been deprecated as the chat feature is temporarily disabled.
-// The chat functionality will be re-introduced in a future update.
+// This service has been deprecated. All AI functionality is now handled by geminiService.ts

@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import * as soundService from '../../services/soundService';
 
 interface FeedbackFooterProps {
     isCorrect: boolean;
@@ -10,6 +11,14 @@ const FeedbackFooter: React.FC<FeedbackFooterProps> = ({ isCorrect, correctAnswe
     const bgColor = isCorrect ? 'bg-green-100 dark:bg-green-900/80' : 'bg-red-100 dark:bg-red-900/80';
     const textColor = isCorrect ? 'text-green-700 dark:text-green-200' : 'text-red-700 dark:text-red-200';
     const buttonColor = isCorrect ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600';
+
+    useEffect(() => {
+        if (isCorrect) {
+            soundService.playCorrectSound();
+        } else {
+            soundService.playIncorrectSound();
+        }
+    }, []); // Play only once when the component first renders.
     
     return (
         <div className={`w-full p-4 md:p-6 mt-auto animate-fadeIn ${bgColor}`}>

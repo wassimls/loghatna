@@ -3,6 +3,7 @@ import { CategoryId, Language, GeneratedContent, User, Word, Category } from './
 import { CATEGORIES, LANGUAGES } from './constants';
 import { getCategoryContent } from './services/dataService';
 import * as userService from './services/userService';
+import * as soundService from './services/soundService';
 import Header from './components/Header';
 import GamesSection from './components/content/GamesSection';
 import AuthPage from './components/auth/AuthPage';
@@ -25,29 +26,61 @@ type Theme = 'light' | 'dark';
 type View = 'dashboard' | 'lesson' | 'games' | 'chat' | 'grammar';
 
 const ApiKeyInput: React.FC<{ apiKey: string; onApiKeyChange: (key: string) => void; forModal?: boolean;}> = ({ apiKey, onApiKeyChange, forModal = false }) => {
+    const [localKey, setLocalKey] = useState(apiKey);
     const [showKey, setShowKey] = useState(false);
+    const [justSaved, setJustSaved] = useState(false);
+
+    useEffect(() => {
+        setLocalKey(apiKey);
+    }, [apiKey]);
+
+    const handleSave = () => {
+        soundService.playGenericClick();
+        onApiKeyChange(localKey);
+        setJustSaved(true);
+        setTimeout(() => setJustSaved(false), 2000); // Display checkmark for 2 seconds
+    };
+    
+    const isDirty = localKey !== apiKey;
+
     return (
         <div className="api-key-section">
             <label htmlFor={forModal ? "api-key-modal" : "api-key-sidebar"} className="block mb-2 font-medium text-white text-sm">مفتاح Gemini API:</label>
-            <div className="relative">
-                <input
-                    id={forModal ? "api-key-modal" : "api-key-sidebar"}
-                    type={showKey ? "text" : "password"}
-                    value={apiKey}
-                    onChange={(e) => onApiKeyChange(e.target.value)}
-                    className="w-full p-3 pl-10 pr-10 border-none rounded-xl font-mono text-xs bg-dark/70 text-white cursor-pointer transition-all duration-300 shadow-inner focus:outline-none focus:ring-2 focus:ring-secondary/50"
-                    placeholder="أدخل مفتاح API الخاص بك..."
-                />
-                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-secondary">
-                    <i className="fas fa-key"></i>
+            <div className="flex items-center gap-2">
+                <div className="relative grow">
+                    <input
+                        id={forModal ? "api-key-modal" : "api-key-sidebar"}
+                        type={showKey ? "text" : "password"}
+                        value={localKey}
+                        onChange={(e) => {
+                            setLocalKey(e.target.value);
+                            setJustSaved(false);
+                        }}
+                        className="w-full p-3 pl-10 pr-10 border-none rounded-xl font-mono text-xs bg-dark/70 text-white cursor-pointer transition-all duration-300 shadow-inner focus:outline-none focus:ring-2 focus:ring-secondary/50"
+                        placeholder="أدخل مفتاح API الخاص بك..."
+                    />
+                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-secondary">
+                        <i className="fas fa-key"></i>
+                    </div>
+                    <button 
+                        type="button" 
+                        onClick={() => setShowKey(!showKey)} 
+                        className="absolute inset-y-0 left-0 flex items-center px-3 text-gray-400 hover:text-white"
+                        aria-label={showKey ? "إخفاء المفتاح" : "إظهار المفتاح"}
+                    >
+                        <i className={`fas ${showKey ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                    </button>
                 </div>
-                <button 
-                    type="button" 
-                    onClick={() => setShowKey(!showKey)} 
-                    className="absolute inset-y-0 left-0 flex items-center px-3 text-gray-400 hover:text-white"
-                    aria-label={showKey ? "إخفاء المفتاح" : "إظهار المفتاح"}
+                <button
+                    type="button"
+                    onClick={handleSave}
+                    disabled={!isDirty}
+                    title={justSaved ? "تم الحفظ بنجاح!" : (isDirty ? "حفظ التغييرات" : "تم الحفظ")}
+                    className={`flex-shrink-0 w-12 h-12 rounded-xl text-white transition-all duration-300 flex items-center justify-center text-xl disabled:opacity-60 disabled:cursor-not-allowed
+                        ${justSaved ? 'bg-green-500' : isDirty ? 'bg-secondary' : 'bg-primary'}
+                    `}
                 >
-                    <i className={`fas ${showKey ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                    {justSaved ? <i className="fas fa-check"></i> : <i className="fas fa-save"></i>}
                 </button>
             </div>
         </div>
@@ -133,7 +166,10 @@ const BottomNav: React.FC<{
             {navItems.map(item => (
                 <button
                     key={item.view}
-                    onClick={() => onNavigate(item.view as View)}
+                    onClick={() => {
+                        soundService.playNavigationSound();
+                        onNavigate(item.view as View);
+                    }}
                     className={`flex flex-col items-center justify-center gap-1 p-2 w-full transition-colors duration-300 ${isViewActive(item.view as View) ? 'text-secondary' : 'text-gray-400 hover:text-white'}`}
                 >
                     <i className={`fas ${item.icon} text-xl h-6`}></i>
@@ -220,11 +256,13 @@ const App: React.FC = () => {
     }, [selectedLanguage, currentUser]);
 
     const handleCategoryChange = (categoryId: CategoryId) => {
+        soundService.playNavigationSound();
         setActiveCategory(categoryId);
         loadContent(categoryId);
     };
 
     const handleLanguageChange = (languageCode: string) => {
+        soundService.playGenericClick();
         const lang = LANGUAGES.find(l => l.code === languageCode);
         if (lang) {
             setSelectedLanguage(lang);
@@ -235,6 +273,7 @@ const App: React.FC = () => {
     };
     
     const handleThemeChange = () => {
+        soundService.playGenericClick();
         setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
     };
     
@@ -251,6 +290,7 @@ const App: React.FC = () => {
     };
 
     const handleLogout = async () => {
+        soundService.playNavigationSound();
         await userService.logout();
         setCurrentUser(null);
         setCurrentView('dashboard');
@@ -387,7 +427,10 @@ const App: React.FC = () => {
              <Sidebar
                 className="hidden md:flex"
                 currentView={currentView}
-                onNavigate={setCurrentView}
+                onNavigate={(view) => {
+                    soundService.playNavigationSound();
+                    setCurrentView(view);
+                }}
                 languages={LANGUAGES}
                 selectedLanguage={selectedLanguage.code}
                 onLanguageChange={handleLanguageChange}
@@ -402,7 +445,10 @@ const App: React.FC = () => {
                     user={currentUser}
                     onLogout={handleLogout}
                     onUpdateName={handleUpdateName}
-                    onSettingsClick={() => setIsSettingsOpen(true)}
+                    onSettingsClick={() => {
+                        soundService.playNavigationSound();
+                        setIsSettingsOpen(true)
+                    }}
                 />
                 <main className="flex-1 overflow-y-auto">
                     {renderContent()}
@@ -416,7 +462,10 @@ const App: React.FC = () => {
             
             {isSettingsOpen && (
                 <SettingsModal
-                    onClose={() => setIsSettingsOpen(false)}
+                    onClose={() => {
+                        soundService.playGenericClick();
+                        setIsSettingsOpen(false);
+                    }}
                     languages={LANGUAGES}
                     selectedLanguage={selectedLanguage.code}
                     onLanguageChange={handleLanguageChange}

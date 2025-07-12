@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import * as soundService from '../../services/soundService';
 
 interface LessonCompleteProps {
     score: number;
@@ -11,6 +12,15 @@ const LessonComplete: React.FC<LessonCompleteProps> = ({ score, total, onFinish 
     let message = 'نتيجة رائعة! استمر في التعلم.';
     if (percentage === 100) message = 'ممتاز! لقد أتقنت هذا الدرس!';
     if (percentage < 50) message = 'لا بأس، الممارسة المستمرة هي مفتاح النجاح.';
+
+    useEffect(() => {
+        soundService.playLessonCompleteSound();
+    }, []);
+
+    const handleFinish = () => {
+        soundService.playNavigationSound();
+        onFinish();
+    }
     
     return (
         <div className="p-8 flex-1 flex flex-col items-center justify-center text-center animate-fadeIn">
@@ -24,7 +34,7 @@ const LessonComplete: React.FC<LessonCompleteProps> = ({ score, total, onFinish 
                 نتيجتك: {score} من {total}
             </p>
             <p className="text-lg text-gray-300 mb-8">{message}</p>
-            <button onClick={onFinish} className="btn bg-gradient-to-r from-accent to-pink-500 text-white py-3 px-8 rounded-full font-bold transition-transform duration-300 hover:scale-105 flex items-center gap-2 shadow-lg">
+            <button onClick={handleFinish} className="btn bg-gradient-to-r from-accent to-pink-500 text-white py-3 px-8 rounded-full font-bold transition-transform duration-300 hover:scale-105 flex items-center gap-2 shadow-lg">
                 <i className="fas fa-arrow-left"></i>
                 العودة للرئيسية
             </button>

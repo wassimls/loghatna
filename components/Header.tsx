@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { User } from '../types';
+import * as soundService from '../services/soundService';
 
 interface HeaderProps {
     user: User;
@@ -48,7 +49,13 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onUpdateName, onSetting
     return (
         <header className="bg-dark/20 backdrop-blur-sm p-3 flex justify-between items-center relative z-20 border-b border-white/10">
             <div className="flex items-center gap-3 z-10">
-                 <img src="icon.svg" alt="MindLingo Logo" className="w-12 h-12" />
+                 <button 
+                    onClick={onSettingsClick}
+                    className="bg-dark/50 hover:bg-white/20 transition-colors duration-300 w-12 h-12 rounded-full font-bold flex items-center justify-center backdrop-blur-sm border border-white/20 shadow-md text-white"
+                    title="الإعدادات"
+                >
+                    <i className="fas fa-cog text-xl"></i>
+                </button>
                 <div className="text-right">
                     <h1 className="text-2xl font-extrabold tracking-wide text-white">MindLingo</h1>
                 </div>
@@ -91,13 +98,6 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onUpdateName, onSetting
                         {user.avatar}
                     </div>
                 </div>
-                <button 
-                    onClick={onSettingsClick}
-                    className="bg-dark/50 hover:bg-white/20 transition-colors duration-300 w-12 h-12 rounded-full font-bold flex items-center justify-center backdrop-blur-sm border border-white/20 shadow-md text-white md:hidden"
-                    title="الإعدادات"
-                >
-                    <i className="fas fa-cog text-xl"></i>
-                </button>
                 <button 
                     onClick={onLogout}
                     className="bg-dark/50 hover:bg-accent transition-colors duration-300 w-12 h-12 rounded-full font-bold flex items-center justify-center backdrop-blur-sm border border-white/20 shadow-md text-white hidden md:flex"

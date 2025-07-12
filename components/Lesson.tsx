@@ -7,6 +7,7 @@ import SpeakingSection from './content/SpeakingSection';
 import LessonComplete from './content/LessonComplete';
 import ProgressBar from './shared/ProgressBar';
 import WordsSection from './content/WordsSection';
+import * as soundService from '../services/soundService';
 
 interface LessonProps {
     content: GeneratedContent;
@@ -67,6 +68,7 @@ const Lesson: React.FC<LessonProps> = ({ content, language, onComplete, favorite
     };
     
     const handleNextStep = () => {
+        soundService.playNavigationSound();
         if (currentStepIndex < steps.length - 1) {
             setCurrentStepIndex(prev => prev + 1);
         } else {

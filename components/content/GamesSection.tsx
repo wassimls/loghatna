@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Language, GamesCollection, MatchGame, MissingWordGame, SentenceScrambleGame } from '../../types';
 import { getGames } from '../../services/dataService';
+import * as soundService from '../../services/soundService';
 
 interface GamesSectionProps {
     language: Language;
@@ -45,9 +46,11 @@ const MatchGameCard: React.FC<{ game: MatchGame; onGameComplete: () => void; }> 
             setSelection(item);
         } else {
             if (selection.id === item.id && selection.type !== item.type) {
+                soundService.playCorrectSound();
                 setMatchedPairs(prev => [...prev, item.id]);
                 setSelection(null);
             } else if (selection.content !== item.content) {
+                soundService.playIncorrectSound();
                 setIncorrectPair([selection, item]);
                 setTimeout(() => {
                     setIncorrectPair(null);
@@ -98,8 +101,18 @@ const MatchGameCard: React.FC<{ game: MatchGame; onGameComplete: () => void; }> 
 // --- Missing Word Game Component ---
 const MissingWordGameCard: React.FC<{ game: MissingWordGame; onGameComplete: () => void; }> = ({ game, onGameComplete }) => {
     const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
-    const isCorrect = selectedAnswer === game.correctWord;
     const hasAnswered = selectedAnswer !== null;
+    const isCorrect = hasAnswered && selectedAnswer === game.correctWord;
+
+    const handleSelectAnswer = (option: string) => {
+        if (hasAnswered) return;
+        setSelectedAnswer(option);
+        if (option === game.correctWord) {
+            soundService.playCorrectSound();
+        } else {
+            soundService.playIncorrectSound();
+        }
+    };
 
     const sentenceParts = game.sentence.split('{blank}');
 
@@ -125,7 +138,7 @@ const MissingWordGameCard: React.FC<{ game: MissingWordGame; onGameComplete: () 
                             : 'bg-white dark:bg-slate-700 hover:bg-secondary/10 dark:hover:bg-secondary/20 border-gray-200 dark:border-slate-600';
                          
                         return (
-                             <button key={index} onClick={() => !hasAnswered && setSelectedAnswer(option)} disabled={hasAnswered} className={`${baseClasses} ${stateClasses}`}>
+                             <button key={index} onClick={() => handleSelectAnswer(option)} disabled={hasAnswered} className={`${baseClasses} ${stateClasses}`}>
                                 {option}
                             </button>
                         )
@@ -171,8 +184,10 @@ const SentenceScrambleGameCard: React.FC<{ game: SentenceScrambleGame; onGameCom
     const checkAnswer = () => {
         const userAnswer = builtSentence.join(' ');
         if (userAnswer === game.correctSentence) {
+            soundService.playCorrectSound();
             setFeedback('correct');
         } else {
+            soundService.playIncorrectSound();
             setFeedback('incorrect');
             setTimeout(() => {
                 setFeedback(null);

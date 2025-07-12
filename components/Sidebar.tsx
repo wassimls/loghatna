@@ -1,32 +1,65 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Language } from '../types';
+import * as soundService from '../services/soundService';
 
 type View = 'dashboard' | 'lesson' | 'games' | 'chat' | 'grammar';
 
 const ApiKeyInput: React.FC<{ apiKey: string; onApiKeyChange: (key: string) => void; forModal?: boolean;}> = ({ apiKey, onApiKeyChange, forModal = false }) => {
+    const [localKey, setLocalKey] = useState(apiKey);
     const [showKey, setShowKey] = useState(false);
+    const [justSaved, setJustSaved] = useState(false);
+
+    useEffect(() => {
+        setLocalKey(apiKey);
+    }, [apiKey]);
+
+    const handleSave = () => {
+        soundService.playGenericClick();
+        onApiKeyChange(localKey);
+        setJustSaved(true);
+        setTimeout(() => setJustSaved(false), 2000); // Display checkmark for 2 seconds
+    };
+    
+    const isDirty = localKey !== apiKey;
+
     return (
         <div className="api-key-section">
             <label htmlFor={forModal ? "api-key-modal" : "api-key-sidebar"} className="block mb-2 font-medium text-white text-sm">مفتاح Gemini API:</label>
-            <div className="relative">
-                <input
-                    id={forModal ? "api-key-modal" : "api-key-sidebar"}
-                    type={showKey ? "text" : "password"}
-                    value={apiKey}
-                    onChange={(e) => onApiKeyChange(e.target.value)}
-                    className="w-full p-3 pl-10 pr-10 border-none rounded-xl font-mono text-xs bg-dark/70 text-white cursor-pointer transition-all duration-300 shadow-inner focus:outline-none focus:ring-2 focus:ring-secondary/50"
-                    placeholder="أدخل مفتاح API الخاص بك..."
-                />
-                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-secondary">
-                    <i className="fas fa-key"></i>
+            <div className="flex items-center gap-2">
+                <div className="relative grow">
+                    <input
+                        id={forModal ? "api-key-modal" : "api-key-sidebar"}
+                        type={showKey ? "text" : "password"}
+                        value={localKey}
+                        onChange={(e) => {
+                            setLocalKey(e.target.value);
+                            setJustSaved(false);
+                        }}
+                        className="w-full p-3 pl-10 pr-10 border-none rounded-xl font-mono text-xs bg-dark/70 text-white cursor-pointer transition-all duration-300 shadow-inner focus:outline-none focus:ring-2 focus:ring-secondary/50"
+                        placeholder="أدخل مفتاح API الخاص بك..."
+                    />
+                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-secondary">
+                        <i className="fas fa-key"></i>
+                    </div>
+                    <button 
+                        type="button" 
+                        onClick={() => setShowKey(!showKey)} 
+                        className="absolute inset-y-0 left-0 flex items-center px-3 text-gray-400 hover:text-white"
+                        aria-label={showKey ? "إخفاء المفتاح" : "إظهار المفتاح"}
+                    >
+                        <i className={`fas ${showKey ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                    </button>
                 </div>
-                <button 
-                    type="button" 
-                    onClick={() => setShowKey(!showKey)} 
-                    className="absolute inset-y-0 left-0 flex items-center px-3 text-gray-400 hover:text-white"
-                    aria-label={showKey ? "إخفاء المفتاح" : "إظهار المفتاح"}
+                <button
+                    type="button"
+                    onClick={handleSave}
+                    disabled={!isDirty}
+                    title={justSaved ? "تم الحفظ بنجاح!" : (isDirty ? "حفظ التغييرات" : "تم الحفظ")}
+                    className={`flex-shrink-0 w-12 h-12 rounded-xl text-white transition-all duration-300 flex items-center justify-center text-xl disabled:opacity-60 disabled:cursor-not-allowed
+                        ${justSaved ? 'bg-green-500' : isDirty ? 'bg-secondary' : 'bg-primary'}
+                    `}
                 >
-                    <i className={`fas ${showKey ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                    {justSaved ? <i className="fas fa-check"></i> : <i className="fas fa-save"></i>}
                 </button>
             </div>
         </div>

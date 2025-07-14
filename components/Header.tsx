@@ -1,19 +1,54 @@
 import React, { useState, useEffect } from 'react';
 import { User } from '../types';
 import * as soundService from '../services/soundService';
+import { AVATAR_EMOJIS } from '../constants';
+
+const AvatarPickerModal: React.FC<{
+    emojis: string[];
+    onSelect: (emoji: string) => void;
+    onClose: () => void;
+}> = ({ emojis, onSelect, onClose }) => {
+    return (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={onClose}>
+            <div 
+                className="bg-dark/80 backdrop-blur-lg rounded-2xl p-6 w-full max-w-xs border border-white/10 text-white animate-fadeIn"
+                onClick={e => e.stopPropagation()}
+            >
+                <h3 className="text-center text-lg font-bold text-secondary mb-4">اختر رمزك الجديد</h3>
+                <div className="grid grid-cols-4 gap-4">
+                    {emojis.map(emoji => (
+                        <button
+                            key={emoji}
+                            onClick={() => {
+                                onSelect(emoji);
+                                onClose();
+                            }}
+                            className="text-4xl rounded-lg bg-dark/50 hover:bg-white/20 p-2 transition-colors duration-200"
+                            aria-label={`اختر ${emoji}`}
+                        >
+                            {emoji}
+                        </button>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+};
 
 interface HeaderProps {
     user: User;
     onLogout: () => void;
     onUpdateName: (newName: string) => Promise<void>;
+    onUpdateAvatar: (newAvatar: string) => Promise<void>;
     onSettingsClick: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ user, onLogout, onUpdateName, onSettingsClick }) => {
+const Header: React.FC<HeaderProps> = ({ user, onLogout, onUpdateName, onUpdateAvatar, onSettingsClick }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [newName, setNewName] = useState(user.name);
     const [isSaving, setIsSaving] = useState(false);
     const [editError, setEditError] = useState<string | null>(null);
+    const [isPickerOpen, setIsPickerOpen] = useState(false);
 
     useEffect(() => {
         setNewName(user.name);
@@ -44,6 +79,17 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onUpdateName, onSetting
         setNewName(user.name);
         setIsEditing(false);
         setEditError(null);
+    };
+
+    const handleSelectAvatar = async (emoji: string) => {
+        soundService.playGenericClick();
+        if (user.avatar === emoji) return;
+        try {
+            await onUpdateAvatar(emoji);
+        } catch (error) {
+            // Optionally, set an error state to show the user
+            console.error("Failed to update avatar", error);
+        }
     };
 
     return (
@@ -92,11 +138,13 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onUpdateName, onSetting
                             </div>
                         )}
                     </div>
-                    <div
-                        className="w-10 h-10 rounded-full border-2 border-white bg-dark/50 flex items-center justify-center text-2xl"
+                    <button
+                        onClick={() => setIsPickerOpen(true)}
+                        title="تغيير الصورة الرمزية"
+                        className="w-10 h-10 rounded-full border-2 border-white bg-dark/50 flex items-center justify-center text-2xl cursor-pointer transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-dark focus:ring-secondary"
                     >
                         {user.avatar}
-                    </div>
+                    </button>
                 </div>
                 <button 
                     onClick={onLogout}
@@ -106,6 +154,13 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onUpdateName, onSetting
                     <i className="fas fa-sign-out-alt text-xl"></i>
                 </button>
             </div>
+            {isPickerOpen && (
+                <AvatarPickerModal
+                    emojis={AVATAR_EMOJIS}
+                    onSelect={handleSelectAvatar}
+                    onClose={() => setIsPickerOpen(false)}
+                />
+            )}
         </header>
     );
 };

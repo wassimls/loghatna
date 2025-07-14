@@ -1,4 +1,5 @@
 
+
 import { CategoryContent, ReadingExercise, ListeningExercise } from '../../types';
 
 const shuffle = <T,>(arr: T[]) => [...arr].sort(() => 0.5 - Math.random());
@@ -20,59 +21,42 @@ const listeningExercise = (audioWord: string, hint: string, otherOptions: string
 export const CHINESE_CONTENT: { [categoryName: string]: CategoryContent; } = {
     alphabet: {
         words: [
-            { word: "b", translation: "ب", pronunciation: "b", emoji: "🔊" },
-            { word: "p", translation: "پ", pronunciation: "p", emoji: "🔊" },
-            { word: "m", translation: "م", pronunciation: "m", emoji: "🔊" },
-            { word: "f", translation: "ف", pronunciation: "f", emoji: "🔊" },
-            { word: "d", translation: "د", pronunciation: "d", emoji: "🔊" },
-            { word: "t", translation: "ت", pronunciation: "t", emoji: "🔊" },
-            { word: "n", translation: "ن", pronunciation: "n", emoji: "🔊" },
-            { word: "l", translation: "ل", pronunciation: "l", emoji: "🔊" },
-            { word: "g", translation: "گ", pronunciation: "g", emoji: "🔊" },
-            { word: "k", translation: "ك", pronunciation: "k", emoji: "🔊" },
-            { word: "h", translation: "هـ", pronunciation: "h", emoji: "🔊" },
-            { word: "j", translation: "ج (تش)", pronunciation: "j", emoji: "🔊" },
-            { word: "q", translation: "تش (شديدة)", pronunciation: "q", emoji: "🔊" },
-            { word: "x", translation: "ش (خفيفة)", pronunciation: "x", emoji: "🔊" },
-            { word: "zh", translation: "دج (مفخمة)", pronunciation: "zh", emoji: "🔊" },
-            { word: "ch", translation: "تش (مفخمة)", pronunciation: "ch", emoji: "🔊" },
-            { word: "sh", translation: "ش (مفخمة)", pronunciation: "sh", emoji: "🔊" },
-            { word: "r", translation: "ر", pronunciation: "r", emoji: "🔊" },
-            { word: "z", translation: "دز", pronunciation: "z", emoji: "🔊" },
-            { word: "c", translation: "تس", pronunciation: "c", emoji: "🔊" },
-            { word: "s", translation: "س", pronunciation: "s", emoji: "🔊" },
-            { word: "a", translation: "آ", pronunciation: "a", emoji: "🎶" },
-            { word: "o", translation: "أو", pronunciation: "o", emoji: "🎶" },
-            { word: "e", translation: "إيه", pronunciation: "e", emoji: "🎶" },
-            { word: "i", translation: "إي", pronunciation: "i", emoji: "🎶" },
-            { word: "u", translation: "أو (مضمومة)", pronunciation: "u", emoji: "🎶" },
-            { word: "ü", translation: "أو (مرققة)", pronunciation: "ü", emoji: "🎶" },
-            { word: "ai", translation: "آي", pronunciation: "ai", emoji: "🎶" },
-            { word: "ei", translation: "إيه", pronunciation: "ei", emoji: "🎶" },
-            { word: "ui", translation: "واي", pronunciation: "ui", emoji: "🎶" },
-            { word: "ao", translation: "آو", pronunciation: "ao", emoji: "🎶" },
-            { word: "ou", translation: "أو", pronunciation: "ou", emoji: "🎶" },
-            { word: "iu", translation: "إيو", pronunciation: "iu", emoji: "🎶" },
-            { word: "ie", translation: "ييه", pronunciation: "ie", emoji: "🎶" },
-            { word: "üe", translation: "يويه", pronunciation: "üe", emoji: "🎶" },
-            { word: "er", translation: "آر", pronunciation: "er", emoji: "🎶" },
-            { word: "an", translation: "آن", pronunciation: "an", emoji: "🎶" },
-            { word: "en", translation: "إن", pronunciation: "en", emoji: "🎶" },
-            { word: "in", translation: "إين", pronunciation: "in", emoji: "🎶" },
-            { word: "un", translation: "أون", pronunciation: "un", emoji: "🎶" },
-            { word: "ün", translation: "أون (مرققة)", pronunciation: "ün", emoji: "🎶" },
-            { word: "ang", translation: "آنغ", pronunciation: "ang", emoji: "🎶" },
-            { word: "eng", translation: "إنغ", pronunciation: "eng", emoji: "🎶" },
-            { word: "ing", translation: "إينغ", pronunciation: "ing", emoji: "🎶" },
-            { word: "ong", translation: "أونغ", pronunciation: "ong", emoji: "🎶" },
+            { word: "一", translation: "واحد / خط أفقي", pronunciation: "yī / héng", emoji: "1️⃣" },
+            { word: "丨", translation: "خط عمودي", pronunciation: "shù", emoji: "🖌️" },
+            { word: "丿", translation: "مائل لليسار", pronunciation: "piě", emoji: "🖌️" },
+            { word: "丶", translation: "نقطة", pronunciation: "diǎn", emoji: "🖌️" },
+            { word: "㇏", translation: "مائل لليمين", pronunciation: "nà", emoji: "🖌️" },
+            { word: "二", translation: "اثنان", pronunciation: "èr", emoji: "2️⃣" },
+            { word: "三", translation: "ثلاثة", pronunciation: "sān", emoji: "3️⃣" },
+            { word: "十", translation: "عشرة", pronunciation: "shí", emoji: "🔟" },
+            { word: "人", translation: "شخص", pronunciation: "rén", emoji: "🧍" },
+            { word: "口", translation: "فم", pronunciation: "kǒu", emoji: "👄" },
+            { word: "大", translation: "كبير", pronunciation: "dà", emoji: "🐘" },
+            { word: "小", translation: "صغير", pronunciation: "xiǎo", emoji: "🐭" },
+            { word: "上", translation: "فوق", pronunciation: "shàng", emoji: "🔼" },
+            { word: "下", translation: "تحت", pronunciation: "xià", emoji: "🔽" },
+            { word: "中", translation: "وسط", pronunciation: "zhōng", emoji: "🎯" },
+            { word: "天", translation: "سماء / يوم", pronunciation: "tiān", emoji: "☀️" },
+            { word: "日", translation: "شمس / يوم", pronunciation: "rì", emoji: "☀️" },
+            { word: "月", translation: "قمر / شهر", pronunciation: "yuè", emoji: "🌙" },
+            { word: "山", translation: "جبل", pronunciation: "shān", emoji: "⛰️" },
+            { word: "水", translation: "ماء", pronunciation: "shuǐ", emoji: "💧" },
+            { word: "火", translation: "نار", pronunciation: "huǒ", emoji: "🔥" },
+            { word: "木", translation: "خشب / شجرة", pronunciation: "mù", emoji: "🌳" },
+            { word: "王", translation: "ملك", pronunciation: "wáng", emoji: "👑" },
+            { word: "玉", translation: "يشم (حجر كريم)", pronunciation: "yù", emoji: "💎" },
+            { word: "女", translation: "امرأة", pronunciation: "nǚ", emoji: "👩" },
+            { word: "子", translation: "طفل", pronunciation: "zǐ", emoji: "👶" },
         ],
         readingExercises: [
-            readingExercise("nǐ hǎo (你好)", "Pinyin لكلمة 'مرحباً'", "nǐ hǎo", ["wǒ ài nǐ", "xièxie", "zàijiàn"]),
-            readingExercise("b, p, m, f", "أول أربعة حروف ساكنة", "b, p, m, f", ["d, t, n, l", "g, k, h", "a, o, e"])
+            readingExercise("一二三", "واحد، اثنان، ثلاثة", "واحد، اثنان، ثلاثة", ["شخص، كبير، صغير", "فوق، تحت، وسط", "شمس، قمر، نجمة"]),
+            readingExercise("大火", "نار كبيرة", "نار كبيرة", ["جبل صغير", "ماء بارد", "شخص جيد"]),
+            readingExercise("十个人", "عشرة أشخاص", "عشرة أشخاص", ["ثلاثة كتب", "يوم واحد", "فم صغير"])
         ],
         listeningExercises: [
-            listeningExercise("mā", "النغمة الأولى", ["má", "mǎ", "mà"]),
-            listeningExercise("shì", "النغمة الرابعة", ["shí", "shǐ", "shī"])
+            listeningExercise("人", "الرمز الذي يعني 'شخص'.", ["rén", "shān", "kǒu"]),
+            listeningExercise("上", "الرمز الذي يعني 'فوق'.", ["shàng", "xià", "zhōng"]),
+            listeningExercise("火", "الرمز الذي يعني 'نار'.", ["huǒ", "shuǐ", "mù"])
         ]
     },
     basics: {
@@ -649,6 +633,226 @@ export const CHINESE_CONTENT: { [categoryName: string]: CategoryContent; } = {
             listeningExercise("旅游", "فعل السفر أو السياحة.", ["工作", "学习", "吃饭"]),
             listeningExercise("飞机", "وسيلة نقل تطير في السماء.", ["火车", "汽车", "船"]),
             listeningExercise("酒店", "المكان الذي تقيم فيه عند السفر.", ["家", "学校", "医院"])
+        ]
+    },
+    animals: {
+        words: [
+            { word: "狗", translation: "كلب", pronunciation: "gǒu", emoji: "🐕" },
+            { word: "猫", translation: "قطة", pronunciation: "māo", emoji: "🐈" },
+            { word: "鱼", translation: "سمكة", pronunciation: "yú", emoji: "🐟" },
+            { word: "鸟", translation: "طائر", pronunciation: "niǎo", emoji: "🐦" },
+            { word: "马", translation: "حصان", pronunciation: "mǎ", emoji: "🐎" },
+            { word: "熊猫", translation: "باندا", pronunciation: "xióngmāo", emoji: "🐼" },
+            { word: "老虎", translation: "نمر", pronunciation: "lǎohǔ", emoji: "🐅" },
+            { word: "狮子", translation: "أسد", pronunciation: "shīzi", emoji: "🦁" },
+            { word: "大象", translation: "فيل", pronunciation: "dàxiàng", emoji: "🐘" },
+            { word: "猴子", translation: "قرد", pronunciation: "hóuzi", emoji: "🐒" },
+        ],
+        readingExercises: [
+            readingExercise("我有一只可爱的猫。", "امتلاك حيوان أليف", "لدي قطة لطيفة.", ["الكلب كبير.", "الباندا تأكل الخيزران.", "أحب الخيول."]),
+            readingExercise("动物园里有老虎和狮子。", "حيوانات حديقة الحيوان", "يوجد في حديقة الحيوان نمور وأسود.", ["الطائر يطير.", "الفيل يشرب الماء.", "السمكة تسبح."])
+        ],
+        listeningExercises: [
+            listeningExercise("熊猫", "حيوان أبيض وأسود من الصين", ["熊猫", "老虎", "狮子", "大象"]),
+            listeningExercise("狗", "أفضل صديق للإنسان", ["狗", "猫", "鱼", "鸟"])
+        ]
+    },
+    transportation: {
+        words: [
+            { word: "车", translation: "سيارة/مركبة", pronunciation: "chē", emoji: "🚗" },
+            { word: "公共汽车", translation: "حافلة", pronunciation: "gōnggòng qìchē", emoji: "🚌" },
+            { word: "出租车", translation: "سيارة أجرة", pronunciation: "chūzūchē", emoji: "🚕" },
+            { word: "火车", translation: "قطار", pronunciation: "huǒchē", emoji: "🚆" },
+            { word: "飞机", translation: "طائرة", pronunciation: "fēijī", emoji: "✈️" },
+            { word: "自行车", translation: "دراجة هوائية", pronunciation: "zìxíngchē", emoji: "🚲" },
+            { word: "地铁", translation: "مترو الأنفاق", pronunciation: "dìtiě", emoji: "🚇" },
+            { word: "船", translation: "سفينة", pronunciation: "chuán", emoji: "🚢" },
+            { word: "走路", translation: "مشي", pronunciation: "zǒulù", emoji: "🚶" },
+            { word: "开车", translation: "قيادة سيارة", pronunciation: "kāichē", emoji: "🚗" },
+        ],
+        readingExercises: [
+            readingExercise("我每天坐地铁上班。", "وسيلة النقل اليومية", "أذهب إلى العمل بالمترو كل يوم.", ["هو يقود السيارة.", "هي تستقل الحافلة.", "نحن نسافر بالقطار."]),
+            readingExercise("从这里到机场怎么走？", "سؤال عن الاتجاهات", "كيف أصل إلى المطار من هنا؟", ["يمكنك أخذ سيارة أجرة.", "الطائرة ستقلع قريباً.", "الدراجة صديقة للبيئة."])
+        ],
+        listeningExercises: [
+            listeningExercise("火车", "وسيلة نقل تسير على قضبان حديدية", ["火车", "飞机", "船", "自行车"]),
+            listeningExercise("公共汽车", "مركبة كبيرة تنقل الكثير من الناس", ["公共汽车", "出租车", "地铁", "车"])
+        ]
+    },
+    education: {
+        words: [
+            { word: "学校", translation: "مدرسة", pronunciation: "xuéxiào", emoji: "🏫" },
+            { word: "大学", translation: "جامعة", pronunciation: "dàxué", emoji: "🎓" },
+            { word: "老师", translation: "معلم", pronunciation: "lǎoshī", emoji: "👨‍🏫" },
+            { word: "学生", translation: "طالب", pronunciation: "xuésheng", emoji: "🧑‍🎓" },
+            { word: "同学", translation: "زميل دراسة", pronunciation: "tóngxué", emoji: "👥" },
+            { word: "课", translation: "درس/حصة", pronunciation: "kè", emoji: "📚" },
+            { word: "考试", translation: "امتحان", pronunciation: "kǎoshì", emoji: "📝" },
+            { word: "作业", translation: "واجب منزلي", pronunciation: "zuòyè", emoji: "📓" },
+            { word: "教室", translation: "فصل دراسي", pronunciation: "jiàoshì", emoji: "🧑‍🏫" },
+            { word: "学习", translation: "يدرس", pronunciation: "xuéxí", emoji: "🧠" },
+        ],
+        readingExercises: [
+            readingExercise("老师在教室里上课。", "مشهد داخل الفصل", "المعلم يلقي درساً في الفصل الدراسي.", ["الطلاب يقومون بواجباتهم.", "لدي امتحان صعب غداً.", "زميلي لطيف جداً."]),
+            readingExercise("我喜欢学习汉语。", "تفضيلات الدراسة", "أحب دراسة اللغة الصينية.", ["مدرستنا كبيرة.", "الجامعة بعيدة.", "هذا الدرس مثير للاهتمام."])
+        ],
+        listeningExercises: [
+            listeningExercise("学生", "الشخص الذي يتعلم في المدرسة", ["学生", "老师", "同学", "校长"]),
+            listeningExercise("考试", "اختبار للمعرفة", ["考试", "作业", "课", "教室"])
+        ]
+    },
+    health: {
+        words: [
+            { word: "健康", translation: "صحة", pronunciation: "jiànkāng", emoji: "💪" },
+            { word: "医生", translation: "طبيب", pronunciation: "yīshēng", emoji: "🧑‍⚕️" },
+            { word: "护士", translation: "ممرضة", pronunciation: "hùshi", emoji: "👩‍⚕️" },
+            { word: "医院", translation: "مستشفى", pronunciation: "yīyuàn", emoji: "🏥" },
+            { word: "药", translation: "دواء", pronunciation: "yào", emoji: "💊" },
+            { word: "生病", translation: "مريض", pronunciation: "shēngbìng", emoji: "🤒" },
+            { word: "头疼", translation: "صداع", pronunciation: "tóuténg", emoji: "🤕" },
+            { word: "肚子疼", translation: "ألم في المعدة", pronunciation: "dùziténg", emoji: "🤢" },
+            { word: "发烧", translation: "حمى", pronunciation: "fāshāo", emoji: "🌡️" },
+            { word: "感冒", translation: "نزلة برد", pronunciation: "gǎnmào", emoji: "🤧" },
+        ],
+        readingExercises: [
+            readingExercise("我生病了，需要去看医生。", "وصف الحالة الصحية", "أنا مريض، أحتاج أن أرى طبيباً.", ["خذ هذا الدواء.", "المستشفى كبير.", "لدي حمى وصداع."]),
+            readingExercise("多喝水对健康有好处。", "نصيحة صحية", "شرب الكثير من الماء مفيد للصحة.", ["الممرضة مشغولة.", "لدي نزلة برد.", "هذا الدواء مر."])
+        ],
+        listeningExercises: [
+            listeningExercise("医院", "المكان الذي تذهب إليه عندما تكون مريضاً", ["医院", "学校", "银行", "商店"]),
+            listeningExercise("生病", "عندما لا تكون بصحة جيدة", ["生病", "健康", "高兴", "累"])
+        ]
+    },
+    technology: {
+        words: [
+            { word: "电脑", translation: "حاسوب", pronunciation: "diànnǎo", emoji: "💻" },
+            { word: "手机", translation: "هاتف محمول", pronunciation: "shǒujī", emoji: "📱" },
+            { word: "网络", translation: "إنترنت", pronunciation: "wǎngluò", emoji: "🌐" },
+            { word: "电子邮件", translation: "بريد إلكتروني", pronunciation: "diànzǐ yóujiàn", emoji: "📧" },
+            { word: "网站", translation: "موقع إلكتروني", pronunciation: "wǎngzhàn", emoji: "🕸️" },
+            { word: "密码", translation: "كلمة المرور", pronunciation: "mìmǎ", emoji: "🔒" },
+            { word: "键盘", translation: "لوحة مفاتيح", pronunciation: "jiànpán", emoji: "⌨️" },
+            { word: "鼠标", translation: "فأرة", pronunciation: "shǔbiāo", emoji: "🖱️" },
+            { word: "屏幕", translation: "شاشة", pronunciation: "píngmù", emoji: "🖥️" },
+            { word: "软件", translation: "برنامج", pronunciation: "ruǎnjiàn", emoji: "💿" },
+        ],
+        readingExercises: [
+            readingExercise("我用电脑上网。", "استخدام الكمبيوتر", "أستخدم الكمبيوتر لتصفح الإنترنت.", ["لقد نسيت كلمة المرور.", "أرسل لي بريداً إلكترونياً.", "هذا الموقع مفيد جدا."]),
+            readingExercise("我的手机没电了。", "مشكلة في الهاتف", "بطارية هاتفي فارغة.", ["هذه الشاشة كبيرة.", "أنا أكتب بلوحة المفاتيح.", "تحتاج إلى تثبيت هذا البرنامج."])
+        ],
+        listeningExercises: [
+            listeningExercise("网络", "شبكة عالمية", ["网络", "电脑", "手机", "邮件"]),
+            listeningExercise("密码", "تحتاجه لتسجيل الدخول", ["密码", "网站", "键盘", "鼠标"])
+        ]
+    },
+    restaurant: {
+        words: [
+            { word: "饭店", translation: "مطعم", pronunciation: "fàndiàn", emoji: "🍴" },
+            { word: "菜单", translation: "قائمة طعام", pronunciation: "càidān", emoji: "📜" },
+            { word: "服务员", translation: "نادل", pronunciation: "fúwùyuán", emoji: "🤵" },
+            { word: "买单", translation: "طلب الفاتورة", pronunciation: "mǎidān", emoji: "🧾" },
+            { word: "点菜", translation: "طلب الطعام", pronunciation: "diǎncài", emoji: "✍️" },
+            { word: "好吃", translation: "لذيذ", pronunciation: "hǎochī", emoji: "😋" },
+            { word: "筷子", translation: "عيدان طعام", pronunciation: "kuàizi", emoji: "🥢" },
+            { word: "勺子", translation: "ملعقة", pronunciation: "sháozi", emoji: "🥄" },
+            { word: "碗", translation: "وعاء", pronunciation: "wǎn", emoji: "🥣" },
+            { word: "盘子", translation: "طبق", pronunciation: "pánzi", emoji: "🍽️" },
+        ],
+        readingExercises: [
+            readingExercise("服务员，请给我菜单。", "في المطعم", "يا نادل، من فضلك أعطني قائمة الطعام.", ["الطعام لذيذ.", "أريد أن أطلب الآن.", "الفاتورة من فضلك."]),
+            readingExercise("我要点一个宫保鸡丁。", "طلب طبق معين", "أريد طلب طبق دجاج كونغ باو.", ["هل تستخدم عيدان الطعام؟", "هذا الطبق حار قليلاً.", "كم سعر هذا؟"])
+        ],
+        listeningExercises: [
+            listeningExercise("菜单", "قائمة الأطباق", ["菜单", "买单", "点菜", "服务员"]),
+            listeningExercise("筷子", "تستخدم للأكل في الصين", ["筷子", "勺子", "碗", "盘子"])
+        ]
+    },
+    daily_routines: {
+        words: [
+            { word: "起床", translation: "يستيقظ", pronunciation: "qǐchuáng", emoji: "⏰" },
+            { word: "吃早饭", translation: "يأكل الفطور", pronunciation: "chī zǎofàn", emoji: "🍳" },
+            { word: "上班", translation: "يذهب للعمل", pronunciation: "shàngbān", emoji: "💼" },
+            { word: "上学", translation: "يذهب للمدرسة", pronunciation: "shàngxué", emoji: "🎒" },
+            { word: "吃午饭", translation: "يأكل الغداء", pronunciation: "chī wǔfàn", emoji: "🍱" },
+            { word: "回家", translation: "يعود للمنزل", pronunciation: "huíjiā", emoji: "🏡" },
+            { word: "做晚饭", translation: "يطبخ العشاء", pronunciation: "zuò wǎnfàn", emoji: "🍝" },
+            { word: "看电视", translation: "يشاهد التلفاز", pronunciation: "kàn diànshì", emoji: "📺" },
+            { word: "看书", translation: "يقرأ كتاباً", pronunciation: "kàn shū", emoji: "📖" },
+            { word: "睡觉", translation: "ينام", pronunciation: "shuìjiào", emoji: "😴" },
+        ],
+        readingExercises: [
+            readingExercise("我每天早上七点起床。", "روتين يومي", "أستيقظ الساعة 7 صباحاً كل يوم.", ["هو يذهب إلى العمل بالسيارة.", "بعد العشاء، أشاهد التلفاز.", "أنا أدرس في المساء."]),
+            readingExercise("晚上我喜欢看书。", "نشاط مسائي", "أحب قراءة الكتب في المساء.", ["متى تأكل الغداء؟", "هل انتهيت من عملك؟", "حان وقت النوم."])
+        ],
+        listeningExercises: [
+            listeningExercise("起床", "أول شيء تفعله في الصباح", ["起床", "睡觉", "上班", "回家"]),
+            listeningExercise("吃早饭", "وجبة الصباح", ["吃早饭", "吃午饭", "吃晚饭", "喝茶"])
+        ]
+    },
+    countries: {
+        words: [
+            { word: "国家", translation: "دولة", pronunciation: "guójiā", emoji: "🌍" },
+            { word: "国籍", translation: "جنسية", pronunciation: "guójí", emoji: "🆔" },
+            { word: "中国", translation: "الصين", pronunciation: "zhōngguó", emoji: "🇨🇳" },
+            { word: "美国", translation: "أمريكا", pronunciation: "měiguó", emoji: "🇺🇸" },
+            { word: "日本", translation: "اليابان", pronunciation: "rìběn", emoji: "🇯🇵" },
+            { word: "韩国", translation: "كوريا", pronunciation: "hánguó", emoji: "🇰🇷" },
+            { word: "埃及", translation: "مصر", pronunciation: "āijí", emoji: "🇪🇬" },
+            { word: "法国", translation: "فرنسا", pronunciation: "fǎguó", emoji: "🇫🇷" },
+            { word: "德国", translation: "ألمانيا", pronunciation: "déguó", emoji: "🇩🇪" },
+            { word: "首都", translation: "عاصمة", pronunciation: "shǒudū", emoji: "🏛️" },
+        ],
+        readingExercises: [
+            readingExercise("北京是中国的首都。", "معلومات عن الدول", "بكين هي عاصمة الصين.", ["أنا من مصر.", "هو يتحدث اليابانية.", "نيويورك مدينة كبيرة في أمريكا."]),
+            readingExercise("你是哪国人？", "سؤال عن الجنسية", "ما هي جنسيتك؟", ["أحب السفر.", "هل زرت فرنسا؟", "ألمانيا في أوروبا."])
+        ],
+        listeningExercises: [
+            listeningExercise("中国", "دولة في آسيا", ["中国", "美国", "日本", "韩国"]),
+            listeningExercise("首都", "أهم مدينة في الدولة", ["首都", "国家", "城市", "语言"])
+        ]
+    },
+    sports: {
+        words: [
+            { word: "运动", translation: "رياضة", pronunciation: "yùndòng", emoji: "🏅" },
+            { word: "足球", translation: "كرة القدم", pronunciation: "zúqiú", emoji: "⚽" },
+            { word: "篮球", translation: "كرة السلة", pronunciation: "lánqiú", emoji: "🏀" },
+            { word: "网球", translation: "تنس", pronunciation: "wǎngqiú", emoji: "🎾" },
+            { word: "游泳", translation: "سباحة", pronunciation: "yóuyǒng", emoji: "🏊" },
+            { word: "跑步", translation: "جري", pronunciation: "pǎobù", emoji: "🏃" },
+            { word: "比赛", translation: "مباراة/منافسة", pronunciation: "bǐsài", emoji: "🏆" },
+            { word: "赢", translation: "يفوز", pronunciation: "yíng", emoji: "🥇" },
+            { word: "输", translation: "يخسر", pronunciation: "shū", emoji: "👎" },
+            { word: "队", translation: "فريق", pronunciation: "duì", emoji: "👥" },
+        ],
+        readingExercises: [
+            readingExercise("我最喜欢的运动是足球。", "تفضيلات رياضية", "رياضتي المفضلة هي كرة القدم.", ["هو يلعب التنس كل نهاية أسبوع.", "فريقنا فاز بالمباراة.", "أذهب للسباحة مرتين في الأسبوع."]),
+            readingExercise("昨天的比赛谁赢了？", "نتائج المباريات", "من فاز في مباراة الأمس؟", ["الجري مفيد للصحة.", "هل تعرف كيف تلعب كرة السلة؟", "هم خسروا المباراة."])
+        ],
+        listeningExercises: [
+            listeningExercise("足球", "رياضة شعبية بكرة", ["足球", "篮球", "网球", "游泳"]),
+            listeningExercise("比赛", "منافسة رياضية", ["比赛", "运动", "队", "赢"])
+        ]
+    },
+    music_arts: {
+        words: [
+            { word: "音乐", translation: "موسيقى", pronunciation: "yīnyuè", emoji: "🎵" },
+            { word: "艺术", translation: "فن", pronunciation: "yìshù", emoji: "🖼️" },
+            { word: "歌", translation: "أغنية", pronunciation: "gē", emoji: "🎶" },
+            { word: "画家", translation: "فنان/رسام", pronunciation: "huàjiā", emoji: "🧑‍🎨" },
+            { word: "画", translation: "يرسم/لوحة", pronunciation: "huà", emoji: "🎨" },
+            { word: "唱歌", translation: "يغني", pronunciation: "chànggē", emoji: "🎤" },
+            { word: "跳舞", translation: "يرقص", pronunciation: "tiàowǔ", emoji: "💃" },
+            { word: "博物馆", translation: "متحف", pronunciation: "bówùguǎn", emoji: "🏛️" },
+            { word: "剧院", translation: "مسرح", pronunciation: "jùyuàn", emoji: "🎭" },
+            { word: "电影", translation: "فيلم", pronunciation: "diànyǐng", emoji: "🎬" },
+        ],
+        readingExercises: [
+            readingExercise("我喜欢听古典音乐。", "تفضيلات فنية", "أحب الاستماع إلى الموسيقى الكلاسيكية.", ["هي فنانة موهوبة.", "لنذهب إلى المتحف يوم السبت.", "هذه الأغنية مشهورة جدا."]),
+            readingExercise("他画的画很漂亮。", "وصف عمل فني", "لوحاته التي يرسمها جميلة جداً.", ["هل تستطيع الرقص؟", "هذا الفيلم حائز على جوائز.", "هي تغني بشكل جيد."])
+        ],
+        listeningExercises: [
+            listeningExercise("音乐", "فن الأصوات", ["音乐", "艺术", "电影", "歌"]),
+            listeningExercise("唱歌", "فعل الغناء", ["唱歌", "跳舞", "画画", "看书"])
         ]
     }
 };

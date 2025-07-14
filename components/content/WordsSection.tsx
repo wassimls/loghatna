@@ -8,11 +8,12 @@ interface WordsSectionProps {
     language: Language;
     favoriteWords: Word[];
     onToggleFavorite: (word: Word) => void;
+    onVoiceNotAvailable: () => void;
 }
 
 type ViewMode = 'grid' | 'flashcards';
 
-const WordsSection: React.FC<WordsSectionProps> = ({ words, language, favoriteWords, onToggleFavorite }) => {
+const WordsSection: React.FC<WordsSectionProps> = ({ words, language, favoriteWords, onToggleFavorite, onVoiceNotAvailable }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [viewMode, setViewMode] = useState<ViewMode>('grid');
     const [currentCardIndex, setCurrentCardIndex] = useState(0);
@@ -75,12 +76,17 @@ const WordsSection: React.FC<WordsSectionProps> = ({ words, language, favoriteWo
                             language={language}
                             isFavorite={favoriteWordSet.has(word.word)}
                             onToggleFavorite={onToggleFavorite}
+                            onVoiceNotAvailable={onVoiceNotAvailable}
                         />
                     ))}
                 </div>
             ) : (
                 <div className="flex-1 flex flex-col items-center justify-center gap-6">
-                    <Flashcard word={filteredWords[currentCardIndex]} language={language} />
+                    <Flashcard 
+                        word={filteredWords[currentCardIndex]} 
+                        language={language} 
+                        onVoiceNotAvailable={onVoiceNotAvailable}
+                    />
                     <div className="flex items-center gap-4">
                          <button onClick={handlePrevCard} className="action-btn bg-white dark:bg-slate-700 shadow-md p-4 rounded-full text-primary transition-transform hover:scale-110">
                             <i className="fas fa-arrow-right"></i>

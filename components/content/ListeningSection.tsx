@@ -8,9 +8,10 @@ interface ListeningSectionProps {
     exercise: ListeningExercise | null;
     language: Language;
     onNext: (isCorrect: boolean) => void;
+    onVoiceNotAvailable: () => void;
 }
 
-const ListeningSection: React.FC<ListeningSectionProps> = ({ exercise, language, onNext }) => {
+const ListeningSection: React.FC<ListeningSectionProps> = ({ exercise, language, onNext, onVoiceNotAvailable }) => {
     const [selectedOption, setSelectedOption] = useState<string | null>(null);
     const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
     const [audioState, setAudioState] = useState<'idle' | 'loading' | 'playing' | 'error'>('idle');
@@ -36,6 +37,7 @@ const ListeningSection: React.FC<ListeningSectionProps> = ({ exercise, language,
             onError: (err) => {
                 console.error('Audio playback error:', err);
                 setAudioState('error');
+                onVoiceNotAvailable();
             },
         });
     };
@@ -94,7 +96,7 @@ const ListeningSection: React.FC<ListeningSectionProps> = ({ exercise, language,
                 </div>
                 
                 {audioState === 'error' && (
-                    <p className="text-red-600 dark:text-red-400 text-center -mt-4 mb-4 font-semibold">حدث خطأ في تشغيل الصوت.</p>
+                    <p className="text-red-600 dark:text-red-400 text-center -mt-4 mb-4 font-semibold">تعذر تشغيل الصوت.</p>
                 )}
 
                 <div className="options grid grid-cols-1 md:grid-cols-2 gap-4 my-8">

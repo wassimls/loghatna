@@ -8,6 +8,7 @@ interface ChatSectionProps {
     language: Language;
     user: User;
     apiKey: string;
+    onVoiceNotAvailable: () => void;
 }
 
 // ---- Start of new interactive avatar components ----
@@ -170,7 +171,7 @@ const useChatSpeechRecognition = (lang: string, onTranscriptUpdate: (transcript:
 };
 
 
-const ChatSection: React.FC<ChatSectionProps> = ({ language, user, apiKey }) => {
+const ChatSection: React.FC<ChatSectionProps> = ({ language, user, apiKey, onVoiceNotAvailable }) => {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -220,7 +221,10 @@ const ChatSection: React.FC<ChatSectionProps> = ({ language, user, apiKey }) => 
         setSpeakingIndex(index);
         speak(text, language.code, {
             onEnd: () => setSpeakingIndex(null),
-            onError: () => setSpeakingIndex(null)
+            onError: () => {
+                setSpeakingIndex(null);
+                onVoiceNotAvailable();
+            }
         });
     };
 

@@ -13,7 +13,10 @@ export type TabId = 'words' | 'reading' | 'writing' | 'listening' | 'speaking' |
 export type CategoryId = 
     'alphabet' | 'basics' | 'greetings' | 'food' | 'family' | 'home' | 'work' | 
     'travel' | 'numbers' | 'colors' | 'time' | 'weather' | 'shopping' | 
-    'body' | 'clothing' | 'verbs' | 'adjectives' | 'places' | 'nature' | 'hobbies' | 'emotions';
+    'body' | 'clothing' | 'verbs' | 'adjectives' | 'places' | 'nature' | 'hobbies' | 'emotions' |
+    'animals' | 'transportation' | 'education' | 'health' | 'technology' | 'restaurant' |
+    'daily_routines' | 'countries' | 'sports' | 'music_arts';
+
 
 /** Represents a language available in the app. */
 export type Language = {

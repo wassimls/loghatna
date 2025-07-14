@@ -123,6 +123,31 @@ export const updateUserName = async (name: string): Promise<User> => {
     };
 };
 
+// Update the current user's avatar
+export const updateUserAvatar = async (avatar: string): Promise<User> => {
+    ensureSupabaseIsConfigured();
+
+    const { data, error } = await supabase!.auth.updateUser({
+        data: { avatar }
+    });
+
+    if (error) {
+        console.error("Supabase update user avatar error: ", error);
+        throw new Error('فشل في تحديث الصورة الرمزية.');
+    }
+    
+    if (!data.user) {
+         throw new Error('لم يتم العثور على المستخدم لتحديثه.');
+    }
+
+    return {
+        id: data.user.id,
+        email: data.user.email!,
+        name: data.user.user_metadata.name || 'مستخدم',
+        avatar: data.user.user_metadata.avatar || '😊'
+    };
+};
+
 
 // --- Chat History ---
 
@@ -154,7 +179,7 @@ export const saveChatHistory = async (userId: string, languageCode: string, mess
             language_code: languageCode,
             messages: messages as Json,
             updated_at: new Date().toISOString()
-        } as any, { onConflict: 'user_id, language_code' });
+        }, { onConflict: 'user_id, language_code' });
         
     if (error) {
         console.error('Error saving chat history:', error);
@@ -194,7 +219,7 @@ export const addFavoriteWord = async (userId: string, word: Word, languageCode: 
             user_id: userId,
             word: word as Json,
             language_code: languageCode
-        } as any);
+        });
         
     if (error) {
         console.error('Error adding favorite word:', error);
@@ -205,12 +230,12 @@ export const addFavoriteWord = async (userId: string, word: Word, languageCode: 
 export const removeFavoriteWord = async (userId: string, wordText: string, languageCode: string): Promise<void> => {
     ensureSupabaseIsConfigured();
 
-    const { error } = await (supabase!
+    const { error } = await supabase!
         .from('user_favorite_words')
-        .delete() as any)
+        .delete()
         .eq('user_id', userId)
         .eq('language_code', languageCode)
-        .filter('word->>word', 'eq', wordText);
+        .eq('word->>word', wordText);
         
     if (error) {
         console.error('Error removing favorite word:', error);

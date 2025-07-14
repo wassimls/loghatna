@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react';
 import { Word, Language } from '../../types';
 import { speak } from '../../services/audioService';
@@ -6,9 +7,10 @@ import { speak } from '../../services/audioService';
 interface FlashcardProps {
     word: Word;
     language: Language;
+    onVoiceNotAvailable: () => void;
 }
 
-const Flashcard: React.FC<FlashcardProps> = ({ word, language }) => {
+const Flashcard: React.FC<FlashcardProps> = ({ word, language, onVoiceNotAvailable }) => {
     const [isFlipped, setIsFlipped] = useState(false);
     
     // Reset flip state when word changes
@@ -16,9 +18,11 @@ const Flashcard: React.FC<FlashcardProps> = ({ word, language }) => {
         setIsFlipped(false);
     }, [word]);
 
-    const speakWord = async (e: React.MouseEvent) => {
+    const speakWord = (e: React.MouseEvent) => {
         e.stopPropagation(); // Prevent card from flipping when button is clicked
-        await speak(word.word, language.code);
+        speak(word.word, language.code, {
+            onError: onVoiceNotAvailable
+        });
     };
 
     return (

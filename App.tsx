@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { CategoryId, Language, GeneratedContent, User, Word, Category } from './types';
 import { CATEGORIES, LANGUAGES } from './constants';
 import { getCategoryContent } from './services/dataService';
@@ -21,6 +21,7 @@ import JapaneseGrammarSection from './components/content/JapaneseGrammarSection'
 import TurkishGrammarSection from './components/content/TurkishGrammarSection';
 import PlaceholderSection from './components/content/PlaceholderSection';
 import Sidebar from './components/Sidebar';
+import VoiceNotAvailableModal from './components/shared/VoiceNotAvailableModal';
 
 type Theme = 'light' | 'dark';
 type View = 'dashboard' | 'lesson' | 'games' | 'chat' | 'grammar';
@@ -154,7 +155,7 @@ const BottomNav: React.FC<{
         { view: 'chat', icon: 'fa-comments', label: 'الدردشة' },
     ];
     
-    const isViewActive = (view: View) => {
+     const isViewActive = (view: View) => {
         if (view === 'dashboard') {
             return currentView === 'dashboard' || currentView === 'lesson';
         }
@@ -162,17 +163,16 @@ const BottomNav: React.FC<{
     };
 
     return (
-        <nav className={`bg-dark/70 backdrop-blur-md border-t border-white/10 flex justify-around ${className}`}>
+        <nav className={`bg-dark/70 backdrop-blur-lg border-t border-white/10 flex justify-around p-2.5 ${className}`}>
             {navItems.map(item => (
-                <button
+                 <button
                     key={item.view}
-                    onClick={() => {
-                        soundService.playNavigationSound();
-                        onNavigate(item.view as View);
-                    }}
-                    className={`flex flex-col items-center justify-center gap-1 p-2 w-full transition-colors duration-300 ${isViewActive(item.view as View) ? 'text-secondary' : 'text-gray-400 hover:text-white'}`}
+                    onClick={() => onNavigate(item.view as View)}
+                    className={`flex flex-col items-center justify-center gap-1.5 w-20 h-16 rounded-2xl transition-all duration-300
+                        ${isViewActive(item.view as View) ? 'bg-secondary text-dark' : 'text-gray-300 hover:text-white'}
+                    `}
                 >
-                    <i className={`fas ${item.icon} text-xl h-6`}></i>
+                    <i className={`fas ${item.icon} text-xl`}></i>
                     <span className="text-xs font-bold">{item.label}</span>
                 </button>
             ))}
@@ -180,301 +180,232 @@ const BottomNav: React.FC<{
     );
 };
 
-const App: React.FC = () => {
-    const [currentUser, setCurrentUser] = useState<User | null>(null);
-    const [appIsLoading, setAppIsLoading] = useState(true);
-    const [activeCategory, setActiveCategory] = useState<CategoryId>('basics');
-    const [selectedLanguage, setSelectedLanguage] = useState<Language>(LANGUAGES[0]);
-    
-    const [content, setContent] = useState<GeneratedContent | null>(null);
-    const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [error, setError] = useState<string | null>(null);
-    const [theme, setTheme] = useState<Theme>(() => (localStorage.getItem('theme') as Theme) || 'dark');
-    const [currentView, setCurrentView] = useState<View>('dashboard');
+const CategoryCard: React.FC<{ category: Category; onClick: () => void }> = ({ category, onClick }) => (
+    <div 
+        onClick={onClick}
+        className="bg-white/5 dark:bg-dark/30 backdrop-blur-sm rounded-3xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-300 hover:bg-secondary/20 hover:-translate-y-2 group border border-white/10 shadow-lg"
+    >
+        <div className="w-20 h-20 bg-gradient-to-br from-primary to-accent rounded-2xl mb-5 flex items-center justify-center text-4xl text-white shadow-lg transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6">
+            <i className={category.icon}></i>
+        </div>
+        <h3 className="text-lg font-bold text-white group-hover:text-secondary transition-colors">{category.name}</h3>
+    </div>
+);
 
+const App: React.FC = () => {
+    const [user, setUser] = useState<User | null>(null);
+    const [selectedLanguage, setSelectedLanguage] = useState(LANGUAGES[0].code);
+    const [activeCategory, setActiveCategory] = useState<CategoryId | null>(null);
+    const [view, setView] = useState<View>('dashboard');
+    const [theme, setTheme] = useState<Theme>('dark');
     const [favoriteWords, setFavoriteWords] = useState<Word[]>([]);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-    const [apiKey, setApiKey] = useState<string>(() => localStorage.getItem('geminiApiKey') || '');
+    const [apiKey, setApiKey] = useState(localStorage.getItem('gemini_api_key') || '');
+    const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
 
-    const handleApiKeyChange = (newKey: string) => {
-        setApiKey(newKey);
-        localStorage.setItem('geminiApiKey', newKey);
-    };
-
+    useEffect(() => {
+        const unsubscribe = userService.onAuthChange(setUser);
+        return () => unsubscribe();
+    }, []);
+    
     useEffect(() => {
         const root = window.document.documentElement;
         if (theme === 'dark') {
             root.classList.add('dark');
+            localStorage.setItem('theme', 'dark');
         } else {
             root.classList.remove('dark');
+            localStorage.setItem('theme', 'light');
         }
-        localStorage.setItem('theme', theme);
     }, [theme]);
-    
-    useEffect(() => {
-        const unsubscribe = userService.onAuthChange((user) => {
-            setCurrentUser(user);
-            setAppIsLoading(false);
-        });
-        return () => unsubscribe();
+
+    const handleApiKeyChange = (key: string) => {
+        setApiKey(key);
+        localStorage.setItem('gemini_api_key', key);
+    };
+
+    const handleVoiceNotAvailable = useCallback(() => {
+        setIsVoiceModalOpen(true);
     }, []);
 
-    useEffect(() => {
-        if (!currentUser) return;
-
-        const fetchFavorites = async () => {
-            const words = await userService.getFavoriteWords(currentUser.id, selectedLanguage.code);
+    const fetchFavoriteWords = useCallback(async () => {
+        if (user) {
+            const words = await userService.getFavoriteWords(user.id, selectedLanguage);
             setFavoriteWords(words);
-        };
-
-        fetchFavorites();
-    }, [currentUser, selectedLanguage]);
-
-    const loadContent = useCallback(async (category: CategoryId) => {
-        if (!currentUser) return;
-        
-        setIsLoading(true);
-        setError(null);
-        try {
-            await new Promise(resolve => setTimeout(resolve, 300));
-            const result = getCategoryContent(selectedLanguage.code, category);
-            
-            if (!result) {
-                throw new Error('لا يوجد محتوى متاح لهذه الفئة باللغة المختارة.');
-            }
-            
-            setContent(result);
-            setCurrentView('lesson');
-        } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
-            setError(`فشل في تحميل المحتوى. ${errorMessage}`);
-            setCurrentView('dashboard');
-            console.error(err);
-        } finally {
-            setIsLoading(false);
         }
-    }, [selectedLanguage, currentUser]);
+    }, [user, selectedLanguage]);
 
-    const handleCategoryChange = (categoryId: CategoryId) => {
-        soundService.playNavigationSound();
-        setActiveCategory(categoryId);
-        loadContent(categoryId);
-    };
-
-    const handleLanguageChange = (languageCode: string) => {
-        soundService.playGenericClick();
-        const lang = LANGUAGES.find(l => l.code === languageCode);
-        if (lang) {
-            setSelectedLanguage(lang);
-            if(currentView === 'lesson'){
-                loadContent(activeCategory);
-            }
-        }
-    };
-    
-    const handleThemeChange = () => {
-        soundService.playGenericClick();
-        setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
-    };
-    
-    const handleUpdateName = async (newName: string) => {
-        if (!currentUser) throw new Error("لا يوجد مستخدم مسجل الدخول.");
-        
-        try {
-            const updatedUser = await userService.updateUserName(newName.trim());
-            setCurrentUser(updatedUser);
-        } catch (err) {
-            console.error("Failed to update name in App.tsx:", err);
-            throw err;
-        }
-    };
+    useEffect(() => {
+        fetchFavoriteWords();
+    }, [fetchFavoriteWords]);
 
     const handleLogout = async () => {
-        soundService.playNavigationSound();
         await userService.logout();
-        setCurrentUser(null);
-        setCurrentView('dashboard');
-    };
-    
-    const handleLessonComplete = () => {
-        setCurrentView('dashboard');
-        setContent(null); // Clear old lesson content
     };
 
-    const handleToggleFavorite = async (word: Word) => {
-        if (!currentUser) return;
-        
-        const isFavorite = favoriteWords.some(fw => fw.word === word.word);
-
-        try {
-            if (isFavorite) {
-                await userService.removeFavoriteWord(currentUser.id, word.word, selectedLanguage.code);
-                setFavoriteWords(prev => prev.filter(fw => fw.word !== word.word));
-            } else {
-                await userService.addFavoriteWord(currentUser.id, word, selectedLanguage.code);
-                setFavoriteWords(prev => [...prev, word]);
-            }
-        } catch (error) {
-            console.error("Failed to toggle favorite:", error);
+    const handleUpdateName = async (newName: string) => {
+        if(user) {
+           const updatedUser = await userService.updateUserName(newName);
+           setUser(updatedUser);
         }
     };
     
-    const renderCategoryList = () => (
-        <div className="p-4 md:p-6">
-            <h2 className="text-white mb-5 text-2xl font-bold flex items-center gap-3">
-                <i className="fas fa-book-open text-secondary"></i>
-                اختر درساً
-            </h2>
-            <div className="space-y-3">
-                {CATEGORIES.map(cat => (
-                    <button
-                        key={cat.id}
-                        onClick={() => handleCategoryChange(cat.id)}
-                        className="p-4 rounded-xl transition-all duration-300 flex items-center gap-4 text-right w-full bg-dark/50 text-white hover:bg-white/20 active:scale-95"
-                    >
-                        <div className="w-12 h-12 rounded-lg flex items-center justify-center text-xl bg-dark/70 text-secondary">
-                            <i className={cat.icon}></i>
-                        </div>
-                        <div className="flex-1">
-                            <span className="font-semibold text-lg">{cat.name}</span>
-                        </div>
-                        <i className="fas fa-chevron-left mr-auto text-gray-400"></i>
-                    </button>
-                ))}
-            </div>
-        </div>
-    );
+    const handleUpdateAvatar = async (newAvatar: string) => {
+        if (user) {
+            const updatedUser = await userService.updateUserAvatar(newAvatar);
+            setUser(updatedUser);
+        }
+    };
+
+    const handleLanguageChange = useCallback((langCode: string) => {
+        soundService.playNavigationSound();
+        setSelectedLanguage(langCode);
+        setActiveCategory(null);
+        setView('dashboard');
+    }, []);
+
+    const handleCategoryChange = useCallback((catId: CategoryId) => {
+        soundService.playNavigationSound();
+        setActiveCategory(catId);
+        setView('lesson');
+    }, []);
+
+    const toggleFavoriteWord = useCallback(async (word: Word) => {
+        if (!user) return;
+        
+        soundService.playGenericClick();
+        const isCurrentlyFavorite = favoriteWords.some(favWord => favWord.word === word.word);
+
+        if (isCurrentlyFavorite) {
+            await userService.removeFavoriteWord(user.id, word.word, selectedLanguage);
+        } else {
+            await userService.addFavoriteWord(user.id, word, selectedLanguage);
+        }
+        await fetchFavoriteWords();
+    }, [user, favoriteWords, selectedLanguage, fetchFavoriteWords]);
+    
+    const isReady = !!user;
+
+    const currentLanguage = useMemo(() => LANGUAGES.find(l => l.code === selectedLanguage)!, [selectedLanguage]);
+
+    const generatedContent = useMemo(() => {
+        if (activeCategory) {
+            return getCategoryContent(selectedLanguage, activeCategory);
+        }
+        return null;
+    }, [selectedLanguage, activeCategory]);
+
+    const navigateTo = (newView: View) => {
+        soundService.playNavigationSound();
+        setView(newView);
+    };
+
+    const toggleTheme = () => {
+        soundService.playGenericClick();
+        setTheme(prevTheme => prevTheme === 'dark' ? 'light' : 'dark');
+    };
 
     const renderContent = () => {
-        if (isLoading) {
-            return (
-                <div className="flex-1 p-8 flex justify-center items-center">
-                    <div className="text-center">
-                        <i className="fas fa-spinner fa-spin text-secondary text-4xl mb-4"></i>
-                        <p className="text-lg text-white">جاري تحضير الدرس...</p>
-                    </div>
-                </div>
-            );
-        }
+        if (!isReady) return <AuthPage />;
 
-        if (error) {
-            return (
-                <div className="flex-1 p-8 flex flex-col justify-center items-center text-center animate-fadeIn bg-white/10 rounded-2xl m-4">
-                    <i className="fas fa-exclamation-triangle text-accent text-5xl mb-4"></i>
-                    <h3 className="text-2xl font-bold text-white mb-2">حدث خطأ</h3>
-                    <p className="text-gray-300 mb-6 max-w-md">{error}</p>
-                    <button 
-                        onClick={() => loadContent(activeCategory)} 
-                        className="btn bg-gradient-to-r from-accent to-pink-600 text-white py-3 px-8 rounded-full font-bold transition-transform duration-300 hover:scale-105 flex items-center gap-2 shadow-lg"
-                    >
-                        <i className="fas fa-sync-alt"></i>
-                        حاول مرة أخرى
-                    </button>
-                </div>
-            );
-        }
-    
-        switch (currentView) {
+        switch (view) {
             case 'lesson':
-                return content && currentUser ? (
-                    <Lesson 
-                        content={content} 
-                        language={selectedLanguage} 
-                        onComplete={handleLessonComplete}
-                        favoriteWords={favoriteWords}
-                        onToggleFavorite={handleToggleFavorite}
-                    />
-                ) : renderCategoryList();
+                if (generatedContent) {
+                    return <Lesson 
+                                content={generatedContent} 
+                                language={currentLanguage} 
+                                onComplete={() => navigateTo('dashboard')}
+                                favoriteWords={favoriteWords}
+                                onToggleFavorite={toggleFavoriteWord}
+                                onVoiceNotAvailable={handleVoiceNotAvailable}
+                            />;
+                }
+                return <PlaceholderSection title="اختر فئة" icon="fa-hand-pointer" badge="ابدأ رحلتك" />;
             case 'games':
-                return <GamesSection language={selectedLanguage} apiKey={apiKey} />;
+                return <GamesSection language={currentLanguage} apiKey={apiKey} />;
             case 'chat':
-                return currentUser ? <ChatSection language={selectedLanguage} user={currentUser} apiKey={apiKey} /> : renderCategoryList();
+                return <ChatSection language={currentLanguage} user={user!} apiKey={apiKey} onVoiceNotAvailable={handleVoiceNotAvailable} />;
             case 'grammar':
-                if (selectedLanguage.code === 'en-US') return <GrammarSection />;
-                if (selectedLanguage.code === 'fr-FR') return <FrenchGrammarSection />;
-                if (selectedLanguage.code === 'it-IT') return <ItalianGrammarSection />;
-                if (selectedLanguage.code === 'es-ES') return <SpanishGrammarSection />;
-                if (selectedLanguage.code === 'de-DE') return <GermanGrammarSection />;
-                if (selectedLanguage.code === 'ru-RU') return <RussianGrammarSection />;
-                if (selectedLanguage.code === 'ko-KR') return <KoreanGrammarSection />;
-                if (selectedLanguage.code === 'zh-CN') return <ChineseGrammarSection />;
-                if (selectedLanguage.code === 'ja-JP') return <JapaneseGrammarSection />;
-                if (selectedLanguage.code === 'tr-TR') return <TurkishGrammarSection />;
-                return <PlaceholderSection title="مركز القواعد" icon="fa-spell-check" badge={selectedLanguage.name} />;
+                switch (selectedLanguage) {
+                    case 'en-US': return <GrammarSection />;
+                    case 'fr-FR': return <FrenchGrammarSection />;
+                    case 'it-IT': return <ItalianGrammarSection />;
+                    case 'es-ES': return <SpanishGrammarSection />;
+                    case 'de-DE': return <GermanGrammarSection />;
+                    case 'ru-RU': return <RussianGrammarSection />;
+                    case 'ko-KR': return <KoreanGrammarSection />;
+                    case 'zh-CN': return <ChineseGrammarSection />;
+                    case 'ja-JP': return <JapaneseGrammarSection />;
+                    case 'tr-TR': return <TurkishGrammarSection />;
+                    default: return <GrammarSection />;
+                }
             case 'dashboard':
             default:
-                return renderCategoryList();
+                return (
+                    <div className="p-4 md:p-8 w-full h-full overflow-y-auto">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                            {CATEGORIES.map(category => (
+                                <CategoryCard 
+                                    key={category.id}
+                                    category={category}
+                                    onClick={() => handleCategoryChange(category.id)}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                );
         }
     };
     
-    if (appIsLoading) {
-        return (
-            <div className="h-full w-full flex flex-col items-center justify-center bg-gradient-to-br from-space-start to-space-end p-4">
-                 <div className="text-center">
-                    <i className="fas fa-spinner fa-spin text-secondary text-6xl mb-6"></i>
-                    <h2 className="text-2xl font-bold text-white">جاري التحقق من الهوية...</h2>
-                </div>
-            </div>
-        )
-    }
-    
-    if (!currentUser) {
+    if (!isReady) {
         return <AuthPage />;
     }
 
     return (
-        <div className="flex flex-col md:flex-row h-full w-full bg-gradient-to-br from-space-start to-space-end text-white overflow-hidden">
-             <Sidebar
-                className="hidden md:flex"
-                currentView={currentView}
-                onNavigate={(view) => {
-                    soundService.playNavigationSound();
-                    setCurrentView(view);
-                }}
+        <div className="flex h-full w-full">
+            <Sidebar
+                className="hidden lg:flex"
+                currentView={view}
+                onNavigate={navigateTo}
                 languages={LANGUAGES}
-                selectedLanguage={selectedLanguage.code}
+                selectedLanguage={selectedLanguage}
                 onLanguageChange={handleLanguageChange}
                 theme={theme}
-                onThemeChange={handleThemeChange}
+                onThemeChange={toggleTheme}
                 onLogout={handleLogout}
                 apiKey={apiKey}
                 onApiKeyChange={handleApiKeyChange}
             />
-            <div className="flex-1 flex flex-col overflow-hidden">
-                <Header 
-                    user={currentUser}
+            <div className="flex-1 flex flex-col h-full overflow-hidden">
+                <Header
+                    user={user}
                     onLogout={handleLogout}
                     onUpdateName={handleUpdateName}
-                    onSettingsClick={() => {
-                        soundService.playNavigationSound();
-                        setIsSettingsOpen(true)
-                    }}
+                    onUpdateAvatar={handleUpdateAvatar}
+                    onSettingsClick={() => setIsSettingsOpen(true)}
                 />
-                <main className="flex-1 overflow-y-auto">
+                <main className="flex-1 overflow-y-auto bg-light dark:bg-slate-900/70">
                     {renderContent()}
                 </main>
-                <BottomNav 
-                    className="md:hidden" 
-                    currentView={currentView} 
-                    onNavigate={(view) => setCurrentView(view)} 
+                <BottomNav
+                    className="lg:hidden"
+                    currentView={view}
+                    onNavigate={navigateTo}
                 />
             </div>
-            
             {isSettingsOpen && (
                 <SettingsModal
-                    onClose={() => {
-                        soundService.playGenericClick();
-                        setIsSettingsOpen(false);
-                    }}
+                    onClose={() => setIsSettingsOpen(false)}
                     languages={LANGUAGES}
-                    selectedLanguage={selectedLanguage.code}
+                    selectedLanguage={selectedLanguage}
                     onLanguageChange={handleLanguageChange}
                     theme={theme}
-                    onThemeChange={handleThemeChange}
+                    onThemeChange={toggleTheme}
                     apiKey={apiKey}
                     onApiKeyChange={handleApiKeyChange}
                 />
             )}
+            {isVoiceModalOpen && <VoiceNotAvailableModal onClose={() => setIsVoiceModalOpen(false)} />}
         </div>
     );
 };

@@ -1,4 +1,5 @@
 
+
 import { CategoryContent, GamesCollection, ReadingExercise, ListeningExercise } from '../../types';
 
 const shuffle = <T,>(arr: T[]) => [...arr].sort(() => 0.5 - Math.random());
@@ -722,6 +723,206 @@ export const TURKISH_CONTENT: { [categoryName: string]: CategoryContent } = {
         listeningExercises: [
             listeningExercise("Pasaport", "وثيقة رسمية للسفر الدولي.", ["Bilet", "Bavul", "Otel"]),
             listeningExercise("Araba", "وسيلة نقل خاصة بأربع عجلات.", ["Otobüs", "Tren", "Uçak"])
+        ]
+    },
+    animals: {
+        words: [
+            { word: "Hayvan", translation: "حيوان", pronunciation: "hay-van", emoji: "🐾" },
+            { word: "Köpek", translation: "كلب", pronunciation: "kö-pek", emoji: "🐕" },
+            { word: "Kedi", translation: "قطة", pronunciation: "ke-di", emoji: "🐈" },
+            { word: "Aslan", translation: "أسد", pronunciation: "as-lan", emoji: "🦁" },
+            { word: "Kaplan", translation: "نمر", pronunciation: "kap-lan", emoji: "🐅" },
+            { word: "Fil", translation: "فيل", pronunciation: "fil", emoji: "🐘" },
+            { word: "Maymun", translation: "قرد", pronunciation: "may-mun", emoji: "🐒" },
+            { word: "At", translation: "حصان", pronunciation: "at", emoji: "🐎" },
+            { word: "Kuş", translation: "طائر", pronunciation: "kuş", emoji: "🐦" },
+            { word: "Balık", translation: "سمكة", pronunciation: "ba-lık", emoji: "🐟" },
+        ],
+        readingExercises: [
+            readingExercise("Aslan ormanın kralıdır.", "وصف حيوان", "الأسد هو ملك الغابة.", ["Kedi süt içer.", "Köpekleri çok severim.", "Fil çok büyük bir hayvandır."]),
+        ],
+        listeningExercises: [
+            listeningExercise("Fil", "خرطومu olan büyük bir hayvan.", ["Köpek", "Kedi", "Maymun"]),
+        ]
+    },
+    transportation: {
+        words: [
+            { word: "Araba", translation: "سيارة", pronunciation: "a-ra-ba", emoji: "🚗" },
+            { word: "Otobüs", translation: "حافلة", pronunciation: "o-to-büs", emoji: "🚌" },
+            { word: "Tren", translation: "قطار", pronunciation: "tren", emoji: "🚆" },
+            { word: "Uçak", translation: "طائرة", pronunciation: "u-çak", emoji: "✈️" },
+            { word: "Bisiklet", translation: "دراجة هوائية", pronunciation: "bi-sik-let", emoji: "🚲" },
+            { word: "Motosiklet", translation: "دراجة نارية", pronunciation: "mo-to-sik-let", emoji: "🏍️" },
+            { word: "Gemi", translation: "سفينة", pronunciation: "ge-mi", emoji: "🚢" },
+            { word: "Tekne", translation: "قارب", pronunciation: "tek-ne", emoji: "⛵" },
+            { word: "Taksi", translation: "سيارة أجرة", pronunciation: "tak-si", emoji: "🚕" },
+            { word: "Metro", translation: "مترو الأنفاق", pronunciation: "met-ro", emoji: "🚇" },
+        ],
+        readingExercises: [
+            readingExercise("İşe otobüsle gidiyorum.", "وسيلة النقل", "أذهب إلى العمل بالحافلة.", ["Tren çok hızlı.", "Araba kullanabilir misin?", "Uçakla seyahat etmek rahat."]),
+        ],
+        listeningExercises: [
+            listeningExercise("Tren", "Raylar üzerinde giden bir ulaşım aracı.", ["Araba", "Otobüs", "Uçak"]),
+        ]
+    },
+    education: {
+        words: [
+            { word: "Okul", translation: "مدرسة", pronunciation: "o-kul", emoji: "🏫" },
+            { word: "Üniversite", translation: "جامعة", pronunciation: "ü-ni-ver-si-te", emoji: "🎓" },
+            { word: "Öğretmen", translation: "معلم", pronunciation: "öğ-ret-men", emoji: "👨‍🏫" },
+            { word: "Öğrenci", translation: "طالب", pronunciation: "öğ-ren-ci", emoji: "🧑‍🎓" },
+            { word: "Kitap", translation: "كتاب", pronunciation: "ki-tap", emoji: "📚" },
+            { word: "Kalem", translation: "قلم", pronunciation: "ka-lem", emoji: "🖊️" },
+            { word: "Sınav", translation: "امتحان", pronunciation: "sı-nav", emoji: "📝" },
+            { word: "Ödev", translation: "واجب منزلي", pronunciation: "ö-dev", emoji: "📓" },
+            { word: "Sınıf", translation: "فصل دراسي", pronunciation: "sı-nıf", emoji: "🧑‍🏫" },
+            { word: "Öğrenmek", translation: "يتعلم", pronunciation: "öğ-ren-mek", emoji: "🧠" },
+        ],
+        readingExercises: [
+            readingExercise("Öğretmen sınıftadır.", "وصف مشهد دراسي", "المعلم في الفصل الدراسي.", ["Yarın zor bir sınavım var.", "Ödevimi yapmalıyım.", "Öğrenciler kitap okuyor."]),
+        ],
+        listeningExercises: [
+            listeningExercise("Kitap", "Okuduğun bir şey.", ["Kalem", "Sınav", "Okul"]),
+        ]
+    },
+    health: {
+        words: [
+            { word: "Doktor", translation: "طبيب", pronunciation: "dok-tor", emoji: "🧑‍⚕️" },
+            { word: "Hemşire", translation: "ممرضة", pronunciation: "hem-şi-re", emoji: "👩‍⚕️" },
+            { word: "Hastane", translation: "مستشفى", pronunciation: "has-ta-ne", emoji: "🏥" },
+            { word: "İlaç", translation: "دواء", pronunciation: "i-laç", emoji: "💊" },
+            { word: "Hasta", translation: "مريض", pronunciation: "has-ta", emoji: "🤒" },
+            { word: "Sağlıklı", translation: "صحي", pronunciation: "sağ-lık-lı", emoji: "💪" },
+            { word: "Baş ağrısı", translation: "صداع", pronunciation: "baş ağ-rı-sı", emoji: "🤕" },
+            { word: "Karın ağrısı", translation: "ألم في المعدة", pronunciation: "ka-rın ağ-rı-sı", emoji: "🤢" },
+            { word: "Ateş", translation: "حمى", pronunciation: "a-teş", emoji: "🌡️" },
+            { word: "Ambulans", translation: "سيارة إسعاف", pronunciation: "am-bu-lans", emoji: "🚑" },
+        ],
+        readingExercises: [
+            readingExercise("Hastayım, doktora gitmem gerekiyor.", "وصف حالة صحية", "أنا مريض، أحتاج لرؤية طبيب.", ["Bu ilacı al.", "Hastane büyük ve temiz.", "Ateşim ve baş ağrım var."]),
+        ],
+        listeningExercises: [
+            listeningExercise("Doktor", "Hasta olduğunda gittiğin kişi.", ["Hemşire", "Öğretmen", "Öğrenci"]),
+        ]
+    },
+    technology: {
+        words: [
+            { word: "Bilgisayar", translation: "حاسوب", pronunciation: "bil-gi-sa-yar", emoji: "💻" },
+            { word: "Telefon", translation: "هاتف", pronunciation: "te-le-fon", emoji: "📱" },
+            { word: "İnternet", translation: "إنترنت", pronunciation: "in-ter-net", emoji: "🌐" },
+            { word: "E-posta", translation: "بريد إلكتروني", pronunciation: "e-pos-ta", emoji: "📧" },
+            { word: "Web sitesi", translation: "موقع إلكتروني", pronunciation: "web si-te-si", emoji: "🕸️" },
+            { word: "Şifre", translation: "كلمة المرور", pronunciation: "şif-re", emoji: "🔒" },
+            { word: "Klavye", translation: "لوحة مفاتيح", pronunciation: "klav-ye", emoji: "⌨️" },
+            { word: "Fare", translation: "فأرة", pronunciation: "fa-re", emoji: "🖱️" },
+            { word: "Ekran", translation: "شاشة", pronunciation: "ek-ran", emoji: "🖥️" },
+            { word: "Yazılım", translation: "برنامج", pronunciation: "ya-zı-lım", emoji: "💿" },
+        ],
+        readingExercises: [
+            readingExercise("Her gün bilgisayarımla internet kullanıyorum.", "استخدام التكنولوجيا", "أستخدم الإنترنت كل يوم على حاسوبي.", ["Şifremi unuttum.", "Bana bir e-posta gönder.", "Bu web sitesi çok faydalı."]),
+        ],
+        listeningExercises: [
+            listeningExercise("İnternet", "Bilgisayarları birbirine bağlayan küresel bir ağ.", ["Bilgisayar", "Telefon", "E-posta"]),
+        ]
+    },
+    restaurant: {
+        words: [
+            { word: "Restoran", translation: "مطعم", pronunciation: "res-to-ran", emoji: "🍴" },
+            { word: "Menü", translation: "قائمة طعام", pronunciation: "me-nü", emoji: "📜" },
+            { word: "Garson", translation: "نادل", pronunciation: "gar-son", emoji: "🤵" },
+            { word: "Hesap", translation: "فاتورة", pronunciation: "he-sap", emoji: "🧾" },
+            { word: "Sipariş vermek", translation: "يطلب", pronunciation: "si-pa-riş ver-mek", emoji: "✍️" },
+            { word: "Lezzetli", translation: "لذيذ", pronunciation: "lez-zet-li", emoji: "😋" },
+            { word: "Çatal", translation: "شوكة", pronunciation: "ça-tal", emoji: "🍴" },
+            { word: "Kaşık", translation: "ملعقة", pronunciation: "ka-şık", emoji: "🥄" },
+            { word: "Bıçak", translation: "سكين", pronunciation: "bı-çak", emoji: "🔪" },
+            { word: "Tabak", translation: "طبق", pronunciation: "ta-bak", emoji: "🍽️" },
+        ],
+        readingExercises: [
+            readingExercise("Menüyü görebilir miyim lütfen?", "في المطعم", "هل يمكنني رؤية القائمة من فضلك؟", ["Yemek lezzetli.", "Şimdi sipariş vermek istiyorum.", "Hesap, lütfen."]),
+        ],
+        listeningExercises: [
+            listeningExercise("Menü", "Restorandaki yemeklerin listesi.", ["Hesap", "Garson", "Çatal"]),
+        ]
+    },
+    daily_routines: {
+        words: [
+            { word: "Uyanmak", translation: "يستيقظ", pronunciation: "u-yan-mak", emoji: "⏰" },
+            { word: "Kahvaltı yapmak", translation: "يأكل الفطور", pronunciation: "kah-val-tı yap-mak", emoji: "🍳" },
+            { word: "İşe gitmek", translation: "يذهب للعمل", pronunciation: "i-şe git-mek", emoji: "💼" },
+            { word: "Ders çalışmak", translation: "يدرس", pronunciation: "ders ça-lış-mak", emoji: "📚" },
+            { word: "Öğle yemeği yemek", translation: "يأكل الغداء", pronunciation: "öğ-le ye-me-ği ye-mek", emoji: "🍱" },
+            { word: "Eve gelmek", translation: "يعود للمنزل", pronunciation: "e-ve gel-mek", emoji: "🏡" },
+            { word: "Akşam yemeği pişirmek", translation: "يطبخ العشاء", pronunciation: "ak-şam ye-me-ği pi-şir-mek", emoji: "🍝" },
+            { word: "Televizyon izlemek", translation: "يشاهد التلفاز", pronunciation: "te-le-viz-yon iz-le-mek", emoji: "📺" },
+            { word: "Kitap okumak", translation: "يقرأ كتاباً", pronunciation: "ki-tap o-ku-mak", emoji: "📖" },
+            { word: "Uyumak", translation: "ينام", pronunciation: "u-yu-mak", emoji: "😴" },
+        ],
+        readingExercises: [
+            readingExercise("Her sabah 7'de uyanırım.", "روتين صباحي", "أستيقظ الساعة 7 صباحاً كل يوم.", ["O arabayla işe gider.", "Akşam yemeğinden sonra televizyon izlerim.", "Akşamları ders çalışırım."]),
+        ],
+        listeningExercises: [
+            listeningExercise("Uyanmak", "Sabah yaptığın ilk şey.", ["Uyumak", "Kahvaltı yapmak", "Ders çalışmak"]),
+        ]
+    },
+    countries: {
+        words: [
+            { word: "Ülke", translation: "دولة", pronunciation: "ül-ke", emoji: "🌍" },
+            { word: "Milliyet", translation: "جنسية", pronunciation: "mil-li-yet", emoji: "🆔" },
+            { word: "Türkiye", translation: "تركيا", pronunciation: "tür-ki-ye", emoji: "🇹🇷" },
+            { word: "Mısır", translation: "مصر", pronunciation: "mı-sır", emoji: "🇪🇬" },
+            { word: "Japonya", translation: "اليابان", pronunciation: "ja-pon-ya", emoji: "🇯🇵" },
+            { word: "Fransa", translation: "فرنسا", pronunciation: "fran-sa", emoji: "🇫🇷" },
+            { word: "Amerika", translation: "أمريكا", pronunciation: "a-me-ri-ka", emoji: "🇺🇸" },
+            { word: "Almanya", translation: "ألمانيا", pronunciation: "al-man-ya", emoji: "🇩🇪" },
+            { word: "İtalya", translation: "إيطاليا", pronunciation: "i-tal-ya", emoji: "🇮🇹" },
+            { word: "Başkent", translation: "عاصمة", pronunciation: "baş-kent", emoji: "🏛️" },
+        ],
+        readingExercises: [
+            readingExercise("Ankara, Türkiye'nin başkentidir.", "عواصم الدول", "أنقرة هي عاصمة تركيا.", ["Ben Mısırlıyım.", "O Japonca konuşuyor.", "New York Amerika'da büyük bir şehir."]),
+        ],
+        listeningExercises: [
+            listeningExercise("Japonya", "Doğan güneşin ülkesi.", ["Mısır", "Fransa", "Amerika"]),
+        ]
+    },
+    sports: {
+        words: [
+            { word: "Spor", translation: "رياضة", pronunciation: "spor", emoji: "🏅" },
+            { word: "Futbol", translation: "كرة القدم", pronunciation: "fut-bol", emoji: "⚽" },
+            { word: "Basketbol", translation: "كرة السلة", pronunciation: "bas-ket-bol", emoji: "🏀" },
+            { word: "Tenis", translation: "تنس", pronunciation: "te-nis", emoji: "🎾" },
+            { word: "Yüzme", translation: "سباحة", pronunciation: "yüz-me", emoji: "🏊" },
+            { word: "Koşu", translation: "جري", pronunciation: "ko-şu", emoji: "🏃" },
+            { word: "Oynamak", translation: "يلعب", pronunciation: "oy-na-mak", emoji: "🤸" },
+            { word: "Kazanmak", translation: "يفوز", pronunciation: "ka-zan-mak", emoji: "🏆" },
+            { word: "Kaybetmek", translation: "يخسر", pronunciation: "kay-bet-mek", emoji: "👎" },
+            { word: "Takım", translation: "فريق", pronunciation: "ta-kım", emoji: "👥" },
+        ],
+        readingExercises: [
+            readingExercise("En sevdiğim spor futboldur.", "رياضة مفضلة", "رياضتي المفضلة هي كرة القدم.", ["O her hafta sonu tenis oynar.", "Takımımız maçı kazandı.", "Haftada iki kez yüzmeye giderim."]),
+        ],
+        listeningExercises: [
+            listeningExercise("Futbol", "11 oyuncu ve bir topla oynanan bir spor.", ["Basketbol", "Tenis", "Yüzme"]),
+        ]
+    },
+    music_arts: {
+        words: [
+            { word: "Müzik", translation: "موسيقى", pronunciation: "mü-zik", emoji: "🎵" },
+            { word: "Sanat", translation: "فن", pronunciation: "sa-nat", emoji: "🖼️" },
+            { word: "Şarkı", translation: "أغنية", pronunciation: "şar-kı", emoji: "🎶" },
+            { word: "Sanatçı", translation: "فنان", pronunciation: "sa-nat-çı", emoji: "🧑‍🎨" },
+            { word: "Boyamak", translation: "يرسم/يلون", pronunciation: "bo-ya-mak", emoji: "🎨" },
+            { word: "Şarkı söylemek", translation: "يغني", pronunciation: "şar-kı söy-le-mek", emoji: "🎤" },
+            { word: "Dans etmek", translation: "يرقص", pronunciation: "dans et-mek", emoji: "💃" },
+            { word: "Müze", translation: "متحف", pronunciation: "mü-ze", emoji: "🏛️" },
+            { word: "Tiyatro", translation: "مسرح", pronunciation: "ti-yat-ro", emoji: "🎭" },
+            { word: "Film", translation: "فيلم", pronunciation: "film", emoji: "🎬" },
+        ],
+        readingExercises: [
+            readingExercise("Klasik müzik dinlemeyi severim.", "تفضيلات موسيقية", "أحب الاستماع إلى الموسيقى الكلاسيكية.", ["O yetenekli bir sanatçı.", "Cumartesi günü müzeye gidelim.", "Bu şarkı çok popüler."]),
+        ],
+        listeningExercises: [
+            listeningExercise("Müzik", "Seslerin sanatı.", ["Sanat", "Film", "Şarkı"]),
         ]
     }
 };

@@ -1,4 +1,5 @@
 
+
 import { CategoryContent, ReadingExercise, ListeningExercise } from '../../types';
 
 const shuffle = <T,>(arr: T[]) => [...arr].sort(() => 0.5 - Math.random());
@@ -632,6 +633,205 @@ export const KOREAN_CONTENT: { [categoryName: string]: CategoryContent; } = {
             listeningExercise("여행", "فعل السفر أو السياحة.", ["일", "공부", "식사"]),
             listeningExercise("비행기", "وسيلة نقل تطير في السماء.", ["기차", "자동차", "배"]),
             listeningExercise("호텔", "المكان الذي تقيم فيه عند السفر.", ["집", "학교", "병원"])
+        ]
+    },
+    animals: {
+        words: [
+            { word: "동물", translation: "حيوان", pronunciation: "dongmul", emoji: "🐾" },
+            { word: "개", translation: "كلب", pronunciation: "gae", emoji: "🐕" },
+            { word: "고양이", translation: "قطة", pronunciation: "goyangi", emoji: "🐈" },
+            { word: "사자", translation: "أسد", pronunciation: "saja", emoji: "🦁" },
+            { word: "호랑이", translation: "نمر", pronunciation: "horangi", emoji: "🐅" },
+            { word: "코끼리", translation: "فيل", pronunciation: "kokkiri", emoji: "🐘" },
+            { word: "원숭이", translation: "قرد", pronunciation: "wonsungi", emoji: "🐒" },
+            { word: "말", translation: "حصان", pronunciation: "mal", emoji: "🐎" },
+            { word: "새", translation: "طائر", pronunciation: "sae", emoji: "🐦" },
+            { word: "물고기", translation: "سمكة", pronunciation: "mulgogi", emoji: "🐟" },
+        ],
+        readingExercises: [
+            readingExercise("사자는 동물의 왕이에요.", "وصف حيوان", "الأسد هو ملك الحيوانات.", ["القطة تشرب الحليب.", "أحب الكلاب كثيرا.", "الفيل حيوان كبير جدا."]),
+        ],
+        listeningExercises: [
+            listeningExercise("코끼리", "حيوان كبير له خرطوم.", ["개", "고양이", "원숭이"]),
+        ]
+    },
+    transportation: {
+        words: [
+            { word: "차", translation: "سيارة/شاي", pronunciation: "cha", emoji: "🚗" },
+            { word: "버스", translation: "حافلة", pronunciation: "beoseu", emoji: "🚌" },
+            { word: "기차", translation: "قطار", pronunciation: "gicha", emoji: "🚆" },
+            { word: "비행기", translation: "طائرة", pronunciation: "bihaenggi", emoji: "✈️" },
+            { word: "자전거", translation: "دراجة هوائية", pronunciation: "jajeongeo", emoji: "🚲" },
+            { word: "오토바이", translation: "دراجة نارية", pronunciation: "otobai", emoji: "🏍️" },
+            { word: "배", translation: "سفينة/بطن", pronunciation: "bae", emoji: "🚢" },
+            { word: "택시", translation: "سيارة أجرة", pronunciation: "taeksi", emoji: "🚕" },
+            { word: "지하철", translation: "مترو الأنفاق", pronunciation: "jihacheol", emoji: "🚇" },
+        ],
+        readingExercises: [
+            readingExercise("저는 버스를 타고 회사에 가요.", "وسيلة النقل", "أذهب إلى العمل بالحافلة.", ["القطار سريع جدا.", "هل يمكنك قيادة سيارة؟", "السفر بالطائرة مريح."]),
+        ],
+        listeningExercises: [
+            listeningExercise("기차", "وسيلة نقل تسير على قضبان.", ["차", "버스", "비행기"]),
+        ]
+    },
+    education: {
+        words: [
+            { word: "학교", translation: "مدرسة", pronunciation: "hakgyo", emoji: "🏫" },
+            { word: "대학교", translation: "جامعة", pronunciation: "daehakgyo", emoji: "🎓" },
+            { word: "선생님", translation: "معلم", pronunciation: "seonsaengnim", emoji: "👨‍🏫" },
+            { word: "학생", translation: "طالب", pronunciation: "haksaeng", emoji: "🧑‍🎓" },
+            { word: "책", translation: "كتاب", pronunciation: "chaek", emoji: "📚" },
+            { word: "펜", translation: "قلم", pronunciation: "pen", emoji: "🖊️" },
+            { word: "시험", translation: "امتحان", pronunciation: "siheom", emoji: "📝" },
+            { word: "숙제", translation: "واجب منزلي", pronunciation: "sukje", emoji: "📓" },
+            { word: "교실", translation: "فصل دراسي", pronunciation: "gyosil", emoji: "🧑‍🏫" },
+            { word: "공부하다", translation: "يدرس", pronunciation: "gongbuhada", emoji: "🧠" },
+        ],
+        readingExercises: [
+            readingExercise("선생님은 교실에 있어요.", "وصف مشهد دراسي", "المعلم في الفصل الدراسي.", ["لدي امتحان صعب غدا.", "يجب أن أفعل واجبي.", "الطلاب يقرؤون الكتب."]),
+        ],
+        listeningExercises: [
+            listeningExercise("책", "شيء تقرأه.", ["펜", "시험", "학교"]),
+        ]
+    },
+    health: {
+        words: [
+            { word: "의사", translation: "طبيب", pronunciation: "uisa", emoji: "🧑‍⚕️" },
+            { word: "간호사", translation: "ممرضة", pronunciation: "ganhosa", emoji: "👩‍⚕️" },
+            { word: "병원", translation: "مستشفى", pronunciation: "byeongwon", emoji: "🏥" },
+            { word: "약", translation: "دواء", pronunciation: "yak", emoji: "💊" },
+            { word: "아프다", translation: "مريض/مؤلم", pronunciation: "apeuda", emoji: "🤒" },
+            { word: "건강", translation: "صحة", pronunciation: "geongang", emoji: "💪" },
+            { word: "두통", translation: "صداع", pronunciation: "dutong", emoji: "🤕" },
+            { word: "복통", translation: "ألم في المعدة", pronunciation: "boktong", emoji: "🤢" },
+            { word: "열", translation: "حمى", pronunciation: "yeol", emoji: "🌡️" },
+            { word: "구급차", translation: "سيارة إسعاف", pronunciation: "gugeupcha", emoji: "🚑" },
+        ],
+        readingExercises: [
+            readingExercise("몸이 아파서 의사를 만나야 해요.", "وصف حالة صحية", "أنا مريض، أحتاج لرؤية طبيب.", ["خذ هذا الدواء.", "المستشفى كبير ونظيف.", "لدي حمى وصداع."]),
+        ],
+        listeningExercises: [
+            listeningExercise("의사", "الشخص الذي تذهب إليه عندما تكون مريضا.", ["간호사", "선생님", "학생"]),
+        ]
+    },
+    technology: {
+        words: [
+            { word: "컴퓨터", translation: "حاسوب", pronunciation: "keompyuteo", emoji: "💻" },
+            { word: "핸드폰", translation: "هاتف محمول", pronunciation: "haendeupon", emoji: "📱" },
+            { word: "인터넷", translation: "إنترنت", pronunciation: "inteonet", emoji: "🌐" },
+            { word: "이메일", translation: "بريد إلكتروني", pronunciation: "imeil", emoji: "📧" },
+            { word: "웹사이트", translation: "موقع إلكتروني", pronunciation: "wepsaiteu", emoji: "🕸️" },
+            { word: "비밀번호", translation: "كلمة المرور", pronunciation: "bimilbeonho", emoji: "🔒" },
+            { word: "키보드", translation: "لوحة مفاتيح", pronunciation: "kibodeu", emoji: "⌨️" },
+            { word: "마우스", translation: "فأرة", pronunciation: "mauseu", emoji: "🖱️" },
+            { word: "화면", translation: "شاشة", pronunciation: "hwamyeon", emoji: "🖥️" },
+            { word: "소프트웨어", translation: "برنامج", pronunciation: "sopeuteuweeo", emoji: "💿" },
+        ],
+        readingExercises: [
+            readingExercise("저는 매일 컴퓨터로 인터넷을 해요.", "استخدام التكنولوجيا", "أستخدم الإنترنت كل يوم على حاسوبي.", ["لقد نسيت كلمة المرور الخاصة بي.", "أرسل لي بريداً إلكترونياً.", "هذا الموقع مفيد جدا."]),
+        ],
+        listeningExercises: [
+            listeningExercise("인터넷", "شبكة عالمية تربط الحواسيب.", ["컴퓨터", "핸드폰", "이메일"]),
+        ]
+    },
+    restaurant: {
+        words: [
+            { word: "식당", translation: "مطعم", pronunciation: "sikdang", emoji: "🍴" },
+            { word: "메뉴", translation: "قائمة طعام", pronunciation: "menyu", emoji: "📜" },
+            { word: "종업원", translation: "نادل", pronunciation: "jong-obwon", emoji: "🤵" },
+            { word: "계산서", translation: "فاتورة", pronunciation: "gyesanseo", emoji: "🧾" },
+            { word: "주문하다", translation: "يطلب", pronunciation: "jumunhada", emoji: "✍️" },
+            { word: "맛있다", translation: "لذيذ", pronunciation: "masitda", emoji: "😋" },
+            { word: "포크", translation: "شوكة", pronunciation: "pokeu", emoji: "🍴" },
+            { word: "숟가락", translation: "ملعقة", pronunciation: "sutgarak", emoji: "🥄" },
+            { word: "젓가락", translation: "عيدان طعام", pronunciation: "jeotgarak", emoji: "🥢" },
+            { word: "접시", translation: "طبق", pronunciation: "jeopsi", emoji: "🍽️" },
+        ],
+        readingExercises: [
+            readingExercise("메뉴 좀 보여주세요.", "في المطعم", "أرني القائمة من فضلك.", ["الطعام لذيذ.", "أريد أن أطلب الآن.", "الفاتورة من فضلك."]),
+        ],
+        listeningExercises: [
+            listeningExercise("메뉴", "قائمة الأطباق في المطعم.", ["계산서", "종업원", "포크"]),
+        ]
+    },
+    daily_routines: {
+        words: [
+            { word: "일어나다", translation: "يستيقظ", pronunciation: "ireonada", emoji: "⏰" },
+            { word: "아침을 먹다", translation: "يأكل الفطور", pronunciation: "achimeul meokda", emoji: "🍳" },
+            { word: "출근하다", translation: "يذهب للعمل", pronunciation: "chulgeunhada", emoji: "💼" },
+            { word: "공부하다", translation: "يدرس", pronunciation: "gongbuhada", emoji: "📚" },
+            { word: "점심을 먹다", translation: "يأكل الغداء", pronunciation: "jeomsimeul meokda", emoji: "🍱" },
+            { word: "집에 오다", translation: "يعود للمنزل", pronunciation: "jibe oda", emoji: "🏡" },
+            { word: "저녁을 만들다", translation: "يطبخ العشاء", pronunciation: "jeonyeogeul mandeulda", emoji: "🍝" },
+            { word: "텔레비전을 보다", translation: "يشاهد التلفاز", pronunciation: "tellebijeoneul boda", emoji: "📺" },
+            { word: "책을 읽다", translation: "يقرأ كتاباً", pronunciation: "chaegeul ikda", emoji: "📖" },
+            { word: "자다", translation: "ينام", pronunciation: "jada", emoji: "😴" },
+        ],
+        readingExercises: [
+            readingExercise("저는 매일 아침 7시에 일어나요.", "روتين يومي", "أستيقظ الساعة 7 صباحاً كل يوم.", ["هو يذهب إلى العمل بالسيارة.", "بعد العشاء، أشاهد التلفاز.", "أنا أدرس في المساء."]),
+        ],
+        listeningExercises: [
+            listeningExercise("일어나다", "أول شيء تفعله في الصباح.", ["자다", "먹다", "공부하다"]),
+        ]
+    },
+    countries: {
+        words: [
+            { word: "나라", translation: "دولة", pronunciation: "nara", emoji: "🌍" },
+            { word: "국적", translation: "جنسية", pronunciation: "gukjeok", emoji: "🆔" },
+            { word: "한국", translation: "كوريا", pronunciation: "hanguk", emoji: "🇰🇷" },
+            { word: "미국", translation: "أمريكا", pronunciation: "miguk", emoji: "🇺🇸" },
+            { word: "일본", translation: "اليابان", pronunciation: "ilbon", emoji: "🇯🇵" },
+            { word: "중국", translation: "الصين", pronunciation: "jungguk", emoji: "🇨🇳" },
+            { word: "이집트", translation: "مصر", pronunciation: "ijipteu", emoji: "🇪🇬" },
+            { word: "프랑스", translation: "فرنسا", pronunciation: "peurangseu", emoji: "🇫🇷" },
+            { word: "독일", translation: "ألمانيا", pronunciation: "dogil", emoji: "🇩🇪" },
+            { word: "수도", translation: "عاصمة", pronunciation: "sudo", emoji: "🏛️" },
+        ],
+        readingExercises: [
+            readingExercise("서울은 한국의 수도입니다.", "عواصم الدول", "سيول هي عاصمة كوريا.", ["أنا من مصر.", "هو يتحدث الصينية.", "نيويورك مدينة كبيرة في أمريكا."]),
+        ],
+        listeningExercises: [
+            listeningExercise("한국", "بلد الكيمتشي والكيبوب.", ["이집트", "프랑스", "미국"]),
+        ]
+    },
+    sports: {
+        words: [
+            { word: "운동", translation: "رياضة", pronunciation: "undong", emoji: "🏅" },
+            { word: "축구", translation: "كرة القدم", pronunciation: "chukgu", emoji: "⚽" },
+            { word: "농구", translation: "كرة السلة", pronunciation: "nonggu", emoji: "🏀" },
+            { word: "야구", translation: "بيسبول", pronunciation: "yagu", emoji: "⚾" },
+            { word: "수영", translation: "سباحة", pronunciation: "suyeong", emoji: "🏊" },
+            { word: "달리기", translation: "جري", pronunciation: "dalligi", emoji: "🏃" },
+            { word: "경기", translation: "مباراة/منافسة", pronunciation: "gyeonggi", emoji: "🏆" },
+            { word: "이기다", translation: "يفوز", pronunciation: "igida", emoji: "🥇" },
+            { word: "지다", translation: "يخسر", pronunciation: "jida", emoji: "👎" },
+            { word: "팀", translation: "فريق", pronunciation: "tim", emoji: "👥" },
+        ],
+        readingExercises: [
+            readingExercise("제가 가장 좋아하는 운동은 축구예요.", "رياضة مفضلة", "رياضتي المفضلة هي كرة القدم.", ["هو يلعب البيسبول كل نهاية أسبوع.", "فريقنا فاز بالمباراة.", "أذهب للسباحة مرتين في الأسبوع."]),
+        ],
+        listeningExercises: [
+            listeningExercise("축구", "رياضة بها 11 لاعباً وكرة.", ["농구", "야구", "수영"]),
+        ]
+    },
+    music_arts: {
+        words: [
+            { word: "음악", translation: "موسيقى", pronunciation: "eumak", emoji: "🎵" },
+            { word: "미술", translation: "فن", pronunciation: "misul", emoji: "🖼️" },
+            { word: "노래", translation: "أغنية", pronunciation: "norae", emoji: "🎶" },
+            { word: "예술가", translation: "فنان", pronunciation: "yesulga", emoji: "🧑‍🎨" },
+            { word: "그리다", translation: "يرسم", pronunciation: "geurida", emoji: "🎨" },
+            { word: "노래하다", translation: "يغني", pronunciation: "noraehada", emoji: "🎤" },
+            { word: "춤추다", translation: "يرقص", pronunciation: "chumchuda", emoji: "💃" },
+            { word: "박물관", translation: "متحف", pronunciation: "bangmulgwan", emoji: "🏛️" },
+            { word: "극장", translation: "مسرح", pronunciation: "geukjang", emoji: "🎭" },
+            { word: "영화", translation: "فيلم", pronunciation: "yeonghwa", emoji: "🎬" },
+        ],
+        readingExercises: [
+            readingExercise("클래식 음악 듣는 것을 좋아해요.", "تفضيلات فنية", "أحب الاستماع إلى الموسيقى الكلاسيكية.", ["هي فنانة موهوبة.", "لنذهب إلى المتحف يوم السبت.", "هذه الأغنية مشهورة جدا."]),
+        ],
+        listeningExercises: [
+            listeningExercise("음악", "فن الأصوات.", ["미술", "영화", "노래"]),
         ]
     }
 };

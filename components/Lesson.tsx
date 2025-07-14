@@ -15,6 +15,7 @@ interface LessonProps {
     onComplete: () => void;
     favoriteWords: Word[];
     onToggleFavorite: (word: Word) => void;
+    onVoiceNotAvailable: () => void;
 }
 
 type LessonStep = 
@@ -25,7 +26,7 @@ type LessonStep =
     | { type: 'speaking', data: { phrase: string } }
     | { type: 'complete', data: { score: number, total: number } };
 
-const Lesson: React.FC<LessonProps> = ({ content, language, onComplete, favoriteWords, onToggleFavorite }) => {
+const Lesson: React.FC<LessonProps> = ({ content, language, onComplete, favoriteWords, onToggleFavorite, onVoiceNotAvailable }) => {
     const [steps, setSteps] = useState<LessonStep[]>([]);
     const [currentStepIndex, setCurrentStepIndex] = useState(0);
     const [score, setScore] = useState(0);
@@ -104,6 +105,7 @@ const Lesson: React.FC<LessonProps> = ({ content, language, onComplete, favorite
                             language={language}
                             favoriteWords={favoriteWords}
                             onToggleFavorite={onToggleFavorite}
+                            onVoiceNotAvailable={onVoiceNotAvailable}
                         />
                         <button onClick={handleNextStep} className="btn bg-secondary text-dark py-3 px-8 rounded-full font-bold transition-transform duration-300 hover:scale-105 shadow-lg mt-4 flex-shrink-0">
                             بدء التمارين <i className="fas fa-arrow-left mr-2"></i>
@@ -111,7 +113,7 @@ const Lesson: React.FC<LessonProps> = ({ content, language, onComplete, favorite
                     </div>
                 );
             case 'listening':
-                return <div className={exerciseProps.className}><ListeningSection exercise={currentStep.data} language={language} onNext={handleStepComplete} /></div>;
+                return <div className={exerciseProps.className}><ListeningSection exercise={currentStep.data} language={language} onNext={handleStepComplete} onVoiceNotAvailable={onVoiceNotAvailable} /></div>;
             case 'reading':
                 return <div className={exerciseProps.className}><ReadingSection exercise={currentStep.data} onNext={handleStepComplete} /></div>;
             case 'quiz':

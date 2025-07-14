@@ -1,4 +1,5 @@
 
+
 import { CategoryContent, ReadingExercise, ListeningExercise } from '../../types';
 
 const shuffle = <T,>(arr: T[]) => [...arr].sort(() => 0.5 - Math.random());
@@ -278,7 +279,7 @@ export const JAPANESE_CONTENT: { [categoryName: string]: CategoryContent; } = {
             { word: "孫", translation: "حفيد/حفيدة", pronunciation: "mago", emoji: "👶" },
         ],
         readingExercises: [
-            readingExercise("私には兄が一人と妹が一人います。", "أفراد العائلة", "لدي أخ أكبر واحد وأخت صغرى واحدة.", ["أبي وأمي في المنزل.", "جدي وجدتي يعيشان في الريف.", "هذا ابني."]),
+            readingExercise("私には兄が一人と妹が一人います。", "أفراد العائلة", "لدي أخ أكبر واحد وأخت صغرى واحدة.", ["أبي وأمي في المنزل.", "جدي وجدتي يعيشون في الريف.", "هذا ابني."]),
             readingExercise("彼の妻は医者です。", "مهنة أحد أفراد العائلة", "زوجته طبيبة.", ["ابن عمي طالب جامعي.", "عائلتي كبيرة.", "أنا أعيش مع والديّ."]),
             readingExercise("お母さんの名前は何ですか？", "سؤال عن اسم الأم", "ما هو اسم والدتك؟", ["أخي الأصغر لطيف.", "زوجي يعمل في شركة.", "عائلتي تسكن في طوكيو."])
         ],
@@ -746,10 +747,6 @@ export const JAPANESE_CONTENT: { [categoryName: string]: CategoryContent; } = {
             { word: "丘", translation: "تل", pronunciation: "oka", emoji: "🌄" },
             { word: "島", translation: "جزيرة", pronunciation: "shima", emoji: "🏝️" },
             { word: "砂漠", translation: "صحراء", pronunciation: "sabaku", emoji: "🏜️" },
-            { word: "動物", translation: "حيوان", pronunciation: "dōbutsu", emoji: "🐾" },
-            { word: "犬", translation: "كلب", pronunciation: "inu", emoji: "🐕" },
-            { word: "猫", translation: "قطة", pronunciation: "neko", emoji: "🐈" },
-            { word: "鳥", translation: "طائر", pronunciation: "tori", emoji: "🐦" },
             { word: "岩", translation: "صخرة", pronunciation: "iwa", emoji: "🪨" },
             { word: "砂", translation: "رمل", pronunciation: "suna", emoji: "🏖️" },
             { word: "森", translation: "غابة", pronunciation: "mori", emoji: "🌲" },
@@ -921,6 +918,207 @@ export const JAPANESE_CONTENT: { [categoryName: string]: CategoryContent; } = {
             listeningExercise("旅行", "الكلمة العامة للسفر.", ["空港", "ホテル", "地図"]),
             listeningExercise("パスポート", "وثيقة رسمية تحتاجها للسفر إلى الخارج.", ["チケット", "荷物", "お土産"]),
             listeningExercise("新幹線", "قطار ياباني فائق السرعة.", ["電車", "バス", "タクシー"])
+        ]
+    },
+    animals: {
+        words: [
+            { word: "動物", translation: "حيوان", pronunciation: "dōbutsu", emoji: "🐾" },
+            { word: "犬", translation: "كلب", pronunciation: "inu", emoji: "🐕" },
+            { word: "猫", translation: "قطة", pronunciation: "neko", emoji: "🐈" },
+            { word: "鳥", translation: "طائر", pronunciation: "tori", emoji: "🐦" },
+            { word: "魚", translation: "سمكة", pronunciation: "sakana", emoji: "🐟" },
+            { word: "ライオン", translation: "أسد", pronunciation: "raion", emoji: "🦁" },
+            { word: "虎", translation: "نمر", pronunciation: "tora", emoji: "🐅" },
+            { word: "象", translation: "فيل", pronunciation: "zō", emoji: "🐘" },
+            { word: "猿", translation: "قرد", pronunciation: "saru", emoji: "🐒" },
+            { word: "馬", translation: "حصان", pronunciation: "uma", emoji: "🐎" },
+        ],
+        readingExercises: [
+            readingExercise("猫は魚が好きです。", "تفضيلات الحيوانات", "القطة تحب السمك.", ["الكلب يحب العظام.", "الطائر يطير في السماء.", "الفيل كبير."]),
+        ],
+        listeningExercises: [
+            listeningExercise("犬", "حيوان أليف وفيّ.", ["猫", "鳥", "魚"]),
+        ]
+    },
+    transportation: {
+        words: [
+            { word: "交通", translation: "مواصلات", pronunciation: "kōtsū", emoji: "🚦" },
+            { word: "車", translation: "سيارة", pronunciation: "kuruma", emoji: "🚗" },
+            { word: "バス", translation: "حافلة", pronunciation: "basu", emoji: "🚌" },
+            { word: "電車", translation: "قطار", pronunciation: "densha", emoji: "🚆" },
+            { word: "飛行機", translation: "طائرة", pronunciation: "hikōki", emoji: "✈️" },
+            { word: "自転車", translation: "دراجة هوائية", pronunciation: "jitensha", emoji: "🚲" },
+            { word: "地下鉄", translation: "مترو الأنفاق", pronunciation: "chikatetsu", emoji: "🚇" },
+            { word: "船", translation: "سفينة", pronunciation: "fune", emoji: "🚢" },
+            { word: "タクシー", translation: "سيارة أجرة", pronunciation: "takushī", emoji: "🚕" },
+            { word: "新幹線", translation: "قطار الطلقة", pronunciation: "shinkansen", emoji: "🚄" },
+        ],
+        readingExercises: [
+            readingExercise("私は毎日電車で会社へ行きます。", "الذهاب للعمل", "أنا أذهب إلى الشركة بالقطار كل يوم.", ["هو يسافر بالطائرة.", "أحب ركوب الدراجة.", "مترو طوكيو مزدحم."]),
+        ],
+        listeningExercises: [
+            listeningExercise("車", "وسيلة نقل بأربع عجلات.", ["バス", "電車", "自転車"]),
+        ]
+    },
+    education: {
+        words: [
+            { word: "教育", translation: "تعليم", pronunciation: "kyōiku", emoji: "🎓" },
+            { word: "学校", translation: "مدرسة", pronunciation: "gakkō", emoji: "🏫" },
+            { word: "大学", translation: "جامعة", pronunciation: "daigaku", emoji: "🎓" },
+            { word: "先生", translation: "معلم", pronunciation: "sensei", emoji: "👨‍🏫" },
+            { word: "学生", translation: "طالب", pronunciation: "gakusei", emoji: "🧑‍🎓" },
+            { word: "本", translation: "كتاب", pronunciation: "hon", emoji: "📚" },
+            { word: "ペン", translation: "قلم", pronunciation: "pen", emoji: "🖊️" },
+            { word: "試験", translation: "امتحان", pronunciation: "shiken", emoji: "📝" },
+            { word: "宿題", translation: "واجب منزلي", pronunciation: "shukudai", emoji: "📓" },
+            { word: "教室", translation: "فصل دراسي", pronunciation: "kyōshitsu", emoji: "🧑‍🏫" },
+        ],
+        readingExercises: [
+            readingExercise("先生は教室にいます。", "وصف مشهد دراسي", "المعلم في الفصل الدراسي.", ["لدي امتحان صعب غداً.", "يجب أن أفعل واجبي.", "الطلاب يقرؤون الكتب."]),
+        ],
+        listeningExercises: [
+            listeningExercise("本", "شيء تقرأه.", ["ペン", "試験", "学校"]),
+        ]
+    },
+    health: {
+        words: [
+            { word: "健康", translation: "صحة", pronunciation: "kenkō", emoji: "💪" },
+            { word: "医者", translation: "طبيب", pronunciation: "isha", emoji: "🧑‍⚕️" },
+            { word: "看護師", translation: "ممرضة", pronunciation: "kangoshi", emoji: "👩‍⚕️" },
+            { word: "病院", translation: "مستشفى", pronunciation: "byōin", emoji: "🏥" },
+            { word: "薬", translation: "دواء", pronunciation: "kusuri", emoji: "💊" },
+            { word: "病気", translation: "مرض", pronunciation: "byōki", emoji: "🤒" },
+            { word: "頭痛", translation: "صداع", pronunciation: "zutsū", emoji: "🤕" },
+            { word: "腹痛", translation: "ألم في المعدة", pronunciation: "fukutsū", emoji: "🤢" },
+            { word: "熱", translation: "حمى", pronunciation: "netsu", emoji: "🌡️" },
+            { word: "救急車", translation: "سيارة إسعاف", pronunciation: "kyūkyūsha", emoji: "🚑" },
+        ],
+        readingExercises: [
+            readingExercise("病気ですから、病院へ行きます。", "وصف حالة صحية", "لأنني مريض، سأذهب إلى المستشفى.", ["خذ هذا الدواء.", "المستشفى كبير ونظيف.", "لدي حمى وصداع."]),
+        ],
+        listeningExercises: [
+            listeningExercise("医者", "الشخص الذي تذهب إليه عندما تكون مريضاً.", ["看護師", "先生", "学生"]),
+        ]
+    },
+    technology: {
+        words: [
+            { word: "技術", translation: "تقنية", pronunciation: "gijutsu", emoji: "💡" },
+            { word: "パソコン", translation: "حاسوب شخصي", pronunciation: "pasokon", emoji: "💻" },
+            { word: "電話", translation: "هاتف", pronunciation: "denwa", emoji: "📱" },
+            { word: "インターネット", translation: "إنترنت", pronunciation: "intānetto", emoji: "🌐" },
+            { word: "メール", translation: "بريد إلكتروني", pronunciation: "mēru", emoji: "📧" },
+            { word: "ウェブサイト", translation: "موقع إلكتروني", pronunciation: "uebusaito", emoji: "🕸️" },
+            { word: "パスワード", translation: "كلمة المرور", pronunciation: "pasuwādo", emoji: "🔒" },
+            { word: "キーボード", translation: "لوحة مفاتيح", pronunciation: "kībōdo", emoji: "⌨️" },
+            { word: "マウス", translation: "فأرة", pronunciation: "mausu", emoji: "🖱️" },
+            { word: "ソフトウェア", translation: "برنامج", pronunciation: "sofutouea", emoji: "💿" },
+        ],
+        readingExercises: [
+            readingExercise("私は毎日パソコンでインターネットを使います。", "استخدام التكنولوجيا", "أستخدم الإنترنت كل يوم على حاسوبي.", ["لقد نسيت كلمة المرور الخاصة بي.", "أرسل لي بريداً إلكترونياً.", "هذا الموقع مفيد جدا."]),
+        ],
+        listeningExercises: [
+            listeningExercise("インターネット", "شبكة عالمية تربط الحواسيب.", ["パソコン", "電話", "メール"]),
+        ]
+    },
+    restaurant: {
+        words: [
+            { word: "レストラン", translation: "مطعم", pronunciation: "resutoran", emoji: "🍴" },
+            { word: "メニュー", translation: "قائمة طعام", pronunciation: "menyū", emoji: "📜" },
+            { word: "ウェイター", translation: "نادل", pronunciation: "ueitā", emoji: "🤵" },
+            { word: "お会計", translation: "فاتورة", pronunciation: "okaikei", emoji: "🧾" },
+            { word: "注文する", translation: "يطلب", pronunciation: "chūmon suru", emoji: "✍️" },
+            { word: "美味しい", translation: "لذيذ", pronunciation: "oishii", emoji: "😋" },
+            { word: "フォーク", translation: "شوكة", pronunciation: "fōku", emoji: "🍴" },
+            { word: "スプーン", translation: "ملعقة", pronunciation: "supūn", emoji: "🥄" },
+            { word: "ナイフ", translation: "سكين", pronunciation: "naifu", emoji: "🔪" },
+            { word: "お皿", translation: "طبق", pronunciation: "osara", emoji: "🍽️" },
+            { word: "箸", translation: "عيدان طعام", pronunciation: "hashi", emoji: "🥢" },
+        ],
+        readingExercises: [
+            readingExercise("メニューを見せてください。", "في المطعم", "أرني القائمة من فضلك.", ["الطعام لذيذ.", "أريد أن أطلب الآن.", "الفاتورة من فضلك."]),
+        ],
+        listeningExercises: [
+            listeningExercise("メニュー", "قائمة الأطباق في المطعم.", ["お会計", "ウェイター", "フォーク"]),
+        ]
+    },
+    daily_routines: {
+        words: [
+            { word: "起きる", translation: "يستيقظ", pronunciation: "okiru", emoji: "⏰" },
+            { word: "朝ご飯を食べる", translation: "يأكل الفطور", pronunciation: "asagohan o taberu", emoji: "🍳" },
+            { word: "仕事に行く", translation: "يذهب للعمل", pronunciation: "shigoto ni iku", emoji: "💼" },
+            { word: "勉強する", translation: "يدرس", pronunciation: "benkyō suru", emoji: "📚" },
+            { word: "昼ご飯を食べる", translation: "يأكل الغداء", pronunciation: "hirugohan o taberu", emoji: "🍱" },
+            { word: "家に帰る", translation: "يعود للمنزل", pronunciation: "ie ni kaeru", emoji: "🏡" },
+            { word: "晩ご飯を作る", translation: "يطبخ العشاء", pronunciation: "bangohan o tsukuru", emoji: "🍝" },
+            { word: "テレビを見る", translation: "يشاهد التلفاز", pronunciation: "terebi o miru", emoji: "📺" },
+            { word: "本を読む", translation: "يقرأ كتاباً", pronunciation: "hon o yomu", emoji: "📖" },
+            { word: "寝る", translation: "يذهب للنوم", pronunciation: "neru", emoji: "😴" },
+        ],
+        readingExercises: [
+            readingExercise("私は毎朝7時に起きます。", "روتين صباحي", "أستيقظ الساعة 7 كل صباح.", ["هو يذهب إلى العمل بالقطار.", "بعد العشاء، أشاهد التلفاز.", "أنا أدرس في المساء."]),
+        ],
+        listeningExercises: [
+            listeningExercise("起きる", "أول شيء تفعله في الصباح.", ["寝る", "食べる", "勉強する"]),
+        ]
+    },
+    countries: {
+        words: [
+            { word: "国", translation: "دولة", pronunciation: "kuni", emoji: "🌍" },
+            { word: "国籍", translation: "جنسية", pronunciation: "kokuseki", emoji: "🆔" },
+            { word: "日本", translation: "اليابان", pronunciation: "nihon", emoji: "🇯🇵" },
+            { word: "アメリカ", translation: "أمريكا", pronunciation: "amerika", emoji: "🇺🇸" },
+            { word: "中国", translation: "الصين", pronunciation: "chūgoku", emoji: "🇨🇳" },
+            { word: "韓国", translation: "كوريا", pronunciation: "kankoku", emoji: "🇰🇷" },
+            { word: "エジプト", translation: "مصر", pronunciation: "ejiputo", emoji: "🇪🇬" },
+            { word: "フランス", translation: "فرنسا", pronunciation: "furansu", emoji: "🇫🇷" },
+            { word: "ドイツ", translation: "ألمانيا", pronunciation: "doitsu", emoji: "🇩🇪" },
+            { word: "首都", translation: "عاصمة", pronunciation: "shuto", emoji: "🏛️" },
+        ],
+        readingExercises: [
+            readingExercise("東京は日本の首都です。", "عواصم الدول", "طوكيو هي عاصمة اليابان.", ["أنا من مصر.", "هو يتحدث الصينية.", "نيويورك مدينة كبيرة في أمريكا."]),
+        ],
+        listeningExercises: [
+            listeningExercise("日本", "بلد الشمس المشرقة.", ["エジプト", "フランス", "アメリカ"]),
+        ]
+    },
+    sports: {
+        words: [
+            { word: "スポーツ", translation: "رياضة", pronunciation: "supōtsu", emoji: "🏅" },
+            { word: "サッカー", translation: "كرة القدم", pronunciation: "sakkā", emoji: "⚽" },
+            { word: "野球", translation: "بيسبول", pronunciation: "yakyū", emoji: "⚾" },
+            { word: "テニス", translation: "تنس", pronunciation: "tenisu", emoji: "🎾" },
+            { word: "水泳", translation: "سباحة", pronunciation: "suiei", emoji: "🏊" },
+            { word: "走ること", translation: "جري", pronunciation: "hashiru koto", emoji: "🏃" },
+            { word: "する", translation: "يلعب/يفعل", pronunciation: "suru", emoji: "🤸" },
+            { word: "勝つ", translation: "يفوز", pronunciation: "katsu", emoji: "🏆" },
+            { word: "負ける", translation: "يخسر", pronunciation: "makeru", emoji: "👎" },
+            { word: "チーム", translation: "فريق", pronunciation: "chīmu", emoji: "👥" },
+        ],
+        readingExercises: [
+            readingExercise("私の好きなスポーツはサッカーです。", "رياضة مفضلة", "رياضتي المفضلة هي كرة القدم.", ["هو يلعب التنس كل نهاية أسبوع.", "فريقنا فاز بالمباراة.", "أذهب للسباحة مرتين في الأسبوع."]),
+        ],
+        listeningExercises: [
+            listeningExercise("サッカー", "رياضة بها 11 لاعباً وكرة.", ["野球", "テニス", "水泳"]),
+        ]
+    },
+    music_arts: {
+        words: [
+            { word: "音楽", translation: "موسيقى", pronunciation: "ongaku", emoji: "🎵" },
+            { word: "芸術", translation: "فن", pronunciation: "geijutsu", emoji: "🖼️" },
+            { word: "歌", translation: "أغنية", pronunciation: "uta", emoji: "🎶" },
+            { word: "アーティスト", translation: "فنان", pronunciation: "ātisuto", emoji: "🧑‍🎨" },
+            { word: "描く", translation: "يرسم", pronunciation: "kaku", emoji: "🎨" },
+            { word: "歌う", translation: "يغني", pronunciation: "utau", emoji: "🎤" },
+            { word: "踊る", translation: "يرقص", pronunciation: "odoru", emoji: "💃" },
+            { word: "美術館", translation: "متحف فني", pronunciation: "bijutsukan", emoji: "🏛️" },
+            { word: "劇場", translation: "مسرح", pronunciation: "gekijō", emoji: "🎭" },
+            { word: "映画", translation: "فيلم", pronunciation: "eiga", emoji: "🎬" },
+        ],
+        readingExercises: [
+            readingExercise("クラシック音楽を聴くのが好きです。", "تفضيلات موسيقية", "أحب الاستماع إلى الموسيقى الكلاسيكية.", ["هي فنانة موهوبة.", "لنذهب إلى المتحف يوم السبت.", "هذه الأغنية مشهورة جدا."]),
+        ],
+        listeningExercises: [
+            listeningExercise("音楽", "فن الأصوات.", ["芸術", "映画", "歌"]),
         ]
     }
 };

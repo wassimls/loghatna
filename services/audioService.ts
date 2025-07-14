@@ -146,10 +146,18 @@ export const speak = async (
         // for better engine compatibility.
         utterance.lang = bestVoice.lang;
     } else {
-        // If no suitable voice is found, fall back to the browser's default
-        // by setting the desired language on the utterance itself.
-        utterance.lang = lang;
-        console.warn(`Could not find a suitable voice for ${lang}. Using browser default.`);
+        const errorMsg = `No voice found for language ${lang}. The browser might not have it installed.`;
+        console.warn(errorMsg);
+        if (callbacks.onError) {
+            // Create a synthetic event-like object for consistency, since SpeechSynthesisErrorEvent is not constructible.
+            const errorEvent = { 
+                type: 'error', 
+                error: 'no-voice-found', 
+                message: errorMsg 
+            } as unknown as SpeechSynthesisEvent;
+            callbacks.onError(errorEvent);
+        }
+        return; // Important: Stop execution to prevent speaking with a wrong voice.
     }
 
     // Assign callbacks

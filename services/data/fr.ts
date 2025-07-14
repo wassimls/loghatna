@@ -673,6 +673,204 @@ export const FRENCH_CONTENT: { [categoryName: string]: CategoryContent; } = {
             listeningExercise("Passeport", "وثيقة رسمية للسفر الدولي.", ["Billet", "Valise", "Hôtel"]),
             listeningExercise("Voiture", "وسيلة نقل خاصة بأربع عجلات.", ["Bus", "Train", "Avion"])
         ]
+    },
+    animals: {
+        words: [
+            { word: "Animal", translation: "حيوان", pronunciation: "أنيمال", emoji: "🐾" },
+            { word: "Chien", translation: "كلب", pronunciation: "شيان", emoji: "🐕" },
+            { word: "Chat", translation: "قطة", pronunciation: "شا", emoji: "🐈" },
+            { word: "Lion", translation: "أسد", pronunciation: "ليون", emoji: "🦁" },
+            { word: "Tigre", translation: "نمر", pronunciation: "تيغر", emoji: "🐅" },
+            { word: "Éléphant", translation: "فيل", pronunciation: "إليفون", emoji: "🐘" },
+            { word: "Singe", translation: "قرد", pronunciation: "سانج", emoji: "🐒" },
+            { word: "Cheval", translation: "حصان", pronunciation: "شوفال", emoji: "🐎" },
+            { word: "Oiseau", translation: "طائر", pronunciation: "وازو", emoji: "🐦" },
+            { word: "Poisson", translation: "سمكة", pronunciation: "بواسون", emoji: "🐟" },
+        ],
+        readingExercises: [
+            readingExercise("Le lion est le roi de la jungle.", "وصف حيوان", "الأسد هو ملك الغابة.", ["Le chat boit du lait.", "J'aime beaucoup les chiens.", "L'éléphant est un très grand animal."]),
+        ],
+        listeningExercises: [
+            listeningExercise("Éléphant", "Un grand animal avec une trompe.", ["Chien", "Chat", "Singe"]),
+        ]
+    },
+    transportation: {
+        words: [
+            { word: "Voiture", translation: "سيارة", pronunciation: "ڤواتور", emoji: "🚗" },
+            { word: "Bus", translation: "حافلة", pronunciation: "بوس", emoji: "🚌" },
+            { word: "Train", translation: "قطار", pronunciation: "تران", emoji: "🚆" },
+            { word: "Avion", translation: "طائرة", pronunciation: "آڤيون", emoji: "✈️" },
+            { word: "Vélo", translation: "دراجة هوائية", pronunciation: "ڤيلو", emoji: "🚲" },
+            { word: "Moto", translation: "دراجة نارية", pronunciation: "موتو", emoji: "🏍️" },
+            { word: "Bateau", translation: "سفينة/قارب", pronunciation: "باتو", emoji: "⛵" },
+            { word: "Taxi", translation: "سيارة أجرة", pronunciation: "تاكسي", emoji: "🚕" },
+            { word: "Métro", translation: "مترو الأنفاق", pronunciation: "ميترو", emoji: "🚇" },
+        ],
+        readingExercises: [
+            readingExercise("Je vais au travail en bus.", "وسيلة النقل", "أذهب إلى العمل بالحافلة.", ["Le train est très rapide.", "Sais-tu conduire une voiture ?", "Voyager en avion est confortable."]),
+        ],
+        listeningExercises: [
+            listeningExercise("Train", "Un moyen de transport qui roule sur des rails.", ["Voiture", "Bus", "Avion"]),
+        ]
+    },
+    education: {
+        words: [
+            { word: "École", translation: "مدرسة", pronunciation: "إيكول", emoji: "🏫" },
+            { word: "Université", translation: "جامعة", pronunciation: "أونيڤيرسيتيه", emoji: "🎓" },
+            { word: "Professeur", translation: "معلم", pronunciation: "بروفيسور", emoji: "👨‍🏫" },
+            { word: "Étudiant", translation: "طالب", pronunciation: "إيتوديون", emoji: "🧑‍🎓" },
+            { word: "Livre", translation: "كتاب", pronunciation: "ليڤر", emoji: "📚" },
+            { word: "Stylo", translation: "قلم", pronunciation: "ستيلو", emoji: "🖊️" },
+            { word: "Examen", translation: "امتحان", pronunciation: "إكزامان", emoji: "📝" },
+            { word: "Devoirs", translation: "واجب منزلي", pronunciation: "دوڤوار", emoji: "📓" },
+            { word: "Salle de classe", translation: "فصل دراسي", pronunciation: "سال دو كلاس", emoji: "🧑‍🏫" },
+            { word: "Apprendre", translation: "يتعلم", pronunciation: "أبروندر", emoji: "🧠" },
+        ],
+        readingExercises: [
+            readingExercise("Le professeur est dans la salle de classe.", "وصف مشهد دراسي", "المعلم في الفصل الدراسي.", ["J'ai un examen difficile demain.", "Je dois faire mes devoirs.", "Les étudiants lisent des livres."]),
+        ],
+        listeningExercises: [
+            listeningExercise("Livre", "Quelque chose que vous lisez.", ["Stylo", "Examen", "École"]),
+        ]
+    },
+    health: {
+        words: [
+            { word: "Médecin", translation: "طبيب", pronunciation: "ميدسان", emoji: "🧑‍⚕️" },
+            { word: "Hôpital", translation: "مستشفى", pronunciation: "أوپيتال", emoji: "🏥" },
+            { word: "Médicament", translation: "دواء", pronunciation: "ميديكامون", emoji: "💊" },
+            { word: "Malade", translation: "مريض", pronunciation: "مالاد", emoji: "🤒" },
+            { word: "En bonne santé", translation: "صحي", pronunciation: "أون بون سانتيه", emoji: "💪" },
+            { word: "Mal de tête", translation: "صداع", pronunciation: "مال دو تيت", emoji: "🤕" },
+            { word: "Mal de ventre", translation: "ألم في المعدة", pronunciation: "مال دو ڤونتر", emoji: "🤢" },
+            { word: "Fièvre", translation: "حمى", pronunciation: "فييڤر", emoji: "🌡️" },
+            { word: "Ambulance", translation: "سيارة إسعاف", pronunciation: "أومبيلونس", emoji: "🚑" },
+        ],
+        readingExercises: [
+            readingExercise("Je suis malade, je dois voir un médecin.", "وصف حالة صحية", "أنا مريض، أحتاج لرؤية طبيب.", ["Prenez ce médicament.", "L'hôpital est grand et propre.", "J'ai de la fièvre et un mal de tête."]),
+        ],
+        listeningExercises: [
+            listeningExercise("Médecin", "La personne que vous allez voir quand vous êtes malade.", ["Infirmière", "Professeur", "Étudiant"]),
+        ]
+    },
+    technology: {
+        words: [
+            { word: "Ordinateur", translation: "حاسوب", pronunciation: "أورديناتور", emoji: "💻" },
+            { word: "Téléphone", translation: "هاتف", pronunciation: "تيليفون", emoji: "📱" },
+            { word: "Internet", translation: "إنترنت", pronunciation: "إنترنت", emoji: "🌐" },
+            { word: "Email", translation: "بريد إلكتروني", pronunciation: "إيميل", emoji: "📧" },
+            { word: "Site web", translation: "موقع إلكتروني", pronunciation: "سيت ويب", emoji: "🕸️" },
+            { word: "Mot de passe", translation: "كلمة المرور", pronunciation: "مو دو پاس", emoji: "🔒" },
+            { word: "Clavier", translation: "لوحة مفاتيح", pronunciation: "كلاڤييه", emoji: "⌨️" },
+            { word: "Souris", translation: "فأرة", pronunciation: "سوري", emoji: "🖱️" },
+            { word: "Écran", translation: "شاشة", pronunciation: "إكرون", emoji: "🖥️" },
+            { word: "Logiciel", translation: "برنامج", pronunciation: "لوجيسيال", emoji: "💿" },
+        ],
+        readingExercises: [
+            readingExercise("J'utilise internet tous les jours sur mon ordinateur.", "استخدام التكنولوجيا", "أستخدم الإنترنت كل يوم على حاسوبي.", ["J'ai oublié mon mot de passe.", "Envoyez-moi un email.", "Ce site web est très utile."]),
+        ],
+        listeningExercises: [
+            listeningExercise("Internet", "Un réseau mondial qui relie les ordinateurs.", ["Ordinateur", "Téléphone", "Email"]),
+        ]
+    },
+    restaurant: {
+        words: [
+            { word: "Restaurant", translation: "مطعم", pronunciation: "ريستورون", emoji: "🍴" },
+            { word: "Menu", translation: "قائمة طعام", pronunciation: "مينو", emoji: "📜" },
+            { word: "Serveur", translation: "نادل", pronunciation: "سيرڤور", emoji: "🤵" },
+            { word: "Addition", translation: "فاتورة", pronunciation: "أديسيون", emoji: "🧾" },
+            { word: "Commander", translation: "يطلب", pronunciation: "كومونديه", emoji: "✍️" },
+            { word: "Délicieux", translation: "لذيذ", pronunciation: "ديليسيو", emoji: "😋" },
+            { word: "Fourchette", translation: "شوكة", pronunciation: "فورشيت", emoji: "🍴" },
+            { word: "Cuillère", translation: "ملعقة", pronunciation: "كويير", emoji: "🥄" },
+            { word: "Couteau", translation: "سكين", pronunciation: "كوتو", emoji: "🔪" },
+            { word: "Assiette", translation: "طبق", pronunciation: "آسييت", emoji: "🍽️" },
+        ],
+        readingExercises: [
+            readingExercise("Serveur, le menu s'il vous plaît.", "في المطعم", "يا نادل، القائمة من فضلك.", ["La nourriture est délicieuse.", "Je voudrais commander maintenant.", "L'addition, s'il vous plaît."]),
+        ],
+        listeningExercises: [
+            listeningExercise("Menu", "La liste des plats dans un restaurant.", ["Addition", "Serveur", "Fourchette"]),
+        ]
+    },
+    daily_routines: {
+        words: [
+            { word: "Se réveiller", translation: "يستيقظ", pronunciation: "سو ريڤيييه", emoji: "⏰" },
+            { word: "Manger le petit-déjeuner", translation: "يأكل الفطور", pronunciation: "مونجيه لو بوتي ديجونيه", emoji: "🍳" },
+            { word: "Aller au travail", translation: "يذهب للعمل", pronunciation: "آليه أو تراڤاي", emoji: "💼" },
+            { word: "Étudier", translation: "يدرس", pronunciation: "إيتودييه", emoji: "📚" },
+            { word: "Déjeuner", translation: "يأكل الغداء", pronunciation: "ديجونيه", emoji: "🍱" },
+            { word: "Rentrer à la maison", translation: "يعود للمنزل", pronunciation: "رونتريه آ لا ميزون", emoji: "🏡" },
+            { word: "Dîner", translation: "يتعشى", pronunciation: "دينيه", emoji: "🍝" },
+            { word: "Regarder la télé", translation: "يشاهد التلفاز", pronunciation: "روغارديه لا تيليه", emoji: "📺" },
+            { word: "Lire un livre", translation: "يقرأ كتاباً", pronunciation: "لير آن ليڤر", emoji: "📖" },
+            { word: "Dormir", translation: "ينام", pronunciation: "دورمير", emoji: "😴" },
+        ],
+        readingExercises: [
+            readingExercise("Je me réveille à 7h tous les matins.", "روتين يومي", "أستيقظ الساعة 7 صباحاً كل يوم.", ["Il va au travail en voiture.", "Après le dîner, je regarde la télé.", "J'étudie le soir."]),
+        ],
+        listeningExercises: [
+            listeningExercise("Se réveiller", "La première chose que vous faites le matin.", ["Dormir", "Manger", "Étudier"]),
+        ]
+    },
+    countries: {
+        words: [
+            { word: "Pays", translation: "دولة", pronunciation: "پيي", emoji: "🌍" },
+            { word: "Nationalité", translation: "جنسية", pronunciation: "ناسيوناليتيه", emoji: "🆔" },
+            { word: "France", translation: "فرنسا", pronunciation: "فرونس", emoji: "🇫🇷" },
+            { word: "Égypte", translation: "مصر", pronunciation: "إيجيبت", emoji: "🇪🇬" },
+            { word: "Japon", translation: "اليابان", pronunciation: "جابون", emoji: "🇯🇵" },
+            { word: "États-Unis", translation: "أمريكا", pronunciation: "إيتا-زوني", emoji: "🇺🇸" },
+            { word: "Italie", translation: "إيطاليا", pronunciation: "إيتالي", emoji: "🇮🇹" },
+            { word: "Espagne", translation: "إسبانيا", pronunciation: "إسباني", emoji: "🇪🇸" },
+            { word: "Allemagne", translation: "ألمانيا", pronunciation: "ألماني", emoji: "🇩🇪" },
+            { word: "Capitale", translation: "عاصمة", pronunciation: "كابيتال", emoji: "🏛️" },
+        ],
+        readingExercises: [
+            readingExercise("Paris est la capitale de la France.", "عواصم الدول", "باريس هي عاصمة فرنسا.", ["Je viens d'Égypte.", "Il parle japonais.", "New York est une grande ville aux États-Unis."]),
+        ],
+        listeningExercises: [
+            listeningExercise("France", "Le pays de la Tour Eiffel.", ["Égypte", "Japon", "États-Unis"]),
+        ]
+    },
+    sports: {
+        words: [
+            { word: "Sport", translation: "رياضة", pronunciation: "سپور", emoji: "🏅" },
+            { word: "Football", translation: "كرة القدم", pronunciation: "فوتبول", emoji: "⚽" },
+            { word: "Basketball", translation: "كرة السلة", pronunciation: "باسكتبول", emoji: "🏀" },
+            { word: "Tennis", translation: "تنس", pronunciation: "تنيس", emoji: "🎾" },
+            { word: "Natation", translation: "سباحة", pronunciation: "ناتاسيون", emoji: "🏊" },
+            { word: "Course", translation: "جري", pronunciation: "كورس", emoji: "🏃" },
+            { word: "Jouer", translation: "يلعب", pronunciation: "جويه", emoji: "🤸" },
+            { word: "Gagner", translation: "يفوز", pronunciation: "غانييه", emoji: "🏆" },
+            { word: "Perdre", translation: "يخسر", pronunciation: "بيردر", emoji: "👎" },
+            { word: "Équipe", translation: "فريق", pronunciation: "إيكيب", emoji: "👥" },
+        ],
+        readingExercises: [
+            readingExercise("Mon sport préféré est le football.", "رياضة مفضلة", "رياضتي المفضلة هي كرة القدم.", ["Il joue au tennis tous les week-ends.", "Notre équipe a gagné le match.", "Je vais nager deux fois par semaine."]),
+        ],
+        listeningExercises: [
+            listeningExercise("Football", "Un sport avec 11 joueurs et un ballon.", ["Basketball", "Tennis", "Natation"]),
+        ]
+    },
+    music_arts: {
+        words: [
+            { word: "Musique", translation: "موسيقى", pronunciation: "موزيك", emoji: "🎵" },
+            { word: "Art", translation: "فن", pronunciation: "آر", emoji: "🖼️" },
+            { word: "Chanson", translation: "أغنية", pronunciation: "شانسون", emoji: "🎶" },
+            { word: "Artiste", translation: "فنان", pronunciation: "آرتيست", emoji: "🧑‍🎨" },
+            { word: "Peindre", translation: "يرسم/يلون", pronunciation: "پاندر", emoji: "🎨" },
+            { word: "Chanter", translation: "يغني", pronunciation: "شانتيه", emoji: "🎤" },
+            { word: "Danser", translation: "يرقص", pronunciation: "دونسيه", emoji: "💃" },
+            { word: "Musée", translation: "متحف", pronunciation: "موزيه", emoji: "🏛️" },
+            { word: "Théâtre", translation: "مسرح", pronunciation: "تياتر", emoji: "🎭" },
+            { word: "Film", translation: "فيلم", pronunciation: "فيلم", emoji: "🎬" },
+        ],
+        readingExercises: [
+            readingExercise("J'aime écouter de la musique classique.", "تفضيلات فنية", "أحب الاستماع إلى الموسيقى الكلاسيكية.", ["Elle est une artiste talentueuse.", "Allons au musée samedi.", "Cette chanson est très populaire."]),
+        ],
+        listeningExercises: [
+            listeningExercise("Musique", "L'art des sons.", ["Art", "Film", "Chanson"]),
+        ]
     }
 };
 

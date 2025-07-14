@@ -1,3 +1,5 @@
+
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Language, User, ChatMessage, SpeechRecognition, SpeechRecognitionEvent, SpeechRecognitionErrorEvent } from '../../types';
 import { streamChatResponse, translateText } from '../../services/geminiService';
@@ -8,7 +10,6 @@ interface ChatSectionProps {
     language: Language;
     user: User;
     apiKey: string;
-    onVoiceNotAvailable: () => void;
 }
 
 // ---- Start of new interactive avatar components ----
@@ -171,7 +172,7 @@ const useChatSpeechRecognition = (lang: string, onTranscriptUpdate: (transcript:
 };
 
 
-const ChatSection: React.FC<ChatSectionProps> = ({ language, user, apiKey, onVoiceNotAvailable }) => {
+const ChatSection: React.FC<ChatSectionProps> = ({ language, user, apiKey }) => {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -222,8 +223,8 @@ const ChatSection: React.FC<ChatSectionProps> = ({ language, user, apiKey, onVoi
         speak(text, language.code, {
             onEnd: () => setSpeakingIndex(null),
             onError: () => {
+                console.error(`Could not play audio for language ${language.code}`);
                 setSpeakingIndex(null);
-                onVoiceNotAvailable();
             }
         });
     };

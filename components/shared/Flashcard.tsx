@@ -7,10 +7,9 @@ import { speak } from '../../services/audioService';
 interface FlashcardProps {
     word: Word;
     language: Language;
-    onVoiceNotAvailable: () => void;
 }
 
-const Flashcard: React.FC<FlashcardProps> = ({ word, language, onVoiceNotAvailable }) => {
+const Flashcard: React.FC<FlashcardProps> = ({ word, language }) => {
     const [isFlipped, setIsFlipped] = useState(false);
     
     // Reset flip state when word changes
@@ -20,9 +19,7 @@ const Flashcard: React.FC<FlashcardProps> = ({ word, language, onVoiceNotAvailab
 
     const speakWord = (e: React.MouseEvent) => {
         e.stopPropagation(); // Prevent card from flipping when button is clicked
-        speak(word.word, language.code, {
-            onError: onVoiceNotAvailable
-        });
+        speak(word.word, language.code);
     };
 
     return (

@@ -1,3 +1,5 @@
+
+
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { CategoryId, Language, GeneratedContent, User, Word, Category } from './types';
 import { CATEGORIES, LANGUAGES } from './constants';
@@ -21,7 +23,6 @@ import JapaneseGrammarSection from './components/content/JapaneseGrammarSection'
 import TurkishGrammarSection from './components/content/TurkishGrammarSection';
 import PlaceholderSection from './components/content/PlaceholderSection';
 import Sidebar from './components/Sidebar';
-import VoiceNotAvailableModal from './components/shared/VoiceNotAvailableModal';
 
 type Theme = 'light' | 'dark';
 type View = 'dashboard' | 'lesson' | 'games' | 'chat' | 'grammar';
@@ -201,7 +202,6 @@ const App: React.FC = () => {
     const [favoriteWords, setFavoriteWords] = useState<Word[]>([]);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [apiKey, setApiKey] = useState(localStorage.getItem('gemini_api_key') || '');
-    const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
 
     useEffect(() => {
         const unsubscribe = userService.onAuthChange(setUser);
@@ -223,10 +223,6 @@ const App: React.FC = () => {
         setApiKey(key);
         localStorage.setItem('gemini_api_key', key);
     };
-
-    const handleVoiceNotAvailable = useCallback(() => {
-        setIsVoiceModalOpen(true);
-    }, []);
 
     const fetchFavoriteWords = useCallback(async () => {
         if (user) {
@@ -317,14 +313,13 @@ const App: React.FC = () => {
                                 onComplete={() => navigateTo('dashboard')}
                                 favoriteWords={favoriteWords}
                                 onToggleFavorite={toggleFavoriteWord}
-                                onVoiceNotAvailable={handleVoiceNotAvailable}
                             />;
                 }
                 return <PlaceholderSection title="اختر فئة" icon="fa-hand-pointer" badge="ابدأ رحلتك" />;
             case 'games':
                 return <GamesSection language={currentLanguage} apiKey={apiKey} />;
             case 'chat':
-                return <ChatSection language={currentLanguage} user={user!} apiKey={apiKey} onVoiceNotAvailable={handleVoiceNotAvailable} />;
+                return <ChatSection language={currentLanguage} user={user!} apiKey={apiKey} />;
             case 'grammar':
                 switch (selectedLanguage) {
                     case 'en-US': return <GrammarSection />;
@@ -405,7 +400,6 @@ const App: React.FC = () => {
                     onApiKeyChange={handleApiKeyChange}
                 />
             )}
-            {isVoiceModalOpen && <VoiceNotAvailableModal onClose={() => setIsVoiceModalOpen(false)} />}
         </div>
     );
 };

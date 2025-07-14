@@ -1,5 +1,6 @@
 
 
+
 import React from 'react';
 import { Word, Language } from '../../types';
 import { speak } from '../../services/audioService';
@@ -9,14 +10,11 @@ interface WordCardProps {
     language: Language;
     isFavorite: boolean;
     onToggleFavorite: (word: Word) => void;
-    onVoiceNotAvailable: () => void;
 }
 
-const WordCard: React.FC<WordCardProps> = ({ word, language, isFavorite, onToggleFavorite, onVoiceNotAvailable }) => {
+const WordCard: React.FC<WordCardProps> = ({ word, language, isFavorite, onToggleFavorite }) => {
     const speakWord = () => {
-        speak(word.word, language.code, {
-            onError: onVoiceNotAvailable
-        });
+        speak(word.word, language.code);
     };
 
     return (

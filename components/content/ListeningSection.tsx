@@ -1,3 +1,5 @@
+
+
 import React, { useState, useEffect } from 'react';
 import { ListeningExercise, Language } from '../../types';
 import { speak } from '../../services/audioService';
@@ -8,10 +10,9 @@ interface ListeningSectionProps {
     exercise: ListeningExercise | null;
     language: Language;
     onNext: (isCorrect: boolean) => void;
-    onVoiceNotAvailable: () => void;
 }
 
-const ListeningSection: React.FC<ListeningSectionProps> = ({ exercise, language, onNext, onVoiceNotAvailable }) => {
+const ListeningSection: React.FC<ListeningSectionProps> = ({ exercise, language, onNext }) => {
     const [selectedOption, setSelectedOption] = useState<string | null>(null);
     const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
     const [audioState, setAudioState] = useState<'idle' | 'loading' | 'playing' | 'error'>('idle');
@@ -37,7 +38,6 @@ const ListeningSection: React.FC<ListeningSectionProps> = ({ exercise, language,
             onError: (err) => {
                 console.error('Audio playback error:', err);
                 setAudioState('error');
-                onVoiceNotAvailable();
             },
         });
     };

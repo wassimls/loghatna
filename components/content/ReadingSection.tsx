@@ -62,12 +62,22 @@ const ReadingSection: React.FC<ReadingSectionProps> = ({ exercise, onNext }) => 
                 </div>
             </div>
             
-            {isCorrect !== null && (
+            {isCorrect !== null ? (
                  <FeedbackFooter 
                     isCorrect={isCorrect}
                     correctAnswer={exercise.correctAnswer}
                     onContinue={() => onNext(isCorrect)}
                 />
+            ) : (
+                <div className="w-full p-4 md:p-6 mt-auto text-center">
+                    <button
+                        onClick={() => onNext(false)}
+                        className="btn bg-gray-200 dark:bg-slate-600 text-dark dark:text-light py-3 px-8 rounded-full font-bold transition-transform duration-300 hover:scale-105 shadow-sm flex items-center justify-center mx-auto"
+                    >
+                        تخطي التمرين
+                        <i className="fas fa-forward mr-2"></i>
+                    </button>
+                </div>
             )}
         </div>
     );

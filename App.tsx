@@ -1,7 +1,5 @@
-
-
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
-import { CategoryId, Language, GeneratedContent, User, Word, Category } from './types';
+import { CategoryId, Language, GeneratedContent, User, Word, Category, UserProgress } from './types';
 import { CATEGORIES, LANGUAGES } from './constants';
 import { getCategoryContent } from './services/dataService';
 import * as userService from './services/userService';
@@ -23,9 +21,11 @@ import JapaneseGrammarSection from './components/content/JapaneseGrammarSection'
 import TurkishGrammarSection from './components/content/TurkishGrammarSection';
 import PlaceholderSection from './components/content/PlaceholderSection';
 import Sidebar from './components/Sidebar';
+import ProgressSection from './components/content/ProgressSection';
+import LearningMap from './components/content/LearningMap';
 
 type Theme = 'light' | 'dark';
-type View = 'dashboard' | 'lesson' | 'games' | 'chat' | 'grammar';
+type View = 'dashboard' | 'lesson' | 'games' | 'chat' | 'grammar' | 'progress';
 
 const ApiKeyInput: React.FC<{ apiKey: string; onApiKeyChange: (key: string) => void; forModal?: boolean;}> = ({ apiKey, onApiKeyChange, forModal = false }) => {
     const [localKey, setLocalKey] = useState(apiKey);
@@ -150,9 +150,10 @@ const BottomNav: React.FC<{
     className?: string;
 }> = ({ currentView, onNavigate, className = '' }) => {
     const navItems = [
-        { view: 'dashboard', icon: 'fa-book-open', label: 'الدروس' },
+        { view: 'dashboard', icon: 'fa-map-signs', label: 'الخريطة' },
         { view: 'grammar', icon: 'fa-spell-check', label: 'القواعد' },
         { view: 'games', icon: 'fa-gamepad', label: 'الألعاب' },
+        { view: 'progress', icon: 'fa-chart-line', label: 'التقدم' },
         { view: 'chat', icon: 'fa-comments', label: 'الدردشة' },
     ];
     
@@ -169,7 +170,7 @@ const BottomNav: React.FC<{
                  <button
                     key={item.view}
                     onClick={() => onNavigate(item.view as View)}
-                    className={`flex flex-col items-center justify-center gap-1.5 w-20 h-16 rounded-2xl transition-all duration-300
+                    className={`flex flex-col items-center justify-center gap-1.5 w-16 h-16 rounded-2xl transition-all duration-300
                         ${isViewActive(item.view as View) ? 'bg-secondary text-dark' : 'text-gray-300 hover:text-white'}
                     `}
                 >
@@ -181,18 +182,6 @@ const BottomNav: React.FC<{
     );
 };
 
-const CategoryCard: React.FC<{ category: Category; onClick: () => void }> = ({ category, onClick }) => (
-    <div 
-        onClick={onClick}
-        className="bg-white/5 dark:bg-dark/30 backdrop-blur-sm rounded-3xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-300 hover:bg-secondary/20 hover:-translate-y-2 group border border-white/10 shadow-lg"
-    >
-        <div className="w-20 h-20 bg-gradient-to-br from-primary to-accent rounded-2xl mb-5 flex items-center justify-center text-4xl text-white shadow-lg transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6">
-            <i className={category.icon}></i>
-        </div>
-        <h3 className="text-lg font-bold text-white group-hover:text-secondary transition-colors">{category.name}</h3>
-    </div>
-);
-
 const App: React.FC = () => {
     const [user, setUser] = useState<User | null>(null);
     const [selectedLanguage, setSelectedLanguage] = useState(LANGUAGES[0].code);
@@ -202,6 +191,8 @@ const App: React.FC = () => {
     const [favoriteWords, setFavoriteWords] = useState<Word[]>([]);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [apiKey, setApiKey] = useState(localStorage.getItem('gemini_api_key') || '');
+    const [userProgress, setUserProgress] = useState<UserProgress | null>(null);
+    const [isProgressLoading, setIsProgressLoading] = useState(true);
 
     useEffect(() => {
         const unsubscribe = userService.onAuthChange(setUser);
@@ -218,6 +209,19 @@ const App: React.FC = () => {
             localStorage.setItem('theme', 'light');
         }
     }, [theme]);
+
+    const fetchUserProgress = useCallback(async () => {
+        if (user) {
+            setIsProgressLoading(true);
+            const progress = await userService.getUserProgress(user.id, selectedLanguage);
+            setUserProgress(progress);
+            setIsProgressLoading(false);
+        }
+    }, [user, selectedLanguage]);
+    
+    useEffect(() => {
+        fetchUserProgress();
+    }, [fetchUserProgress]);
 
     const handleApiKeyChange = (key: string) => {
         setApiKey(key);
@@ -280,6 +284,22 @@ const App: React.FC = () => {
         await fetchFavoriteWords();
     }, [user, favoriteWords, selectedLanguage, fetchFavoriteWords]);
     
+    const navigateTo = (newView: View) => {
+        soundService.playNavigationSound();
+         if (newView === 'dashboard') {
+            setActiveCategory(null);
+        }
+        setView(newView);
+    };
+
+    const handleLessonComplete = async (score: number, totalQuestions: number) => {
+        if (user && activeCategory) {
+            await userService.updateUserProgress(user.id, selectedLanguage, activeCategory, score, totalQuestions);
+            await fetchUserProgress(); // Re-fetch progress to update UI
+        }
+        navigateTo('dashboard');
+    };
+
     const isReady = !!user;
 
     const currentLanguage = useMemo(() => LANGUAGES.find(l => l.code === selectedLanguage)!, [selectedLanguage]);
@@ -290,11 +310,6 @@ const App: React.FC = () => {
         }
         return null;
     }, [selectedLanguage, activeCategory]);
-
-    const navigateTo = (newView: View) => {
-        soundService.playNavigationSound();
-        setView(newView);
-    };
 
     const toggleTheme = () => {
         soundService.playGenericClick();
@@ -310,7 +325,7 @@ const App: React.FC = () => {
                     return <Lesson 
                                 content={generatedContent} 
                                 language={currentLanguage} 
-                                onComplete={() => navigateTo('dashboard')}
+                                onComplete={handleLessonComplete}
                                 favoriteWords={favoriteWords}
                                 onToggleFavorite={toggleFavoriteWord}
                             />;
@@ -320,6 +335,13 @@ const App: React.FC = () => {
                 return <GamesSection language={currentLanguage} apiKey={apiKey} />;
             case 'chat':
                 return <ChatSection language={currentLanguage} user={user!} apiKey={apiKey} />;
+            case 'progress':
+                return <ProgressSection 
+                            progress={userProgress} 
+                            favoriteWordsCount={favoriteWords.length}
+                            categories={CATEGORIES}
+                            isLoading={isProgressLoading}
+                        />;
             case 'grammar':
                 switch (selectedLanguage) {
                     case 'en-US': return <GrammarSection />;
@@ -337,17 +359,11 @@ const App: React.FC = () => {
             case 'dashboard':
             default:
                 return (
-                    <div className="p-4 md:p-8 w-full h-full overflow-y-auto">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                            {CATEGORIES.map(category => (
-                                <CategoryCard 
-                                    key={category.id}
-                                    category={category}
-                                    onClick={() => handleCategoryChange(category.id)}
-                                />
-                            ))}
-                        </div>
-                    </div>
+                     <LearningMap 
+                        categories={CATEGORIES}
+                        progress={userProgress}
+                        onCategoryClick={handleCategoryChange}
+                    />
                 );
         }
     };

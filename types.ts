@@ -1,5 +1,3 @@
-
-
 // This file contains all the core types used throughout the language learning application.
 
 // ====================================================================================
@@ -58,6 +56,22 @@ export type User = {
     name: string;
     avatar: string;
 };
+
+/** Represents a user's learning progress for a specific language. */
+export type UserProgress = {
+    completed_lessons: CategoryId[];
+    total_score: number;
+    total_questions_answered: number;
+};
+
+/** Represents a single entry on the weekly leaderboard. */
+export type LeaderboardEntry = {
+    language_code: string;
+    user_name: string;
+    user_avatar: string;
+    total_score: number;
+};
+
 
 // ====================================================================================
 // LESSON & CONTENT STRUCTURE
@@ -278,6 +292,46 @@ export interface Database {
           word?: Json
         }
         Relationships: []
+      }
+      user_progress: {
+        Row: {
+            id: number
+            user_id: string
+            language_code: string
+            completed_lessons: Json | null
+            total_score: number
+            total_questions_answered: number
+            created_at: string
+            updated_at: string | null
+        }
+        Insert: {
+            id?: number
+            user_id: string
+            language_code: string
+            completed_lessons?: Json | null
+            total_score?: number
+            total_questions_answered?: number
+            created_at?: string
+            updated_at?: string | null
+        }
+        Update: {
+            id?: number
+            user_id?: string
+            language_code?: string
+            completed_lessons?: Json | null
+            total_score?: number
+            total_questions_answered?: number
+            created_at?: string
+            updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_progress_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
       }
     }
     Views: {

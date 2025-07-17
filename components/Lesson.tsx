@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { GeneratedContent, Language, Word, ReadingExercise, ListeningExercise, QuizQuestion } from '../types';
 import ReadingSection from './content/ReadingSection';
@@ -14,7 +12,7 @@ import * as soundService from '../services/soundService';
 interface LessonProps {
     content: GeneratedContent;
     language: Language;
-    onComplete: () => void;
+    onComplete: (score: number, totalQuestions: number) => void;
     favoriteWords: Word[];
     onToggleFavorite: (word: Word) => void;
 }
@@ -56,6 +54,10 @@ const Lesson: React.FC<LessonProps> = ({ content, language, onComplete, favorite
         setScore(0);
     }, [content]);
 
+    const totalInteractiveSteps = useMemo(() => 
+        steps.filter(step => step.type !== 'words' && step.type !== 'complete').length
+    , [steps]);
+
     const handleStepComplete = (isCorrect: boolean) => {
         if (isCorrect) {
             setScore(prev => prev + 1);
@@ -77,17 +79,13 @@ const Lesson: React.FC<LessonProps> = ({ content, language, onComplete, favorite
             setCurrentStepIndex(steps.length);
         }
     };
-    
-    const totalInteractiveSteps = useMemo(() => 
-        steps.filter(step => step.type !== 'words' && step.type !== 'complete').length
-    , [steps]);
 
     if (steps.length === 0) {
         return <div>Loading lesson...</div>;
     }
 
     if (currentStepIndex >= steps.length) {
-        return <LessonComplete score={score} total={totalInteractiveSteps} onFinish={onComplete} />;
+        return <LessonComplete score={score} total={totalInteractiveSteps} onFinish={() => onComplete(score, totalInteractiveSteps)} />;
     }
 
     const currentStep = steps[currentStepIndex];

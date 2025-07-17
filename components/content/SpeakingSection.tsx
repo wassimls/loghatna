@@ -178,12 +178,22 @@ const SpeakingSection: React.FC<SpeakingSectionProps> = ({ language, phrase, onC
                 </div>
             </div>
 
-             {hasRecorded && !speechError && (
+             {hasRecorded && !speechError ? (
                  <FeedbackFooter 
                     isCorrect={isCorrect}
                     correctAnswer={`النطق الصحيح: "${phraseToSay}"`}
                     onContinue={() => onComplete(isCorrect)}
                 />
+            ) : (
+                <div className="w-full p-4 md:p-6 mt-auto text-center">
+                    <button
+                        onClick={() => onComplete(false)}
+                        className="btn bg-gray-200 dark:bg-slate-600 text-dark dark:text-light py-3 px-8 rounded-full font-bold transition-transform duration-300 hover:scale-105 shadow-sm flex items-center justify-center mx-auto"
+                    >
+                        تخطي التمرين
+                        <i className="fas fa-forward mr-2"></i>
+                    </button>
+                </div>
             )}
         </div>
     );

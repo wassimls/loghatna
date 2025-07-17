@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Language } from '../types';
 import * as soundService from '../services/soundService';
 
-type View = 'dashboard' | 'lesson' | 'games' | 'chat' | 'grammar';
+type View = 'dashboard' | 'lesson' | 'games' | 'chat' | 'grammar' | 'progress';
 
 const ApiKeyInput: React.FC<{ apiKey: string; onApiKeyChange: (key: string) => void; forModal?: boolean;}> = ({ apiKey, onApiKeyChange, forModal = false }) => {
     const [localKey, setLocalKey] = useState(apiKey);
@@ -98,6 +98,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         { view: 'dashboard', icon: 'fa-book-open', label: 'الدروس' },
         { view: 'grammar', icon: 'fa-spell-check', label: 'القواعد' },
         { view: 'games', icon: 'fa-gamepad', label: 'الألعاب' },
+        { view: 'progress', icon: 'fa-chart-line', label: 'التقدم' },
         { view: 'chat', icon: 'fa-comments', label: 'الدردشة' },
     ];
 

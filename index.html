@@ -85,6 +85,20 @@
         .animate-shake {
             animation: shake 0.5s ease-in-out;
         }
+        
+        @keyframes pulse-glow {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 10px #ffc700, 0 0 20px #ffc700;
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 20px #ffc700, 0 0 40px #ffc700;
+            }
+        }
+        .animate-pulse-glow {
+            animation: pulse-glow 2s infinite ease-in-out;
+        }
 
         @keyframes antenna-blink {
             0% { background-color: #ffc700; box-shadow: 0 0 5px #ffc700, 0 0 8px #ffc700; }
@@ -208,8 +222,8 @@
     "react": "https://esm.sh/react@^19.1.0",
     "react-dom/": "https://esm.sh/react-dom@^19.1.0/",
     "react/": "https://esm.sh/react@^19.1.0/",
-    "@google/genai": "https://esm.sh/@google/genai@^1.9.0",
-    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@^2.50.5"
+    "@google/genai": "https://esm.sh/@google/genai@^1.10.0",
+    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@^2.51.0"
   }
 }
 </script>

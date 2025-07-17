@@ -1,4 +1,4 @@
-import { User, Word, ChatMessage, Json, Database } from '../types';
+import { User, Word, ChatMessage, Json, Database, UserProgress, CategoryId, LeaderboardEntry } from '../types';
 import { AVATAR_EMOJIS } from '../constants';
 import { supabase, supabaseConfigError } from './supabase';
 import { AuthChangeEvent, Session, PostgrestResponse, PostgrestSingleResponse } from '@supabase/supabase-js';
@@ -241,4 +241,127 @@ export const removeFavoriteWord = async (userId: string, wordText: string, langu
         console.error('Error removing favorite word:', error);
         throw new Error('Failed to remove favorite word');
     }
+};
+
+
+// --- User Progress ---
+
+export const getUserProgress = async (userId: string, languageCode: string): Promise<UserProgress | null> => {
+    ensureSupabaseIsConfigured();
+    const { data, error } = await supabase!
+        .from('user_progress')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('language_code', languageCode)
+        .single();
+
+    if (error && error.code !== 'PGRST116') { // Ignore "no rows found" error
+        console.error('Error fetching user progress:', error);
+        return null;
+    }
+    if (!data) return null;
+
+    return {
+        completed_lessons: (data.completed_lessons as CategoryId[] | null) || [],
+        total_score: data.total_score || 0,
+        total_questions_answered: data.total_questions_answered || 0,
+    };
+};
+
+export const updateUserProgress = async (
+    userId: string,
+    languageCode: string,
+    categoryId: CategoryId,
+    score: number,
+    totalQuestions: number
+): Promise<void> => {
+    ensureSupabaseIsConfigured();
+
+    const { data: existingProgress, error: fetchError } = await supabase!
+        .from('user_progress')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('language_code', languageCode)
+        .single();
+
+    if (fetchError && fetchError.code !== 'PGRST116') {
+        console.error('Error fetching progress before update:', fetchError);
+        return;
+    }
+
+    const completed = (existingProgress?.completed_lessons as CategoryId[] | null) || [];
+    const completedSet = new Set(completed);
+    completedSet.add(categoryId);
+
+    const updatedProgress = {
+        user_id: userId,
+        language_code: languageCode,
+        completed_lessons: Array.from(completedSet) as Json,
+        total_score: (existingProgress?.total_score || 0) + score,
+        total_questions_answered: (existingProgress?.total_questions_answered || 0) + totalQuestions,
+        updated_at: new Date().toISOString(),
+    };
+
+    const { error: upsertError } = await supabase!
+        .from('user_progress')
+        .upsert(updatedProgress, { onConflict: 'user_id, language_code' });
+
+    if (upsertError) {
+        console.error('Error updating user progress:', upsertError);
+    }
+};
+
+// --- Leaderboard ---
+
+/**
+ * Fetches the top user for each language.
+ * This function requires a corresponding RPC function to be created in the Supabase backend
+ * for security and performance reasons.
+ * 
+ * SUPABASE SQL FUNCTION (create in SQL Editor):
+ * 
+ * create or replace function get_leaderboard()
+ * returns table (
+ *     language_code text,
+ *     total_score bigint,
+ *     user_name text,
+ *     user_avatar text
+ * )
+ * language plpgsql
+ * as $$
+ * begin
+ *   return query
+ *   with ranked_scores as (
+ *     select
+ *       up.language_code,
+ *       up.total_score,
+ *       up.user_id,
+ *       row_number() over (partition by up.language_code order by up.total_score desc, up.updated_at asc) as rn
+ *     from public.user_progress up
+ *     where up.total_score > 0
+ *   )
+ *   select
+ *     rs.language_code,
+ *     rs.total_score,
+ *     u.raw_user_meta_data->>'name' as user_name,
+ *     u.raw_user_meta_data->>'avatar' as user_avatar
+ *   from ranked_scores rs
+ *   join auth.users u on rs.user_id = u.id
+ *   where rs.rn = 1;
+ * end;
+ * $$;
+ * 
+ * The above function is an all-time leaderboard. For a weekly leaderboard, the query
+ * would need to be adapted to filter by `updated_at` for the current week.
+ */
+export const getLeaderboard = async (): Promise<LeaderboardEntry[]> => {
+    ensureSupabaseIsConfigured();
+    const { data, error } = await supabase!.rpc('get_leaderboard');
+
+    if (error) {
+        console.error("Error fetching leaderboard:", error);
+        throw new Error("فشل في جلب قائمة المتصدرين. قد تكون ميزة تجريبية وتتطلب إعدادًا إضافيًا في قاعدة البيانات.");
+    }
+
+    return (data as unknown as LeaderboardEntry[]) || [];
 };

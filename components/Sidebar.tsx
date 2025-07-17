@@ -79,6 +79,7 @@ interface SidebarProps {
     onLogout: () => void;
     apiKey: string;
     onApiKeyChange: (key: string) => void;
+    onReferralClick: () => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -92,7 +93,8 @@ const Sidebar: React.FC<SidebarProps> = ({
     onThemeChange,
     onLogout,
     apiKey,
-    onApiKeyChange
+    onApiKeyChange,
+    onReferralClick
 }) => {
     const navItems = [
         { view: 'dashboard', icon: 'fa-book-open', label: 'الدروس' },
@@ -127,6 +129,15 @@ const Sidebar: React.FC<SidebarProps> = ({
                             <span className="font-semibold text-base">{item.label}</span>
                         </button>
                     ))}
+                </div>
+                 <div className="mt-6 border-t border-white/10 pt-6">
+                     <button
+                        onClick={onReferralClick}
+                        className="w-full p-4 rounded-xl flex items-center gap-4 text-right transition-all duration-300 bg-gradient-to-r from-accent to-pink-500 text-white shadow-lg hover:scale-105"
+                    >
+                        <i className="fas fa-gift text-lg w-6 text-center"></i>
+                        <span className="font-semibold text-base">ادعُ صديقًا</span>
+                    </button>
                 </div>
             </nav>
 

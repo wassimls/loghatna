@@ -7,6 +7,7 @@ import * as soundService from './services/soundService';
 import Header from './components/Header';
 import GamesSection from './components/content/GamesSection';
 import AuthPage from './components/auth/AuthPage';
+import PaymentSuccessPage from './components/auth/PaymentSuccessPage';
 import Lesson from './components/Lesson';
 import ChatSection from './components/content/ChatSection';
 import GrammarSection from './components/content/GrammarSection';
@@ -23,6 +24,7 @@ import PlaceholderSection from './components/content/PlaceholderSection';
 import Sidebar from './components/Sidebar';
 import ProgressSection from './components/content/ProgressSection';
 import LearningMap from './components/content/LearningMap';
+import ReferralModal from './components/shared/ReferralModal';
 
 type Theme = 'light' | 'dark';
 type View = 'dashboard' | 'lesson' | 'games' | 'chat' | 'grammar' | 'progress';
@@ -98,7 +100,8 @@ const SettingsModal: React.FC<{
     onThemeChange: () => void;
     apiKey: string;
     onApiKeyChange: (key: string) => void;
-}> = ({ onClose, languages, selectedLanguage, onLanguageChange, theme, onThemeChange, apiKey, onApiKeyChange }) => {
+    onReferralClick: () => void;
+}> = ({ onClose, languages, selectedLanguage, onLanguageChange, theme, onThemeChange, apiKey, onApiKeyChange, onReferralClick }) => {
     return (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={onClose}>
             <div className="bg-dark/80 backdrop-blur-lg rounded-2xl p-6 w-full max-w-sm border border-white/10 text-white animate-fadeIn" onClick={e => e.stopPropagation()}>
@@ -138,6 +141,16 @@ const SettingsModal: React.FC<{
                             </button>
                         </div>
                     </div>
+                </div>
+
+                <div className="mt-8 border-t border-white/10 pt-4">
+                     <button
+                        onClick={onReferralClick}
+                        className="w-full p-3 rounded-xl flex items-center justify-center gap-3 text-center transition-all duration-300 bg-gradient-to-r from-accent to-pink-500 text-white shadow-lg hover:scale-105"
+                    >
+                        <i className="fas fa-gift"></i>
+                        <span className="font-semibold text-base">ادعُ صديقًا</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -193,6 +206,24 @@ const App: React.FC = () => {
     const [apiKey, setApiKey] = useState(localStorage.getItem('gemini_api_key') || '');
     const [userProgress, setUserProgress] = useState<UserProgress | null>(null);
     const [isProgressLoading, setIsProgressLoading] = useState(true);
+    const [isReferralModalOpen, setIsReferralModalOpen] = useState(false);
+    const [isPaymentFlow, setIsPaymentFlow] = useState(false);
+
+    useEffect(() => {
+        if (window.location.pathname.startsWith('/payment-success')) {
+            setIsPaymentFlow(true);
+        }
+    }, []);
+
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const refId = urlParams.get('ref');
+        if (refId) {
+            localStorage.setItem('referral_code', refId);
+            const newUrl = `${window.location.protocol}//${window.location.host}${window.location.pathname}`;
+            window.history.replaceState({ path: newUrl }, '', newUrl);
+        }
+    }, []);
 
     useEffect(() => {
         const unsubscribe = userService.onAuthChange(setUser);
@@ -367,6 +398,10 @@ const App: React.FC = () => {
                 );
         }
     };
+
+    if (isPaymentFlow) {
+        return <PaymentSuccessPage />;
+    }
     
     if (!isReady) {
         return <AuthPage />;
@@ -386,6 +421,7 @@ const App: React.FC = () => {
                 onLogout={handleLogout}
                 apiKey={apiKey}
                 onApiKeyChange={handleApiKeyChange}
+                onReferralClick={() => setIsReferralModalOpen(true)}
             />
             <div className="flex-1 flex flex-col h-full overflow-hidden">
                 <Header
@@ -414,6 +450,16 @@ const App: React.FC = () => {
                     onThemeChange={toggleTheme}
                     apiKey={apiKey}
                     onApiKeyChange={handleApiKeyChange}
+                    onReferralClick={() => {
+                        setIsSettingsOpen(false);
+                        setIsReferralModalOpen(true);
+                    }}
+                />
+            )}
+            {isReferralModalOpen && user && (
+                <ReferralModal
+                    userId={user.id}
+                    onClose={() => setIsReferralModalOpen(false)}
                 />
             )}
         </div>

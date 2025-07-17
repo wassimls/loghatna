@@ -1,13 +1,14 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import * as soundService from '../../services/soundService';
 
 interface LessonCompleteProps {
     score: number;
     total: number;
-    onFinish: () => void;
+    onFinish: () => void | Promise<void>;
 }
 
 const LessonComplete: React.FC<LessonCompleteProps> = ({ score, total, onFinish }) => {
+    const [isSaving, setIsSaving] = useState(false);
     const percentage = total > 0 ? Math.round((score / total) * 100) : 100;
     let message = 'نتيجة رائعة! استمر في التعلم.';
     if (percentage === 100) message = 'ممتاز! لقد أتقنت هذا الدرس!';
@@ -17,10 +18,13 @@ const LessonComplete: React.FC<LessonCompleteProps> = ({ score, total, onFinish 
         soundService.playLessonCompleteSound();
     }, []);
 
-    const handleFinish = () => {
+    const handleFinish = async () => {
+        if (isSaving) return;
+        setIsSaving(true);
         soundService.playNavigationSound();
-        onFinish();
-    }
+        await onFinish();
+        // The component will unmount, no need to setIsSaving(false)
+    };
     
     return (
         <div className="p-8 flex-1 flex flex-col items-center justify-center text-center animate-fadeIn">
@@ -34,9 +38,22 @@ const LessonComplete: React.FC<LessonCompleteProps> = ({ score, total, onFinish 
                 نتيجتك: {score} من {total}
             </p>
             <p className="text-lg text-gray-300 mb-8">{message}</p>
-            <button onClick={handleFinish} className="btn bg-gradient-to-r from-accent to-pink-500 text-white py-3 px-8 rounded-full font-bold transition-transform duration-300 hover:scale-105 flex items-center gap-2 shadow-lg">
-                <i className="fas fa-arrow-left"></i>
-                العودة للرئيسية
+            <button 
+                onClick={handleFinish} 
+                disabled={isSaving}
+                className="btn bg-gradient-to-r from-accent to-pink-500 text-white py-3 px-8 rounded-full font-bold transition-all duration-300 hover:scale-105 flex items-center gap-2 shadow-lg disabled:opacity-70 disabled:cursor-wait"
+            >
+                {isSaving ? (
+                    <>
+                        <i className="fas fa-spinner fa-spin"></i>
+                        <span>جاري الحفظ...</span>
+                    </>
+                ) : (
+                    <>
+                        <i className="fas fa-arrow-left"></i>
+                        <span>العودة للرئيسية</span>
+                    </>
+                )}
             </button>
         </div>
     );

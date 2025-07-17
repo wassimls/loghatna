@@ -12,7 +12,7 @@ import * as soundService from '../services/soundService';
 interface LessonProps {
     content: GeneratedContent;
     language: Language;
-    onComplete: (score: number, totalQuestions: number) => void;
+    onComplete: (score: number, totalQuestions: number) => void | Promise<void>;
     favoriteWords: Word[];
     onToggleFavorite: (word: Word) => void;
 }

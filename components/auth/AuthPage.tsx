@@ -1,5 +1,7 @@
 import React, { useState, FormEvent } from 'react';
 import * as userService from '../../services/userService';
+import * as paymentService from '../../services/paymentService';
+import * as soundService from '../../services/soundService';
 
 const AuthPage: React.FC = () => {
     const [isLoginView, setIsLoginView] = useState(true);
@@ -14,23 +16,39 @@ const AuthPage: React.FC = () => {
         e.preventDefault();
         setError(null);
         setIsLoading(true);
+        soundService.playGenericClick();
 
-        // Only handle login since signup form is disabled
-        if (isLoginView) {
-            try {
+        try {
+            if (isLoginView) {
                 await userService.login(email, password);
-            } catch (err) {
-                setError(err instanceof Error ? err.message : 'حدث خطأ غير متوقع.');
-            } finally {
-                setIsLoading(false);
+                // On successful login, onAuthChange will redirect.
+            } else {
+                // Signup flow with payment
+                if (name.trim().length < 3) throw new Error('يجب أن يتكون الاسم من 3 أحرف على الأقل.');
+                if (password.length < 6) throw new Error('يجب أن تتكون كلمة المرور من 6 أحرف على الأقل.');
+                
+                // Store user data in sessionStorage to retrieve after payment
+                const signupData = { name, email, password };
+                sessionStorage.setItem('mindlingo_signup_data', JSON.stringify(signupData));
+                
+                // Create payment invoice and redirect
+                const invoice = await paymentService.createInvoice(email, name);
+
+                if (invoice && invoice.payment_url) {
+                    window.location.href = invoice.payment_url;
+                } else {
+                    throw new Error("تعذر إنشاء فاتورة الدفع. حاول مرة أخرى.");
+                }
             }
-        } else {
-            // Signup logic is effectively disabled as the form is not rendered
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'حدث خطأ غير متوقع.');
             setIsLoading(false);
-        }
+        } 
+        // Note: setIsLoading(false) is not called on success for the signup flow
+        // because the page will redirect away.
     };
 
-    if (signupSuccess) {
+    if (signupSuccess) { // This part is now handled by PaymentSuccessPage, but kept for fallback.
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-space-start to-space-end p-4 animate-fadeIn">
                 <div className="w-full max-w-md bg-dark/70 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-white/10 text-center">
@@ -63,6 +81,15 @@ const AuthPage: React.FC = () => {
         )
     }
 
+    const getButtonText = () => {
+        if (isLoading) {
+            return isLoginView 
+                ? <><i className="fas fa-spinner fa-spin mr-2"></i>جاري الدخول...</>
+                : <><i className="fas fa-spinner fa-spin mr-2"></i>جاري التوجيه للدفع...</>;
+        }
+        return isLoginView ? 'تسجيل الدخول' : 'متابعة للدفع (1500.00 د.ج)';
+    }
+
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-space-start to-space-end p-4 animate-fadeIn">
             <div className="flex items-center gap-4 z-10 mb-8">
@@ -80,70 +107,65 @@ const AuthPage: React.FC = () => {
                     {isLoginView ? 'تسجيل الدخول' : 'إنشاء حساب جديد'}
                 </h2>
 
-                {isLoginView ? (
-                    <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    {!isLoginView && (
                         <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-gray-200 mb-2">البريد الإلكتروني</label>
+                            <label htmlFor="name" className="block text-sm font-medium text-gray-200 mb-2">الاسم</label>
                             <div className="relative">
-                                <span className="absolute inset-y-0 left-0 flex items-center pl-3"><i className="fas fa-envelope text-gray-400"></i></span>
+                                <span className="absolute inset-y-0 left-0 flex items-center pl-3"><i className="fas fa-user text-gray-400"></i></span>
                                 <input
-                                    id="email"
-                                    type="email"
-                                    value={email}
-                                    onChange={e => setEmail(e.target.value)}
+                                    id="name"
+                                    type="text"
+                                    value={name}
+                                    onChange={e => setName(e.target.value)}
                                     required
                                     className="w-full p-3 pl-10 rounded-lg bg-dark/70 text-white border-2 border-transparent focus:border-secondary focus:outline-none transition-colors"
-                                    placeholder="example@email.com"
+                                    placeholder="أدخل اسمك"
                                 />
                             </div>
                         </div>
-                        <div>
-                            <label htmlFor="password"  className="block text-sm font-medium text-gray-200 mb-2">كلمة المرور</label>
-                            <div className="relative">
-                                <span className="absolute inset-y-0 left-0 flex items-center pl-3"><i className="fas fa-lock text-gray-400"></i></span>
-                                <input
-                                    id="password"
-                                    type="password"
-                                    value={password}
-                                    onChange={e => setPassword(e.target.value)}
-                                    required
-                                    className="w-full p-3 pl-10 rounded-lg bg-dark/70 text-white border-2 border-transparent focus:border-secondary focus:outline-none transition-colors"
-                                    placeholder="********"
-                                />
-                            </div>
+                    )}
+                    <div>
+                        <label htmlFor="email" className="block text-sm font-medium text-gray-200 mb-2">البريد الإلكتروني</label>
+                        <div className="relative">
+                            <span className="absolute inset-y-0 left-0 flex items-center pl-3"><i className="fas fa-envelope text-gray-400"></i></span>
+                            <input
+                                id="email"
+                                type="email"
+                                value={email}
+                                onChange={e => setEmail(e.target.value)}
+                                required
+                                className="w-full p-3 pl-10 rounded-lg bg-dark/70 text-white border-2 border-transparent focus:border-secondary focus:outline-none transition-colors"
+                                placeholder="example@email.com"
+                            />
                         </div>
-                        
-                        {error && <p className="text-sm text-center text-red-300 font-bold bg-red-500/20 p-3 rounded-lg animate-shake">{error}</p>}
-                        
-                        <button
-                            type="submit"
-                            disabled={isLoading}
-                            className="w-full bg-gradient-to-r from-secondary to-yellow-400 text-dark py-3 rounded-lg font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-wait"
-                        >
-                            {isLoading ? <i className="fas fa-spinner fa-spin"></i> : 'تسجيل الدخول'}
-                        </button>
-                    </form>
-                ) : (
-                    <div className="text-center p-6 bg-dark/70 rounded-lg border border-white/10 animate-fadeIn">
-                        <h3 className="text-lg font-bold text-white mb-3">
-                            <i className="fas fa-pause-circle text-secondary mr-2"></i>
-                            إنشاء حساب جديد متوقف مؤقتاً
-                        </h3>
-                        <p className="text-gray-300 mb-4">
-                            لإنشاء حساب، يرجى التواصل معنا مباشرة عبر صفحتنا على انستغرام.
-                        </p>
-                        <a
-                            href="https://www.instagram.com/mindl_ingo/"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center justify-center gap-3 w-full bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 text-white py-3 rounded-lg font-bold text-lg transition-transform hover:scale-105 shadow-lg"
-                        >
-                            <i className="fab fa-instagram text-2xl"></i>
-                            <span>راسلنا على انستغرام</span>
-                        </a>
                     </div>
-                )}
-
+                    <div>
+                        <label htmlFor="password"  className="block text-sm font-medium text-gray-200 mb-2">كلمة المرور</label>
+                        <div className="relative">
+                            <span className="absolute inset-y-0 left-0 flex items-center pl-3"><i className="fas fa-lock text-gray-400"></i></span>
+                            <input
+                                id="password"
+                                type="password"
+                                value={password}
+                                onChange={e => setPassword(e.target.value)}
+                                required
+                                className="w-full p-3 pl-10 rounded-lg bg-dark/70 text-white border-2 border-transparent focus:border-secondary focus:outline-none transition-colors"
+                                placeholder="********"
+                            />
+                        </div>
+                    </div>
+                    
+                    {error && <p className="text-sm text-center text-red-300 font-bold bg-red-500/20 p-3 rounded-lg animate-shake">{error}</p>}
+                    
+                    <button
+                        type="submit"
+                        disabled={isLoading}
+                        className="w-full bg-gradient-to-r from-secondary to-yellow-400 text-dark py-3 rounded-lg font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-wait flex items-center justify-center"
+                    >
+                       {getButtonText()}
+                    </button>
+                </form>
 
                 <p className="mt-6 text-center text-sm text-gray-400">
                     {isLoginView ? 'ليس لديك حساب؟' : 'لديك حساب بالفعل؟'}

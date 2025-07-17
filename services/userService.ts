@@ -14,14 +14,20 @@ export const signup = async (name: string, email: string, password: string): Pro
     ensureSupabaseIsConfigured();
     const avatar = AVATAR_EMOJIS[Math.floor(Math.random() * AVATAR_EMOJIS.length)];
     
+    const referrerId = localStorage.getItem('referral_code');
+    const userData: { [key: string]: any } = {
+        name,
+        avatar,
+    };
+    if (referrerId) {
+        userData.referred_by = referrerId;
+    }
+
     const { data, error } = await supabase!.auth.signUp({
         email,
         password,
         options: {
-            data: {
-                name,
-                avatar,
-            },
+            data: userData,
         },
     });
 
@@ -38,6 +44,11 @@ export const signup = async (name: string, email: string, password: string): Pro
         }
         console.error("Supabase signup error: ", error);
         throw new Error('فشل في إنشاء الحساب. تأكد من أن بريدك الإلكتروني صالح.');
+    }
+    
+    // If signup is successful (even if it needs confirmation), remove the referral code
+    if (!error && referrerId) {
+        localStorage.removeItem('referral_code');
     }
     
     // Returns true if the user exists, but there's no session, which means confirmation is required.

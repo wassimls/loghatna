@@ -79,6 +79,8 @@ interface SidebarProps {
     onLogout: () => void;
     apiKey: string;
     onApiKeyChange: (key: string) => void;
+    onReferralClick: () => void;
+    onSupportClick: () => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -92,10 +94,12 @@ const Sidebar: React.FC<SidebarProps> = ({
     onThemeChange,
     onLogout,
     apiKey,
-    onApiKeyChange
+    onApiKeyChange,
+    onReferralClick,
+    onSupportClick
 }) => {
     const navItems = [
-        { view: 'dashboard', icon: 'fa-map-signs', label: 'الخريطة' },
+        { view: 'dashboard', icon: 'fa-book-open', label: 'الدروس' },
         { view: 'grammar', icon: 'fa-spell-check', label: 'القواعد' },
         { view: 'games', icon: 'fa-gamepad', label: 'الألعاب' },
         { view: 'progress', icon: 'fa-chart-line', label: 'التقدم' },
@@ -127,6 +131,22 @@ const Sidebar: React.FC<SidebarProps> = ({
                             <span className="font-semibold text-base">{item.label}</span>
                         </button>
                     ))}
+                </div>
+                 <div className="mt-6 border-t border-white/10 pt-6 space-y-2">
+                     <button
+                        onClick={onReferralClick}
+                        className="w-full p-4 rounded-xl flex items-center gap-4 text-right transition-all duration-300 bg-gradient-to-r from-accent to-pink-500 text-white shadow-lg hover:scale-105"
+                    >
+                        <i className="fas fa-gift text-lg w-6 text-center"></i>
+                        <span className="font-semibold text-base">ادعُ صديقًا</span>
+                    </button>
+                    <button
+                        onClick={onSupportClick}
+                        className="w-full p-4 rounded-xl flex items-center gap-4 text-right transition-all duration-300 bg-blue-600 hover:bg-blue-700 text-white shadow-lg"
+                    >
+                        <i className="fas fa-headset text-lg w-6 text-center"></i>
+                        <span className="font-semibold text-base">الدعم الفني</span>
+                    </button>
                 </div>
             </nav>
 

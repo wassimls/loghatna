@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Language } from '../types';
 import * as soundService from '../services/soundService';
 
-type View = 'dashboard' | 'lesson' | 'games' | 'chat' | 'grammar' | 'progress';
+type View = 'dashboard' | 'lesson' | 'games' | 'chat' | 'grammar' | 'account' | 'explore';
 
 const ApiKeyInput: React.FC<{ apiKey: string; onApiKeyChange: (key: string) => void; forModal?: boolean;}> = ({ apiKey, onApiKeyChange, forModal = false }) => {
     const [localKey, setLocalKey] = useState(apiKey);
@@ -97,11 +97,11 @@ const Sidebar: React.FC<SidebarProps> = ({
     onReferralClick
 }) => {
     const navItems = [
-        { view: 'dashboard', icon: 'fa-book-open', label: 'الدروس' },
-        { view: 'grammar', icon: 'fa-spell-check', label: 'القواعد' },
-        { view: 'games', icon: 'fa-gamepad', label: 'الألعاب' },
-        { view: 'progress', icon: 'fa-chart-line', label: 'التقدم' },
-        { view: 'chat', icon: 'fa-comments', label: 'الدردشة' },
+        { view: 'dashboard', icon: 'fas fa-book-open', label: 'الدروس' },
+        { view: 'explore', icon: 'fas fa-book-reader', label: 'استكشف' },
+        { view: 'chat', icon: 'fas fa-comments', label: 'الدردشة' },
+        { view: 'grammar', icon: 'fas fa-spell-check', label: 'القواعد' },
+        { view: 'games', icon: 'fas fa-gamepad', label: 'الألعاب' },
     ];
 
     const isViewActive = (view: View) => {
@@ -125,19 +125,10 @@ const Sidebar: React.FC<SidebarProps> = ({
                             onClick={() => onNavigate(item.view as View)}
                             className={`w-full p-4 rounded-xl flex items-center gap-4 text-right transition-all duration-300 ${isViewActive(item.view as View) ? 'bg-secondary text-dark shadow-lg' : 'bg-dark/50 text-white hover:bg-white/20'}`}
                         >
-                            <i className={`fas ${item.icon} text-lg w-6 text-center`}></i>
+                            <i className={`${item.icon} text-lg w-6 text-center`}></i>
                             <span className="font-semibold text-base">{item.label}</span>
                         </button>
                     ))}
-                </div>
-                 <div className="mt-6 border-t border-white/10 pt-6">
-                     <button
-                        onClick={onReferralClick}
-                        className="w-full p-4 rounded-xl flex items-center gap-4 text-right transition-all duration-300 bg-gradient-to-r from-accent to-pink-500 text-white shadow-lg hover:scale-105"
-                    >
-                        <i className="fas fa-gift text-lg w-6 text-center"></i>
-                        <span className="font-semibold text-base">ادعُ صديقًا</span>
-                    </button>
                 </div>
             </nav>
 

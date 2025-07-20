@@ -7,7 +7,6 @@ import * as soundService from './services/soundService';
 import Header from './components/Header';
 import GamesSection from './components/content/GamesSection';
 import AuthPage from './components/auth/AuthPage';
-import PaymentSuccessPage from './components/auth/PaymentSuccessPage';
 import Lesson from './components/Lesson';
 import ChatSection from './components/content/ChatSection';
 import GrammarSection from './components/content/GrammarSection';
@@ -20,14 +19,22 @@ import KoreanGrammarSection from './components/content/KoreanGrammarSection';
 import ChineseGrammarSection from './components/content/ChineseGrammarSection';
 import JapaneseGrammarSection from './components/content/JapaneseGrammarSection';
 import TurkishGrammarSection from './components/content/TurkishGrammarSection';
+import ExploreSection from './components/content/ExploreSection';
 import PlaceholderSection from './components/content/PlaceholderSection';
 import Sidebar from './components/Sidebar';
-import ProgressSection from './components/content/ProgressSection';
 import LearningMap from './components/content/LearningMap';
 import ReferralModal from './components/shared/ReferralModal';
+import SupportModal from './components/shared/SupportModal';
+import PlansPage from './components/subscription/PlansPage';
+import SubscriptionPage from './components/subscription/SubscriptionPage';
+import SubscriptionSuccessPage from './components/subscription/SubscriptionSuccessPage';
+import AccountPage from './components/content/AccountPage';
+import PlacementTest from './components/content/PlacementTest';
+
 
 type Theme = 'light' | 'dark';
-type View = 'dashboard' | 'lesson' | 'games' | 'chat' | 'grammar' | 'progress';
+type View = 'dashboard' | 'lesson' | 'games' | 'grammar' | 'plans' | 'subscription' | 'subscription_success' | 'account' | 'explore' | 'placement_test' | 'chat';
+
 
 const ApiKeyInput: React.FC<{ apiKey: string; onApiKeyChange: (key: string) => void; forModal?: boolean;}> = ({ apiKey, onApiKeyChange, forModal = false }) => {
     const [localKey, setLocalKey] = useState(apiKey);
@@ -100,8 +107,7 @@ const SettingsModal: React.FC<{
     onThemeChange: () => void;
     apiKey: string;
     onApiKeyChange: (key: string) => void;
-    onReferralClick: () => void;
-}> = ({ onClose, languages, selectedLanguage, onLanguageChange, theme, onThemeChange, apiKey, onApiKeyChange, onReferralClick }) => {
+}> = ({ onClose, languages, selectedLanguage, onLanguageChange, theme, onThemeChange, apiKey, onApiKeyChange }) => {
     return (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={onClose}>
             <div className="bg-dark/80 backdrop-blur-lg rounded-2xl p-6 w-full max-w-sm border border-white/10 text-white animate-fadeIn" onClick={e => e.stopPropagation()}>
@@ -142,16 +148,6 @@ const SettingsModal: React.FC<{
                         </div>
                     </div>
                 </div>
-
-                <div className="mt-8 border-t border-white/10 pt-4">
-                     <button
-                        onClick={onReferralClick}
-                        className="w-full p-3 rounded-xl flex items-center justify-center gap-3 text-center transition-all duration-300 bg-gradient-to-r from-accent to-pink-500 text-white shadow-lg hover:scale-105"
-                    >
-                        <i className="fas fa-gift"></i>
-                        <span className="font-semibold text-base">ادعُ صديقًا</span>
-                    </button>
-                </div>
             </div>
         </div>
     );
@@ -163,31 +159,31 @@ const BottomNav: React.FC<{
     className?: string;
 }> = ({ currentView, onNavigate, className = '' }) => {
     const navItems = [
-        { view: 'dashboard', icon: 'fa-map-signs', label: 'الخريطة' },
-        { view: 'grammar', icon: 'fa-spell-check', label: 'القواعد' },
-        { view: 'games', icon: 'fa-gamepad', label: 'الألعاب' },
-        { view: 'progress', icon: 'fa-chart-line', label: 'التقدم' },
-        { view: 'chat', icon: 'fa-comments', label: 'الدردشة' },
+        { view: 'dashboard', icon: 'fas fa-map', label: 'الخريطة' },
+        { view: 'explore', icon: 'fas fa-book-reader', label: 'استكشف' },
+        { view: 'chat', icon: 'fas fa-comments', label: 'الدردشة' },
+        { view: 'grammar', icon: 'fas fa-spell-check', label: 'القواعد' },
+        { view: 'games', icon: 'fas fa-gamepad', label: 'الألعاب' },
     ];
     
      const isViewActive = (view: View) => {
         if (view === 'dashboard') {
-            return currentView === 'dashboard' || currentView === 'lesson';
+            return ['dashboard', 'lesson', 'plans', 'subscription', 'subscription_success', 'placement_test'].includes(currentView);
         }
         return currentView === view;
     };
 
     return (
-        <nav className={`bg-dark/70 backdrop-blur-lg border-t border-white/10 flex justify-around p-2.5 ${className}`}>
+        <nav className={`bg-dark/70 backdrop-blur-lg border-t border-white/10 grid grid-cols-5 p-1 ${className}`}>
             {navItems.map(item => (
                  <button
                     key={item.view}
                     onClick={() => onNavigate(item.view as View)}
-                    className={`flex flex-col items-center justify-center gap-1.5 w-16 h-16 rounded-2xl transition-all duration-300
+                    className={`flex flex-col items-center justify-center gap-1.5 flex-1 h-16 rounded-2xl transition-all duration-300
                         ${isViewActive(item.view as View) ? 'bg-secondary text-dark' : 'text-gray-300 hover:text-white'}
                     `}
                 >
-                    <i className={`fas ${item.icon} text-xl`}></i>
+                    <i className={`text-xl ${item.icon}`}></i>
                     <span className="text-xs font-bold">{item.label}</span>
                 </button>
             ))}
@@ -207,13 +203,8 @@ const App: React.FC = () => {
     const [userProgress, setUserProgress] = useState<UserProgress | null>(null);
     const [isProgressLoading, setIsProgressLoading] = useState(true);
     const [isReferralModalOpen, setIsReferralModalOpen] = useState(false);
-    const [isPaymentFlow, setIsPaymentFlow] = useState(false);
-
-    useEffect(() => {
-        if (window.location.pathname.startsWith('/payment-success')) {
-            setIsPaymentFlow(true);
-        }
-    }, []);
+    const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
+    const [authLoading, setAuthLoading] = useState(true);
 
     useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
@@ -226,7 +217,10 @@ const App: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        const unsubscribe = userService.onAuthChange(setUser);
+        const unsubscribe = userService.onAuthChange((user) => {
+            setUser(user);
+            setAuthLoading(false);
+        });
         return () => unsubscribe();
     }, []);
     
@@ -288,6 +282,11 @@ const App: React.FC = () => {
         }
     };
 
+    const handleUpdatePassword = async (currentPassword: string, newPassword: string) => {
+        // This function can throw errors, which will be caught by the calling component (AccountPage)
+        await userService.updateUserPassword(currentPassword, newPassword);
+    };
+
     const handleLanguageChange = useCallback((langCode: string) => {
         soundService.playNavigationSound();
         setSelectedLanguage(langCode);
@@ -303,16 +302,23 @@ const App: React.FC = () => {
 
     const toggleFavoriteWord = useCallback(async (word: Word) => {
         if (!user) return;
-        
+
         soundService.playGenericClick();
         const isCurrentlyFavorite = favoriteWords.some(favWord => favWord.word === word.word);
 
-        if (isCurrentlyFavorite) {
-            await userService.removeFavoriteWord(user.id, word.word, selectedLanguage);
-        } else {
-            await userService.addFavoriteWord(user.id, word, selectedLanguage);
+        try {
+            if (isCurrentlyFavorite) {
+                await userService.removeFavoriteWord(user.id, word.word, selectedLanguage);
+            } else {
+                await userService.addFavoriteWord(user.id, word, selectedLanguage);
+            }
+        } catch (error) {
+            console.error("Failed to update favorite word in database:", error);
+            // In a real app, you might want to show a toast notification to the user here.
+        } finally {
+            // Always fetch the latest state from the DB to ensure UI consistency.
+            await fetchFavoriteWords();
         }
-        await fetchFavoriteWords();
     }, [user, favoriteWords, selectedLanguage, fetchFavoriteWords]);
     
     const navigateTo = (newView: View) => {
@@ -331,7 +337,41 @@ const App: React.FC = () => {
         navigateTo('dashboard');
     };
 
-    const isReady = !!user;
+    const handleSubscribe = async () => {
+        if (user) {
+            try {
+                const updatedUser = await userService.setUserSubscribed();
+                setUser(updatedUser);
+                navigateTo('subscription_success');
+            } catch (error) {
+                console.error("Failed to subscribe user", error);
+                // Optionally set an error state to show in the UI
+            }
+        }
+    };
+
+    const handleStartPlacementTest = () => {
+        soundService.playNavigationSound();
+        setView('placement_test');
+    };
+
+    const handlePlacementTestComplete = async (score: number, totalQuestions: number) => {
+        if (!user) return;
+
+        let completedLessons: CategoryId[] = [];
+        const percentage = totalQuestions > 0 ? (score / totalQuestions) : 0;
+        
+        if (percentage >= 0.8) { // Intermediate: 80% or more
+            completedLessons = ['alphabet', 'basics', 'greetings', 'numbers', 'colors', 'family', 'food', 'time'];
+        } else if (percentage >= 0.4) { // Elementary: 40% to 79%
+            completedLessons = ['alphabet', 'basics', 'greetings', 'numbers', 'colors'];
+        }
+
+        await userService.updateCompletedLessons(user.id, selectedLanguage, completedLessons);
+        
+        await fetchUserProgress();
+        navigateTo('dashboard');
+    };
 
     const currentLanguage = useMemo(() => LANGUAGES.find(l => l.code === selectedLanguage)!, [selectedLanguage]);
 
@@ -348,8 +388,6 @@ const App: React.FC = () => {
     };
 
     const renderContent = () => {
-        if (!isReady) return <AuthPage />;
-
         switch (view) {
             case 'lesson':
                 if (generatedContent) {
@@ -359,34 +397,76 @@ const App: React.FC = () => {
                                 onComplete={handleLessonComplete}
                                 favoriteWords={favoriteWords}
                                 onToggleFavorite={toggleFavoriteWord}
+                                apiKey={apiKey}
                             />;
                 }
                 return <PlaceholderSection title="اختر فئة" icon="fa-hand-pointer" badge="ابدأ رحلتك" />;
             case 'games':
-                return <GamesSection language={currentLanguage} apiKey={apiKey} />;
-            case 'chat':
-                return <ChatSection language={currentLanguage} user={user!} apiKey={apiKey} />;
-            case 'progress':
-                return <ProgressSection 
-                            progress={userProgress} 
-                            favoriteWordsCount={favoriteWords.length}
-                            categories={CATEGORIES}
-                            isLoading={isProgressLoading}
+                return <GamesSection 
+                            language={currentLanguage} 
+                            apiKey={apiKey}
+                            isSubscribed={user?.is_subscribed || false}
+                            onUnlockClick={() => navigateTo('plans')}
+                        />;
+            case 'explore':
+                 return <ExploreSection 
+                            language={currentLanguage} 
+                            apiKey={apiKey}
+                            userTier={user?.subscription_tier || 'bronze'}
+                            userId={user!.id}
+                            onUnlockClick={() => navigateTo('plans')}
                         />;
             case 'grammar':
+                const grammarProps = {
+                    isSubscribed: user?.is_subscribed || false,
+                    onUnlockClick: () => navigateTo('plans')
+                };
                 switch (selectedLanguage) {
-                    case 'en-US': return <GrammarSection />;
-                    case 'fr-FR': return <FrenchGrammarSection />;
-                    case 'it-IT': return <ItalianGrammarSection />;
-                    case 'es-ES': return <SpanishGrammarSection />;
-                    case 'de-DE': return <GermanGrammarSection />;
-                    case 'ru-RU': return <RussianGrammarSection />;
-                    case 'ko-KR': return <KoreanGrammarSection />;
-                    case 'zh-CN': return <ChineseGrammarSection />;
-                    case 'ja-JP': return <JapaneseGrammarSection />;
-                    case 'tr-TR': return <TurkishGrammarSection />;
-                    default: return <GrammarSection />;
+                    case 'en-US': return <GrammarSection {...grammarProps} />;
+                    case 'fr-FR': return <FrenchGrammarSection {...grammarProps} />;
+                    case 'it-IT': return <ItalianGrammarSection {...grammarProps} />;
+                    case 'es-ES': return <SpanishGrammarSection {...grammarProps} />;
+                    case 'de-DE': return <GermanGrammarSection {...grammarProps} />;
+                    case 'ru-RU': return <RussianGrammarSection {...grammarProps} />;
+                    case 'ko-KR': return <KoreanGrammarSection {...grammarProps} />;
+                    case 'zh-CN': return <ChineseGrammarSection {...grammarProps} />;
+                    case 'ja-JP': return <JapaneseGrammarSection {...grammarProps} />;
+                    case 'tr-TR': return <TurkishGrammarSection {...grammarProps} />;
+                    default: return <GrammarSection {...grammarProps} />;
                 }
+            case 'plans':
+                return <PlansPage onSelectPlan={() => navigateTo('subscription')} />;
+            case 'subscription':
+                return <SubscriptionPage user={user!} onSubscribe={handleSubscribe} />;
+            case 'subscription_success':
+                return <SubscriptionSuccessPage onGoToDashboard={() => navigateTo('dashboard')} />;
+             case 'account':
+                return <AccountPage 
+                            user={user!}
+                            onUpdateName={handleUpdateName}
+                            onUpdateAvatar={handleUpdateAvatar}
+                            onUpdatePassword={handleUpdatePassword}
+                            progress={userProgress}
+                            favoriteWordsCount={favoriteWords.length}
+                            categories={CATEGORIES}
+                            isProgressLoading={isProgressLoading}
+                            onReferralClick={() => setIsReferralModalOpen(true)}
+                            onSupportClick={() => setIsSupportModalOpen(true)}
+                            onLogout={handleLogout}
+                        />;
+            case 'placement_test':
+                return <PlacementTest
+                            language={currentLanguage}
+                            apiKey={apiKey}
+                            onComplete={handlePlacementTestComplete}
+                        />;
+            case 'chat':
+                return <ChatSection
+                    language={currentLanguage}
+                    user={user!}
+                    apiKey={apiKey}
+                    onUnlockClick={() => navigateTo('plans')}
+                />;
             case 'dashboard':
             default:
                 return (
@@ -394,16 +474,23 @@ const App: React.FC = () => {
                         categories={CATEGORIES}
                         progress={userProgress}
                         onCategoryClick={handleCategoryChange}
+                        isSubscribed={user?.is_subscribed || false}
+                        onUnlockClick={() => navigateTo('plans')}
+                        onStartPlacementTest={handleStartPlacementTest}
                     />
                 );
         }
     };
-
-    if (isPaymentFlow) {
-        return <PaymentSuccessPage />;
-    }
     
-    if (!isReady) {
+    if (authLoading) {
+        return (
+            <div className="flex h-full w-full items-center justify-center">
+                <i className="fas fa-spinner fa-spin text-secondary text-5xl"></i>
+            </div>
+        );
+    }
+
+    if (!user) {
         return <AuthPage />;
     }
 
@@ -427,8 +514,7 @@ const App: React.FC = () => {
                 <Header
                     user={user}
                     onLogout={handleLogout}
-                    onUpdateName={handleUpdateName}
-                    onUpdateAvatar={handleUpdateAvatar}
+                    onAccountClick={() => navigateTo('account')}
                     onSettingsClick={() => setIsSettingsOpen(true)}
                 />
                 <main className="flex-1 overflow-y-auto bg-light dark:bg-slate-900/70">
@@ -450,16 +536,18 @@ const App: React.FC = () => {
                     onThemeChange={toggleTheme}
                     apiKey={apiKey}
                     onApiKeyChange={handleApiKeyChange}
-                    onReferralClick={() => {
-                        setIsSettingsOpen(false);
-                        setIsReferralModalOpen(true);
-                    }}
                 />
             )}
             {isReferralModalOpen && user && (
                 <ReferralModal
                     userId={user.id}
                     onClose={() => setIsReferralModalOpen(false)}
+                />
+            )}
+            {isSupportModalOpen && user && (
+                <SupportModal
+                    user={user}
+                    onClose={() => setIsSupportModalOpen(false)}
                 />
             )}
         </div>

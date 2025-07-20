@@ -55,6 +55,9 @@ export type User = {
     email: string;
     name: string;
     avatar: string;
+    subscription_ends_at?: string;
+    is_subscribed?: boolean;
+    subscription_tier?: 'bronze' | 'silver' | 'gold';
 };
 
 /** Represents a user's learning progress for a specific language. */
@@ -121,6 +124,14 @@ export type GeneratedContent = {
     quiz: Quiz;
 };
 
+/** A single question for the placement test. */
+export type PlacementTestQuestion = {
+  questionText: string;
+  options: string[];
+  correctAnswer: string;
+  level: 'easy' | 'medium' | 'hard';
+};
+
 // ====================================================================================
 // GAME TYPES
 // ====================================================================================
@@ -152,9 +163,19 @@ export type SentenceScrambleGame = {
     correctSentence: string;
 };
 
+/** A game where the user answers a multiple-choice question. */
+export type QuizGame = {
+    type: 'quiz';
+    title: string;
+    description: string;
+    question: string;
+    options: string[];
+    correctAnswer: string;
+};
+
 /** A collection of different mini-games. */
 export type GamesCollection = {
-    games: (MatchGame | MissingWordGame | SentenceScrambleGame)[];
+    games: (MatchGame | MissingWordGame | SentenceScrambleGame | QuizGame)[];
 };
 
 // ====================================================================================
@@ -281,6 +302,33 @@ export interface Database {
         }
         Relationships: []
       }
+      referral_usage: {
+        Row: {
+          id: number
+          created_at: string
+          referrer_user_id: string
+          referred_user_id: string
+          referred_user_name: string | null
+          referred_user_email: string | null
+        }
+        Insert: {
+          id?: number
+          created_at?: string
+          referrer_user_id: string
+          referred_user_id: string
+          referred_user_name?: string | null
+          referred_user_email?: string | null
+        }
+        Update: {
+          id?: number
+          created_at?: string
+          referrer_user_id?: string
+          referred_user_id?: string
+          referred_user_name?: string | null
+          referred_user_email?: string | null
+        }
+        Relationships: []
+      }
       user_favorite_words: {
         Row: {
           created_at: string
@@ -303,7 +351,14 @@ export interface Database {
           user_id?: string
           word?: Json
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_favorite_words_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       user_progress: {
         Row: {

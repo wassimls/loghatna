@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Language, User, ChatMessage, SpeechRecognition, SpeechRecognitionEvent, SpeechRecognitionErrorEvent } from '../../types';
 import { streamChatResponse, translateText } from '../../services/geminiService';
@@ -10,6 +8,7 @@ interface ChatSectionProps {
     language: Language;
     user: User;
     apiKey: string;
+    onUnlockClick: () => void;
 }
 
 // ---- Start of new interactive avatar components ----
@@ -172,7 +171,7 @@ const useChatSpeechRecognition = (lang: string, onTranscriptUpdate: (transcript:
 };
 
 
-const ChatSection: React.FC<ChatSectionProps> = ({ language, user, apiKey }) => {
+const ChatSection: React.FC<ChatSectionProps> = ({ language, user, apiKey, onUnlockClick }) => {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -185,7 +184,13 @@ const ChatSection: React.FC<ChatSectionProps> = ({ language, user, apiKey }) => 
     const [speakingIndex, setSpeakingIndex] = useState<number | null>(null);
     const isReady = !!apiKey;
 
+    const [isChatLocked, setIsChatLocked] = useState(false);
+    const [messageCount, setMessageCount] = useState(0);
+
     const { isListening, startListening, speechError } = useChatSpeechRecognition(language.code, setInput);
+    
+    const CHAT_LIMIT = 3;
+    const getLocalStorageKey = useCallback(() => `mindlingo_chat_${user.id}_${new Date().toISOString().split('T')[0]}`, [user.id]);
 
     const systemInstruction = `You are a helpful and friendly language practice partner. Converse with the user, whose name is ${user.name}, in ${language.name}. Keep your responses concise, friendly, and appropriate for a language learner. The user is a native Arabic speaker. You can gently correct their mistakes.`;
 
@@ -195,6 +200,20 @@ const ChatSection: React.FC<ChatSectionProps> = ({ language, user, apiKey }) => 
                 setIsHistoryLoading(false);
                 return;
             };
+
+            if (!user.is_subscribed) {
+                const key = getLocalStorageKey();
+                const storedCount = parseInt(localStorage.getItem(key) || '0', 10);
+                setMessageCount(storedCount);
+                if (storedCount >= CHAT_LIMIT) {
+                    setIsChatLocked(true);
+                } else {
+                    setIsChatLocked(false);
+                }
+            } else {
+                setIsChatLocked(false);
+            }
+
             setIsHistoryLoading(true);
             const history = await userService.getChatHistory(user.id, language.code);
             if (history && history.length > 0) {
@@ -211,7 +230,7 @@ const ChatSection: React.FC<ChatSectionProps> = ({ language, user, apiKey }) => 
         setTranslations({});
         setTranslatingIndex(null);
         setSpeakingIndex(null);
-    }, [language, user, isReady]);
+    }, [language, user, isReady, getLocalStorageKey]);
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -244,9 +263,17 @@ const ChatSection: React.FC<ChatSectionProps> = ({ language, user, apiKey }) => 
     };
 
     const sendMessage = async () => {
-        if (!input.trim() || isLoading || !isReady) return;
+        if (!input.trim() || isLoading || !isReady || isChatLocked) return;
 
         const userMessage: ChatMessage = { role: 'user', text: input };
+
+        let newCount = messageCount;
+        if (!user.is_subscribed) {
+            newCount = messageCount + 1;
+            setMessageCount(newCount);
+            localStorage.setItem(getLocalStorageKey(), newCount.toString());
+        }
+
         const newMessages = [...messages, userMessage];
         setMessages(newMessages);
         setInput('');
@@ -278,13 +305,27 @@ const ChatSection: React.FC<ChatSectionProps> = ({ language, user, apiKey }) => 
             const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred';
             setError(`عذرًا، حدث خطأ أثناء إرسال الرسالة: ${errorMessage}`);
             setMessages(prev => prev.slice(0, -1));
+             if (!user.is_subscribed) {
+                setMessageCount(newCount - 1);
+                localStorage.setItem(getLocalStorageKey(), (newCount - 1).toString());
+            }
         } finally {
             setIsLoading(false);
+            if (!user.is_subscribed && newCount >= CHAT_LIMIT) {
+                setIsChatLocked(true);
+            }
         }
     };
     
     return (
-        <div className="flex-1 flex flex-col h-full animate-fadeIn p-4">
+        <div className="p-4 md:p-8 flex-1 flex flex-col h-full animate-fadeIn">
+            <div className="content-header mb-6">
+                <h2 className="text-secondary text-2xl font-bold flex items-center gap-3">
+                    <i className="fas fa-comments"></i>
+                    الدردشة مع الذكاء الاصطناعي
+                </h2>
+                <p className="text-gray-300">تدرب على {language.name} في محادثة حقيقية!</p>
+            </div>
             <div className="flex-1 bg-dark/50 backdrop-blur-md rounded-2xl shadow-inner p-4 flex flex-col justify-between overflow-hidden border border-white/10">
                  {isHistoryLoading ? (
                     <div className="flex-1 flex justify-center items-center">
@@ -349,32 +390,52 @@ const ChatSection: React.FC<ChatSectionProps> = ({ language, user, apiKey }) => 
                     </div>
                  )}
                 {(error || speechError) && <p className="text-red-400 text-center text-sm my-2 font-semibold animate-shake">{error || speechError}</p>}
-                <div className="input-area mt-4 flex items-center gap-2">
-                    <input
-                        type="text"
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-                        placeholder={isListening ? 'جاري الاستماع...' : (isReady ? `اكتب شيئًا باللغة ${language.name}...` : 'أدخل مفتاح API لتفعيل الدردشة')}
-                        className="flex-1 p-4 rounded-xl bg-white dark:bg-slate-700 border-2 text-dark dark:text-light border-transparent focus:border-blue-500 focus:outline-none transition-colors"
-                        disabled={isLoading || !isReady || isListening}
-                    />
-                     <button
-                        onClick={startListening}
-                        disabled={isLoading || !isReady || isListening}
-                        className={`w-12 h-12 rounded-xl text-xl flex-shrink-0 flex items-center justify-center transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed ${isListening ? 'bg-red-500 text-white' : 'bg-primary text-white'}`}
-                        title="تسجيل صوتي"
-                    >
-                        <i className={`fas fa-microphone-alt ${isListening ? 'fa-beat' : ''}`}></i>
-                    </button>
-                    <button
-                        onClick={sendMessage}
-                        disabled={isLoading || !input.trim() || !isReady}
-                        className="w-12 h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xl flex-shrink-0 flex items-center justify-center transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        <i className="fas fa-paper-plane"></i>
-                    </button>
-                </div>
+                
+                {isChatLocked ? (
+                    <div className="mt-4 text-center p-4 bg-yellow-500/10 border-2 border-secondary rounded-xl">
+                        <h4 className="text-lg font-bold text-secondary">
+                            <i className="fas fa-lock mr-2"></i>
+                            لقد وصلت إلى الحد اليومي للرسائل
+                        </h4>
+                        <p className="text-gray-300 my-2">
+                            للمحادثة بلا حدود، قم بالترقية إلى الخطة الفضية.
+                        </p>
+                        <button
+                            onClick={onUnlockClick}
+                            className="btn bg-gradient-to-r from-secondary to-yellow-400 text-dark py-2 px-6 rounded-full font-bold transition-transform duration-300 hover:scale-105 shadow-lg"
+                        >
+                            <i className="fas fa-unlock-alt mr-2"></i>
+                            الترقية الآن
+                        </button>
+                    </div>
+                ) : (
+                    <div className="input-area mt-4 flex items-center gap-2">
+                        <input
+                            type="text"
+                            value={input}
+                            onChange={(e) => setInput(e.target.value)}
+                            onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+                            placeholder={isListening ? 'جاري الاستماع...' : (isReady ? `اكتب شيئًا باللغة ${language.name}...` : 'أدخل مفتاح API لتفعيل الدردشة')}
+                            className="flex-1 p-4 rounded-xl bg-white dark:bg-slate-700 border-2 text-dark dark:text-light border-transparent focus:border-blue-500 focus:outline-none transition-colors"
+                            disabled={isLoading || !isReady || isListening}
+                        />
+                         <button
+                            onClick={startListening}
+                            disabled={isLoading || !isReady || isListening}
+                            className={`w-12 h-12 rounded-xl text-xl flex-shrink-0 flex items-center justify-center transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed ${isListening ? 'bg-red-500 text-white' : 'bg-primary text-white'}`}
+                            title="تسجيل صوتي"
+                        >
+                            <i className={`fas fa-microphone-alt ${isListening ? 'fa-beat' : ''}`}></i>
+                        </button>
+                        <button
+                            onClick={sendMessage}
+                            disabled={isLoading || !input.trim() || !isReady}
+                            className="w-12 h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xl flex-shrink-0 flex items-center justify-center transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <i className="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );

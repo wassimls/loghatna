@@ -1,5 +1,3 @@
-
-
 import { SpeechSynthesisVoice } from '../types';
 
 // This module provides a robust, singleton-based service for Text-to-Speech (TTS).
@@ -66,26 +64,27 @@ if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
     getVoices();
 }
 
-interface SpeakCallbacks {
+interface SpeakOptions {
     onStart?: () => void;
     onEnd?: () => void;
     onError?: (e: SpeechSynthesisEvent) => void;
+    rate?: number;
 }
 
 /**
  * Speaks the given text using the best available voice for the specified language.
  * @param {string} text The text to be spoken.
  * @param {string} lang The BCP 47 language code (e.g., 'ru-RU', 'ja-JP').
- * @param {SpeakCallbacks} callbacks Optional callbacks for speech events.
+ * @param {SpeakOptions} options Optional callbacks and settings for speech events.
  */
 export const speak = async (
     text: string,
     lang: string,
-    callbacks: SpeakCallbacks = {}
+    options: SpeakOptions = {}
 ) => {
     if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) {
         console.error('Speech Synthesis not supported.');
-        if (callbacks.onError) callbacks.onError({ type: 'error' } as SpeechSynthesisEvent);
+        if (options.onError) options.onError({ type: 'error' } as SpeechSynthesisEvent);
         return;
     }
 
@@ -94,7 +93,14 @@ export const speak = async (
 
     if (availableVoices.length === 0) {
         console.warn("No speech synthesis voices available to speak.");
-        if (callbacks.onError) callbacks.onError({ type: 'error' } as SpeechSynthesisEvent);
+        if (options.onError) {
+             const errorEvent = { 
+                type: 'error', 
+                error: 'no-voice-found', 
+                message: 'No voices available' 
+            } as unknown as SpeechSynthesisEvent;
+            options.onError(errorEvent);
+        }
         return;
     }
     
@@ -102,7 +108,7 @@ export const speak = async (
     window.speechSynthesis.cancel();
 
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 0.9; // A slightly slower rate for better clarity.
+    utterance.rate = options.rate ?? 1.0; // Default to normal speed (1.0)
     utterance.pitch = 1.0;
 
     // --- Advanced Voice Selection Logic ---
@@ -148,22 +154,40 @@ export const speak = async (
     } else {
         const errorMsg = `No voice found for language ${lang}. The browser might not have it installed.`;
         console.warn(errorMsg);
-        if (callbacks.onError) {
+        if (options.onError) {
             // Create a synthetic event-like object for consistency, since SpeechSynthesisErrorEvent is not constructible.
             const errorEvent = { 
                 type: 'error', 
                 error: 'no-voice-found', 
                 message: errorMsg 
             } as unknown as SpeechSynthesisEvent;
-            callbacks.onError(errorEvent);
+            options.onError(errorEvent);
         }
         return; // Important: Stop execution to prevent speaking with a wrong voice.
     }
 
     // Assign callbacks
-    utterance.onstart = callbacks.onStart || (() => {});
-    utterance.onend = callbacks.onEnd || (() => {});
-    utterance.onerror = callbacks.onError || ((e) => console.error("Speech synthesis error", e));
+    utterance.onstart = options.onStart || (() => {});
+    utterance.onend = options.onEnd || (() => {});
+    utterance.onerror = options.onError || ((e) => console.error("Speech synthesis error:", (e as any).error || e));
 
     window.speechSynthesis.speak(utterance);
+};
+
+export const pauseSpeech = () => {
+    if (window.speechSynthesis && window.speechSynthesis.speaking) {
+        window.speechSynthesis.pause();
+    }
+};
+
+export const resumeSpeech = () => {
+    if (window.speechSynthesis && window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+    }
+};
+
+export const cancelSpeech = () => {
+    if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+    }
 };

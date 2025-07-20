@@ -15,9 +15,11 @@ export const signup = async (name: string, email: string, password: string): Pro
     const avatar = AVATAR_EMOJIS[Math.floor(Math.random() * AVATAR_EMOJIS.length)];
     
     const referrerId = localStorage.getItem('referral_code');
+
     const userData: { [key: string]: any } = {
         name,
         avatar,
+        subscription_tier: 'bronze'
     };
     if (referrerId) {
         userData.referred_by = referrerId;
@@ -42,7 +44,7 @@ export const signup = async (name: string, email: string, password: string): Pro
         } else if (error.message.includes("For security purposes")) {
             throw new Error('لقد حاولت التسجيل عدة مرات بسرعة. يرجى الانتظار لمدة دقيقة ثم المحاولة مرة أخرى.');
         }
-        console.error("Supabase signup error: ", error);
+        console.error("Supabase signup error: ", error.message || error);
         throw new Error('فشل في إنشاء الحساب. تأكد من أن بريدك الإلكتروني صالح.');
     }
     
@@ -73,7 +75,7 @@ export const login = async (email: string, password: string): Promise<void> => {
         if (error.message === 'Email not confirmed') {
             throw new Error('لم يتم تأكيد بريدك الإلكتروني. يرجى التحقق من صندوق الوارد والنقر على رابط التأكيد.');
         }
-        console.error("Supabase login error: ", error);
+        console.error("Supabase login error: ", error.message || error);
         throw new Error('فشل في تسجيل الدخول. يرجى المحاولة مرة أخرى.');
     }
 };
@@ -83,7 +85,7 @@ export const logout = async (): Promise<void> => {
     ensureSupabaseIsConfigured();
     const { error } = await supabase!.auth.signOut();
     if (error) {
-        console.error('Error logging out:', error);
+        console.error('Error logging out:', error.message || error);
     }
 };
 
@@ -94,11 +96,15 @@ export const onAuthChange = (callback: (user: User | null) => void): () => void 
         (event: AuthChangeEvent, session: Session | null) => {
             const supabaseUser = session?.user;
             if (supabaseUser) {
+                 const tier = supabaseUser.user_metadata.subscription_tier || (supabaseUser.user_metadata.is_subscribed ? 'silver' : 'bronze');
                 callback({
                     id: supabaseUser.id,
                     email: supabaseUser.email!,
                     name: supabaseUser.user_metadata.name || 'مستخدم جديد',
-                    avatar: supabaseUser.user_metadata.avatar || '😊'
+                    avatar: supabaseUser.user_metadata.avatar || '😊',
+                    subscription_ends_at: supabaseUser.user_metadata.subscription_ends_at,
+                    is_subscribed: supabaseUser.user_metadata.is_subscribed || false,
+                    subscription_tier: tier
                 });
             } else {
                 callback(null);
@@ -117,7 +123,7 @@ export const updateUserName = async (name: string): Promise<User> => {
     });
 
     if (error) {
-        console.error("Supabase update user error: ", error);
+        console.error("Supabase update user error: ", error.message || error);
         throw new Error('فشل في تحديث الاسم. يرجى المحاولة مرة أخرى.');
     }
     
@@ -125,12 +131,15 @@ export const updateUserName = async (name: string): Promise<User> => {
          throw new Error('لم يتم العثور على المستخدم لتحديثه.');
     }
 
-    // Return a user object that matches our app's User type
+    const tier = data.user.user_metadata.subscription_tier || (data.user.user_metadata.is_subscribed ? 'silver' : 'bronze');
     return {
         id: data.user.id,
         email: data.user.email!,
         name: data.user.user_metadata.name || 'مستخدم',
-        avatar: data.user.user_metadata.avatar || '😊'
+        avatar: data.user.user_metadata.avatar || '😊',
+        subscription_ends_at: data.user.user_metadata.subscription_ends_at,
+        is_subscribed: data.user.user_metadata.is_subscribed || false,
+        subscription_tier: tier
     };
 };
 
@@ -143,21 +152,95 @@ export const updateUserAvatar = async (avatar: string): Promise<User> => {
     });
 
     if (error) {
-        console.error("Supabase update user avatar error: ", error);
+        console.error("Supabase update user avatar error: ", error.message || error);
         throw new Error('فشل في تحديث الصورة الرمزية.');
     }
     
     if (!data.user) {
          throw new Error('لم يتم العثور على المستخدم لتحديثه.');
     }
-
+    
+    const tier = data.user.user_metadata.subscription_tier || (data.user.user_metadata.is_subscribed ? 'silver' : 'bronze');
     return {
         id: data.user.id,
         email: data.user.email!,
         name: data.user.user_metadata.name || 'مستخدم',
-        avatar: data.user.user_metadata.avatar || '😊'
+        avatar: data.user.user_metadata.avatar || '😊',
+        subscription_ends_at: data.user.user_metadata.subscription_ends_at,
+        is_subscribed: data.user.user_metadata.is_subscribed || false,
+        subscription_tier: tier
     };
 };
+
+// Update the current user's password
+export const updateUserPassword = async (currentPassword: string, newPassword: string): Promise<void> => {
+    ensureSupabaseIsConfigured();
+
+    // 1. Verify current password by trying to sign in again. This refreshes the user's session, which is required before updating a secure field like password.
+    const { data: { user } } = await supabase!.auth.getUser();
+    if (!user || !user.email) {
+        throw new Error('لا يمكن التحقق من المستخدم الحالي.');
+    }
+    
+    const { error: signInError } = await supabase!.auth.signInWithPassword({
+        email: user.email,
+        password: currentPassword,
+    });
+
+    if (signInError) {
+        if (signInError.message === 'Invalid login credentials') {
+            throw new Error('كلمة المرور الحالية غير صحيحة.');
+        }
+        throw new Error('فشل التحقق من كلمة المرور الحالية.');
+    }
+    
+    // 2. If verification is successful, update to the new password.
+    const { error: updateError } = await supabase!.auth.updateUser({
+        password: newPassword,
+    });
+
+    if (updateError) {
+        console.error("Supabase update password error: ", updateError.message || updateError);
+         if (updateError.message.includes("same as the old password")) {
+             throw new Error('كلمة المرور الجديدة يجب أن تكون مختلفة عن القديمة.');
+        }
+        if (updateError.message.includes("Password should be at least 6 characters")) {
+             throw new Error('كلمة المرور الجديدة ضعيفة جدًا. يجب أن تتكون من 6 أحرف على الأقل.');
+        }
+        throw new Error('فشل في تحديث كلمة المرور. حاول مرة أخرى.');
+    }
+};
+
+
+export const setUserSubscribed = async (): Promise<User> => {
+    ensureSupabaseIsConfigured();
+    const { data, error } = await supabase!.auth.updateUser({
+        data: { 
+            is_subscribed: true,
+            subscription_tier: 'silver' // Default subscription is Silver
+        }
+    });
+
+    if (error) {
+        console.error("Supabase update user subscription error: ", error.message || error);
+        throw new Error('فشل في تحديث حالة الاشتراك.');
+    }
+    
+    if (!data.user) {
+         throw new Error('لم يتم العثور على المستخدم لتحديثه.');
+    }
+
+    const tier = data.user.user_metadata.subscription_tier || (data.user.user_metadata.is_subscribed ? 'silver' : 'bronze');
+    return {
+        id: data.user.id,
+        email: data.user.email!,
+        name: data.user.user_metadata.name || 'مستخدم',
+        avatar: data.user.user_metadata.avatar || '😊',
+        subscription_ends_at: data.user.user_metadata.subscription_ends_at,
+        is_subscribed: data.user.user_metadata.is_subscribed || false,
+        subscription_tier: tier,
+    };
+}
 
 
 // --- Chat History ---
@@ -173,7 +256,7 @@ export const getChatHistory = async (userId: string, languageCode: string): Prom
         .single();
 
     if (error && error.code !== 'PGRST116') { // PGRST116 = no rows found
-        console.error('Error fetching chat history:', error);
+        console.error('Error fetching chat history:', error.message || error);
         return [];
     }
     
@@ -193,7 +276,7 @@ export const saveChatHistory = async (userId: string, languageCode: string, mess
         }, { onConflict: 'user_id, language_code' });
         
     if (error) {
-        console.error('Error saving chat history:', error);
+        console.error('Error saving chat history:', error.message || error);
     }
 };
 
@@ -210,7 +293,7 @@ export const getFavoriteWords = async (userId: string, languageCode: string): Pr
         .eq('language_code', languageCode);
         
     if (error) {
-        console.error('Error fetching favorite words:', error);
+        console.error('Error fetching favorite words:', error.message || error);
         return [];
     }
 
@@ -233,7 +316,7 @@ export const addFavoriteWord = async (userId: string, word: Word, languageCode: 
         });
         
     if (error) {
-        console.error('Error adding favorite word:', error);
+        console.error('Error adding favorite word:', error.message || error);
         throw new Error('Failed to add favorite word');
     }
 };
@@ -249,7 +332,7 @@ export const removeFavoriteWord = async (userId: string, wordText: string, langu
         .eq('word->>word', wordText);
         
     if (error) {
-        console.error('Error removing favorite word:', error);
+        console.error('Error removing favorite word:', error.message || error);
         throw new Error('Failed to remove favorite word');
     }
 };
@@ -267,7 +350,7 @@ export const getUserProgress = async (userId: string, languageCode: string): Pro
         .single();
 
     if (error && error.code !== 'PGRST116') { // Ignore "no rows found" error
-        console.error('Error fetching user progress:', error);
+        console.error('Error fetching user progress:', error.message || error);
         return null;
     }
     if (!data) return null;
@@ -296,7 +379,7 @@ export const updateUserProgress = async (
         .single();
 
     if (fetchError && fetchError.code !== 'PGRST116') {
-        console.error('Error fetching progress before update:', fetchError);
+        console.error('Error fetching progress before update:', fetchError.message || fetchError);
         return;
     }
 
@@ -318,7 +401,32 @@ export const updateUserProgress = async (
         .upsert(updatedProgress, { onConflict: 'user_id, language_code' });
 
     if (upsertError) {
-        console.error('Error updating user progress:', upsertError);
+        console.error('Error updating user progress:', upsertError.message || upsertError);
+    }
+};
+
+export const updateCompletedLessons = async (
+    userId: string,
+    languageCode: string,
+    newlyCompleted: CategoryId[]
+): Promise<void> => {
+    ensureSupabaseIsConfigured();
+
+    const updatedProgress = {
+        user_id: userId,
+        language_code: languageCode,
+        completed_lessons: newlyCompleted as Json,
+        total_score: 0,
+        total_questions_answered: 0,
+        updated_at: new Date().toISOString(),
+    };
+
+    const { error: upsertError } = await supabase!
+        .from('user_progress')
+        .upsert(updatedProgress, { onConflict: 'user_id, language_code' });
+
+    if (upsertError) {
+        console.error('Error setting user progress after placement test:', upsertError.message || upsertError);
     }
 };
 
@@ -370,9 +478,35 @@ export const getLeaderboard = async (): Promise<LeaderboardEntry[]> => {
     const { data, error } = await supabase!.rpc('get_leaderboard');
 
     if (error) {
-        console.error("Error fetching leaderboard:", error);
+        console.error("Error fetching leaderboard:", error.message || error);
         throw new Error("فشل في جلب قائمة المتصدرين. قد تكون ميزة تجريبية وتتطلب إعدادًا إضافيًا في قاعدة البيانات.");
     }
 
     return (data as unknown as LeaderboardEntry[]) || [];
+};
+
+// --- Referral Usage ---
+
+export const logReferralUsage = async (referrerId: string, currentUser: User): Promise<void> => {
+    ensureSupabaseIsConfigured();
+
+    if (!referrerId.trim() || referrerId === currentUser.id) {
+        // Don't log if the code is empty or if it's the user's own code
+        return;
+    }
+
+    const { error } = await supabase!
+        .from('referral_usage')
+        .insert({
+            referrer_user_id: referrerId,
+            referred_user_id: currentUser.id,
+            referred_user_name: currentUser.name,
+            referred_user_email: currentUser.email,
+        });
+
+    if (error) {
+        // We log the error but don't throw it to the user,
+        // as the subscription process is more critical.
+        console.error('Error logging referral usage:', error.message);
+    }
 };

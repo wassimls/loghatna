@@ -1,3 +1,6 @@
+
+
+
 import React, { useState, useEffect } from 'react';
 import { UserProgress, Category, LeaderboardEntry } from '../../types';
 import * as userService from '../../services/userService';
@@ -142,12 +145,7 @@ const ProgressSection: React.FC<{ progress: UserProgress | null; favoriteWordsCo
     const mistakes = total_questions_answered - total_score;
 
     return (
-        <div className="p-4 md:p-6 w-full h-full overflow-y-auto animate-fadeIn">
-            <header className="text-center mb-6">
-                <h1 className="text-4xl font-extrabold text-white">إحصائيات تقدمي</h1>
-                <p className="text-lg text-gray-300 mt-2">نظرة عامة مرئية لرحلتك التعليمية</p>
-            </header>
-
+        <div className="w-full">
             {/* Key Stats Cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                 <StatCard icon="fa-check-double" value={completedCount} label="الدروس المكتملة" color="bg-green-500/80" />

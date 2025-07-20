@@ -14,14 +14,16 @@ const StatusDisplay: React.FC<{ icon: string; color: string; message: string; su
 );
 
 const PaymentSuccessPage: React.FC = () => {
-    const [status, setStatus] = useState< 'verifying' | 'success' | 'error'>('verifying');
+    const [status, setStatus] = useState<'verifying' | 'success_signup' | 'success_renewal' | 'error'>('verifying');
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     useEffect(() => {
-        const verifyAndSignup = async () => {
+        const verifyAndFinalize = async () => {
             try {
                 const urlParams = new URLSearchParams(window.location.search);
                 const invoiceId = urlParams.get('invoice');
+                const isRenewal = urlParams.get('renewal') === 'true';
+
                 if (!invoiceId) {
                     throw new Error("لم يتم العثور على معرّف الفاتورة.");
                 }
@@ -33,21 +35,23 @@ const PaymentSuccessPage: React.FC = () => {
                 }
                 
                 soundService.playCorrectSound();
-                const userDataString = sessionStorage.getItem('mindlingo_signup_data');
-                if (!userDataString) {
-                    throw new Error("لم يتم العثور على بيانات المستخدم لإكمال التسجيل. يرجى محاولة التسجيل مرة أخرى.");
+
+                if (isRenewal) {
+                    await userService.extendSubscription();
+                    setStatus('success_renewal');
+                } else {
+                    const userDataString = sessionStorage.getItem('mindlingo_signup_data');
+                    if (!userDataString) {
+                        throw new Error("لم يتم العثور على بيانات المستخدم لإكمال التسجيل. يرجى محاولة التسجيل مرة أخرى.");
+                    }
+                    const { name, email, password } = JSON.parse(userDataString);
+                    await userService.signup(name, email, password);
+                    sessionStorage.removeItem('mindlingo_signup_data');
+                    setStatus('success_signup');
                 }
-                const { name, email, password } = JSON.parse(userDataString);
-
-                // This will throw an error if signup fails, which will be caught below
-                await userService.signup(name, email, password);
-
-                sessionStorage.removeItem('mindlingo_signup_data');
                 
-                setStatus('success');
                 soundService.playLessonCompleteSound();
 
-                // Redirect to the main app after a short delay
                 setTimeout(() => {
                     window.location.href = '/';
                 }, 3000);
@@ -55,20 +59,22 @@ const PaymentSuccessPage: React.FC = () => {
             } catch (err) {
                 soundService.playIncorrectSound();
                 const message = err instanceof Error ? err.message : 'حدث خطأ غير معروف.';
-                setErrorMessage(`فشل التسجيل: ${message}`);
+                setErrorMessage(`فشل إتمام العملية: ${message}`);
                 setStatus('error');
             }
         };
 
-        verifyAndSignup();
+        verifyAndFinalize();
     }, []);
 
     const renderStatus = () => {
         switch (status) {
             case 'verifying':
                 return <StatusDisplay icon="fa-spinner fa-spin" color="text-secondary" message="جاري التحقق من الدفع..." />;
-            case 'success':
-                return <StatusDisplay icon="fa-check-circle" color="text-green-400" message="تم بنجاح!" subtext="تم إنشاء حسابك. جاري توجيهك إلى التطبيق..." />;
+            case 'success_signup':
+                return <StatusDisplay icon="fa-check-circle" color="text-green-400" message="تم إنشاء الحساب بنجاح!" subtext="جاري توجيهك إلى التطبيق..." />;
+            case 'success_renewal':
+                 return <StatusDisplay icon="fa-check-circle" color="text-green-400" message="تم تجديد الاشتراك بنجاح!" subtext="جاري توجيهك إلى التطبيق..." />;
             case 'error':
                  return (
                     <div className="w-full max-w-md bg-dark/70 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-white/10 text-center animate-fadeIn">

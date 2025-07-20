@@ -1,6 +1,5 @@
 import React, { useState, FormEvent } from 'react';
 import * as userService from '../../services/userService';
-import * as paymentService from '../../services/paymentService';
 import * as soundService from '../../services/soundService';
 
 const AuthPage: React.FC = () => {
@@ -23,32 +22,25 @@ const AuthPage: React.FC = () => {
                 await userService.login(email, password);
                 // On successful login, onAuthChange will redirect.
             } else {
-                // Signup flow with payment
+                // Normal signup flow
                 if (name.trim().length < 3) throw new Error('يجب أن يتكون الاسم من 3 أحرف على الأقل.');
                 if (password.length < 6) throw new Error('يجب أن تتكون كلمة المرور من 6 أحرف على الأقل.');
                 
-                // Store user data in sessionStorage to retrieve after payment
-                const signupData = { name, email, password };
-                sessionStorage.setItem('mindlingo_signup_data', JSON.stringify(signupData));
+                const { confirmationSent } = await userService.signup(name, email, password);
                 
-                // Create payment invoice and redirect
-                const invoice = await paymentService.createInvoice(email, name);
-
-                if (invoice && invoice.payment_url) {
-                    window.location.href = invoice.payment_url;
-                } else {
-                    throw new Error("تعذر إنشاء فاتورة الدفع. حاول مرة أخرى.");
+                if (confirmationSent) {
+                    setSignupSuccess(true);
+                    setIsLoading(false);
                 }
+                // If auto-login happens, onAuthChange handles the redirect.
             }
         } catch (err) {
             setError(err instanceof Error ? err.message : 'حدث خطأ غير متوقع.');
             setIsLoading(false);
-        } 
-        // Note: setIsLoading(false) is not called on success for the signup flow
-        // because the page will redirect away.
+        }
     };
 
-    if (signupSuccess) { // This part is now handled by PaymentSuccessPage, but kept for fallback.
+    if (signupSuccess) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-space-start to-space-end p-4 animate-fadeIn">
                 <div className="w-full max-w-md bg-dark/70 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-white/10 text-center">
@@ -85,9 +77,9 @@ const AuthPage: React.FC = () => {
         if (isLoading) {
             return isLoginView 
                 ? <><i className="fas fa-spinner fa-spin mr-2"></i>جاري الدخول...</>
-                : <><i className="fas fa-spinner fa-spin mr-2"></i>جاري التوجيه للدفع...</>;
+                : <><i className="fas fa-spinner fa-spin mr-2"></i>جاري الإنشاء...</>;
         }
-        return isLoginView ? 'تسجيل الدخول' : 'متابعة للدفع (1500.00 د.ج)';
+        return isLoginView ? 'تسجيل الدخول' : 'إنشاء الحساب';
     }
 
     return (

@@ -1,5 +1,5 @@
-import { GoogleGenAI } from "@google/genai";
-import { GamesCollection, ChatMessage } from '../types';
+import { GoogleGenAI, Type, GenerateContentResponse } from "@google/genai";
+import { GamesCollection, ChatMessage, PlacementTestQuestion } from '../types';
 
 /**
  * Parses a JSON string from the model response, handling potential markdown code fences.
@@ -33,18 +33,20 @@ export const generateGamesForLanguage = async (language: string, apiKey: string)
 
     const systemInstruction = `You are a creative game designer. Your response MUST be a single, valid, minified JSON object with a 'games' key for an Arabic-speaking audience. All titles and descriptions must be in Arabic. Adhere strictly to JSON format rules.`;
     const userPrompt = `
-        Generate a collection of TWO DIFFERENT mini-games for learning "${language}".
-        Randomly choose two different game types from this list: 'match', 'missing_word', 'sentence_scramble'.
+        Generate a collection of THREE DIFFERENT mini-games for learning "${language}".
+        Randomly choose three different game types from this list: 'match', 'missing_word', 'sentence_scramble', 'quiz'.
         The final output MUST be a single JSON object with a "games" key.
         Example Structures:
         - For 'match': { "type": "match", "title": "لعبة المطابقة", "description": "طابق الكلمة بترجمتها الصحيحة.", "items": [ { "id": "...", "word": "...", "translation": "..." }, ... ] }
         - For 'missing_word': { "type": "missing_word", "title": "أكمل الجملة", "description": "اختر الكلمة الصحيحة لإكمال الجملة.", "sentence": "... {blank} ...", "correctWord": "...", "options": ["...", "...", "..."] }
         - For 'sentence_scramble': { "type": "sentence_scramble", "title": "رتب الجملة", "description": "رتب الكلمات لتكوين جملة صحيحة.", "words": ["...", "...", "..."], "correctSentence": "..." }
+        - For 'quiz': { "type": "quiz", "title": "اختبار سريع", "description": "اختر الإجابة الصحيحة على السؤال.", "question": "...", "options": ["...", "...", "..."], "correctAnswer": "..." }
         Guidelines:
-        - Create exactly TWO different games.
+        - Create exactly THREE different games.
         - "match" game: 4 word pairs. 'word' in ${language}, 'translation' in Arabic.
         - "missing_word" game: A simple sentence in ${language} with '{blank}'. Provide 'correctWord' and 3 other 'options' in ${language}.
         - "sentence_scramble" game: Shuffled words for a simple sentence in ${language} and the 'correctSentence'.
+        - "quiz" game: A vocabulary or simple grammar question for learning ${language}. For example, "ما هي ترجمة كلمة 'House'؟" or "أي من هذه الكلمات هو فعل؟". The 'question' MUST be in Arabic. Provide 4 'options' and one 'correctAnswer' in ${language}.
     `;
 
     try {
@@ -129,5 +131,183 @@ export const translateText = async (text: string, sourceLang: string, targetLang
            throw new Error(`حدث خطأ أثناء الترجمة: ${error.message}`);
         }
         throw new Error("حدث خطأ غير معروف أثناء الترجمة.");
+    }
+};
+
+export const getPronunciationFeedback = async (
+    originalText: string, 
+    userTranscript: string, 
+    languageName: string, 
+    apiKey: string
+): Promise<{ score: number; feedback: string; }> => {
+    if (!apiKey) {
+        throw new Error("مفتاح API الخاص بـ Gemini غير متوفر. يرجى إضافته في الإعدادات.");
+    }
+    const ai = new GoogleGenAI({ apiKey });
+    const GEMINI_MODEL = 'gemini-2.5-flash';
+
+    const systemInstruction = `You are a language pronunciation coach for an Arabic-speaking user learning ${languageName}.
+    Your task is to compare the user's spoken transcription to the original target sentence.
+    Provide a score from 0 to 10 based on how closely the transcription matches the target sentence in terms of wording and structure.
+    Also, provide a short, encouraging, and constructive feedback in ARABIC, highlighting one or two words to improve, if any.
+    If the transcription is perfect, give a score of 10 and positive feedback.
+    If the transcription is very different, give a low score and helpful advice.
+    Your entire response MUST be a single, valid, minified JSON object matching the provided schema. Do not include markdown fences.`;
+
+    const userPrompt = `
+    Target Sentence (${languageName}): "${originalText}"
+    User's Transcription: "${userTranscript}"
+    `;
+
+    const schema = {
+        type: Type.OBJECT,
+        properties: {
+            score: {
+                type: Type.INTEGER,
+                description: "A score from 0 (very bad) to 10 (perfect) for pronunciation accuracy based on the transcription."
+            },
+            feedback: {
+                type: Type.STRING,
+                description: "Short, encouraging feedback in Arabic. Mention specific words to improve if necessary."
+            }
+        },
+        required: ["score", "feedback"]
+    };
+
+    try {
+        const response = await ai.models.generateContent({
+            model: GEMINI_MODEL,
+            contents: userPrompt,
+            config: {
+                systemInstruction,
+                responseMimeType: "application/json",
+                responseSchema: schema,
+            }
+        });
+
+        const content = response.text;
+        const parsedResult = parseJsonResponse<{ score: number; feedback: string; }>(content);
+
+        if (!parsedResult) {
+            // Fallback for when JSON parsing fails
+            return { score: 0, feedback: "لم أتمكن من تقييم نطقك. حاول مرة أخرى." };
+        }
+        
+        return parsedResult;
+
+    } catch (error) {
+        console.error("Error getting pronunciation feedback from Gemini:", error);
+        if (error instanceof Error) {
+            throw new Error(`حدث خطأ أثناء تقييم النطق: ${error.message}`);
+        }
+        throw new Error("حدث خطأ غير معروف أثناء تقييم النطق.");
+    }
+};
+
+export const generateAudioStory = async (
+    languageName: string,
+    genre: string,
+    apiKey: string
+): Promise<string | null> => {
+    if (!apiKey) {
+        throw new Error("مفتاح API الخاص بـ Gemini غير متوفر. يرجى إضافته في الإعدادات.");
+    }
+    const ai = new GoogleGenAI({ apiKey });
+    const GEMINI_MODEL = 'gemini-2.5-flash';
+
+    const systemInstruction = `You are a creative storyteller for language learners who are native Arabic speakers.
+    Generate a short, simple story (around 100-150 words) in ${languageName}.
+    The story must be easy to understand for a beginner to intermediate learner.
+    Use common vocabulary and simple sentence structures.
+    Your response MUST ONLY contain the story text. Do not add titles, headings, markdown, or any introductory phrases like "Here is a story:".`;
+
+    const userPrompt = `Please write a story in the "${genre}" genre.`;
+
+    try {
+        const response = await ai.models.generateContent({
+            model: GEMINI_MODEL,
+            contents: userPrompt,
+            config: {
+                systemInstruction,
+            }
+        });
+        
+        const story = response.text.trim();
+        // Basic validation
+        if (story && story.split(' ').length > 10) {
+            return story;
+        }
+        return null;
+    } catch (error) {
+        console.error("Error generating story with Gemini:", error);
+        if (error instanceof Error) {
+            throw new Error(`حدث خطأ أثناء الاتصال بالذكاء الاصطناعي: ${error.message}`);
+        }
+        throw new Error("حدث خطأ أثناء توليد القصة.");
+    }
+};
+
+
+export const generatePlacementTest = async (language: string, apiKey: string): Promise<PlacementTestQuestion[] | null> => {
+    if (!apiKey) {
+        throw new Error("مفتاح API الخاص بـ Gemini غير متوفر. يرجى إضافته في الإعدادات.");
+    }
+    const ai = new GoogleGenAI({ apiKey });
+    const GEMINI_MODEL = 'gemini-2.5-flash';
+
+    const systemInstruction = `You are an expert language test creator for Arabic-speaking users. Your entire response MUST be a single, valid, minified JSON array of objects that strictly adheres to the provided schema. Do not use markdown.`;
+    
+    const userPrompt = `
+        Create a high-quality 10-question placement test for an Arabic-speaking user learning ${language}.
+        The questions must be practical and test contextual understanding of vocabulary and grammar, not just simple translation.
+        
+        CRITICAL INSTRUCTIONS:
+        1. The "questionText" MUST be in ARABIC. It should provide context or a scenario. For example, instead of asking for a direct translation of 'book', ask "أي كلمة تعني 'كتاب'؟".
+        2. The "options" and "correctAnswer" MUST be in ${language}.
+        3. All options must be plausible and grammatically correct possibilities, with only one being the correct answer for the question's context. Avoid joke answers.
+        4. The difficulty MUST be mixed and progressive:
+            - 3 "easy" questions (A1 level): Focus on basic vocabulary (greetings, colors, common objects) and simple sentence completion. Example: "اختر الكلمة المناسبة لإكمال التحية: 'Good ___!'".
+            - 4 "medium" questions (A2 level): Focus on everyday scenarios, basic verb conjugations, and prepositions. Example: "أكمل الجملة: 'I am reading a ___.' باللغة ${language}." with options: book, car, tree, pen.
+            - 3 "hard" questions (B1 level): Focus on understanding different tenses, more complex sentence structures, and nuanced vocabulary choices. Example: "أي جملة هي الأنسب لوصف شيء حدث بالأمس وانتهى؟" with options being sentences in ${language} using different past tenses.
+    `;
+    
+    const schema = {
+        type: Type.ARRAY,
+        items: {
+            type: Type.OBJECT,
+            properties: {
+                questionText: { type: Type.STRING, description: 'The question in Arabic.' },
+                options: { type: Type.ARRAY, items: { type: Type.STRING } },
+                correctAnswer: { type: Type.STRING, description: 'The correct option in the target language.' },
+                level: { type: Type.STRING, description: 'Difficulty level: "easy", "medium", or "hard".' }
+            },
+            required: ['questionText', 'options', 'correctAnswer', 'level']
+        }
+    };
+
+    try {
+        const response = await ai.models.generateContent({
+            model: GEMINI_MODEL,
+            contents: userPrompt,
+            config: {
+                systemInstruction,
+                responseMimeType: "application/json",
+                responseSchema: schema
+            }
+        });
+        
+        const questions = parseJsonResponse<PlacementTestQuestion[]>(response.text);
+        // Basic validation to ensure we got a good response
+        if (questions && questions.length === 10 && questions.every(q => q.options.length > 1)) {
+            return questions;
+        }
+        return null;
+
+    } catch (error) {
+        console.error("Error generating placement test with Gemini:", error);
+        if (error instanceof Error) {
+            throw new Error(`حدث خطأ أثناء إنشاء الاختبار: ${error.message}`);
+        }
+        throw new Error("حدث خطأ غير معروف أثناء إنشاء الاختبار.");
     }
 };

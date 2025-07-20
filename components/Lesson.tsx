@@ -15,6 +15,7 @@ interface LessonProps {
     onComplete: (score: number, totalQuestions: number) => void | Promise<void>;
     favoriteWords: Word[];
     onToggleFavorite: (word: Word) => void;
+    apiKey: string;
 }
 
 type LessonStep = 
@@ -25,7 +26,7 @@ type LessonStep =
     | { type: 'speaking', data: { phrase: string } }
     | { type: 'complete', data: { score: number, total: number } };
 
-const Lesson: React.FC<LessonProps> = ({ content, language, onComplete, favoriteWords, onToggleFavorite }) => {
+const Lesson: React.FC<LessonProps> = ({ content, language, onComplete, favoriteWords, onToggleFavorite, apiKey }) => {
     const [steps, setSteps] = useState<LessonStep[]>([]);
     const [currentStepIndex, setCurrentStepIndex] = useState(0);
     const [score, setScore] = useState(0);
@@ -117,7 +118,7 @@ const Lesson: React.FC<LessonProps> = ({ content, language, onComplete, favorite
             case 'quiz':
                 return <div className={exerciseProps.className}><QuizSection quiz={{title: content.quiz.title, questions: [currentStep.data]}} onRetry={handleStepComplete} /></div>;
             case 'speaking':
-                 return <div className={exerciseProps.className}><SpeakingSection phrase={currentStep.data.phrase} language={language} onComplete={handleStepComplete} /></div>;
+                 return <div className={exerciseProps.className}><SpeakingSection phrase={currentStep.data.phrase} language={language} onComplete={handleStepComplete} apiKey={apiKey} /></div>;
             default:
                 return null;
         }

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ListeningExercise, Language } from '../../types';
 import { speak } from '../../services/audioService';
 import FeedbackFooter from '../shared/FeedbackFooter';
+import VoiceNotAvailableModal from '../shared/VoiceNotAvailableModal';
 
 
 interface ListeningSectionProps {
@@ -14,6 +15,7 @@ const ListeningSection: React.FC<ListeningSectionProps> = ({ exercise, language,
     const [selectedOption, setSelectedOption] = useState<string | null>(null);
     const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
     const [audioState, setAudioState] = useState<'idle' | 'loading' | 'playing' | 'error'>('idle');
+    const [showVoiceModal, setShowVoiceModal] = useState(false);
 
     useEffect(() => {
         setSelectedOption(null);
@@ -34,7 +36,11 @@ const ListeningSection: React.FC<ListeningSectionProps> = ({ exercise, language,
             onStart: () => setAudioState('playing'),
             onEnd: () => setAudioState('idle'),
             onError: (err) => {
-                console.error('Audio playback error:', err);
+                const speechError = (err as any).error || '';
+                console.error('Audio playback error:', speechError, err);
+                if (speechError === 'no-voice-found') {
+                    setShowVoiceModal(true);
+                }
                 setAudioState('error');
             },
         });
@@ -93,7 +99,7 @@ const ListeningSection: React.FC<ListeningSectionProps> = ({ exercise, language,
                     </button>
                 </div>
                 
-                {audioState === 'error' && (
+                {audioState === 'error' && !showVoiceModal && (
                     <p className="text-red-600 dark:text-red-400 text-center -mt-4 mb-4 font-semibold">تعذر تشغيل الصوت.</p>
                 )}
 
@@ -127,6 +133,7 @@ const ListeningSection: React.FC<ListeningSectionProps> = ({ exercise, language,
                     </button>
                 </div>
             )}
+            {showVoiceModal && <VoiceNotAvailableModal onClose={() => setShowVoiceModal(false)} />}
         </div>
     );
 };

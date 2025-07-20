@@ -9,14 +9,15 @@ const API_BASE_URL = 'https://prodapi.slickpay.com/api/v2'; // Corrected URL
  * Creates a new payment invoice using the Slick Pay API.
  * @param userEmail The email of the user making the payment.
  * @param userName The name of the user.
+ * @param successUrlOverride Optional URL to redirect to on success.
  * @returns A promise that resolves to the created invoice data.
  */
-export const createInvoice = async (userEmail: string, userName: string): Promise<Invoice> => {
+export const createInvoice = async (userEmail: string, userName: string, successUrlOverride?: string): Promise<Invoice> => {
     // NOTE: The API documentation provided uses a static contact UUID.
     // In a real application, you would first create a contact for the new user
     // and use their unique contact ID here. We will use a placeholder as per the docs.
     const contactId = '37990d08-fc51-4c32-ad40-1552d13c00d1'; 
-    const successUrl = `${window.location.origin}/payment-success`; // Redirect URL after payment
+    const successUrl = successUrlOverride || `${window.location.origin}/payment-success`;
 
     const response = await fetch(`${API_BASE_URL}/users/invoices`, {
         method: 'POST',

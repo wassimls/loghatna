@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Language, GamesCollection, MatchGame, MissingWordGame, SentenceScrambleGame } from '../../types';
+import { Language, GamesCollection, MatchGame, MissingWordGame, SentenceScrambleGame, QuizGame } from '../../types';
 import { getGames } from '../../services/dataService';
 import * as soundService from '../../services/soundService';
 
 interface GamesSectionProps {
     language: Language;
     apiKey: string;
+    isSubscribed: boolean;
+    onUnlockClick: () => void;
 }
 
 const GameCard: React.FC<{ title: string; description: string; icon: string; children: React.ReactNode }> = ({ title, description, icon, children }) => (
@@ -249,16 +251,99 @@ const SentenceScrambleGameCard: React.FC<{ game: SentenceScrambleGame; onGameCom
     );
 };
 
+const QuizGameCard: React.FC<{ game: QuizGame; onGameComplete: () => void; }> = ({ game, onGameComplete }) => {
+    const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+    const hasAnswered = selectedAnswer !== null;
+    const isCorrect = hasAnswered && selectedAnswer === game.correctAnswer;
 
-const GamesSection: React.FC<GamesSectionProps> = ({ language, apiKey }) => {
+    const handleSelectAnswer = (option: string) => {
+        if (hasAnswered) return;
+        setSelectedAnswer(option);
+        if (option === game.correctAnswer) {
+            soundService.playCorrectSound();
+        } else {
+            soundService.playIncorrectSound();
+        }
+    };
+
+    return (
+        <GameCard title={game.title} description={game.description} icon="fa-question">
+            <div className="flex flex-col justify-center flex-grow">
+                <div className="bg-light dark:bg-dark/50 p-6 rounded-2xl text-center text-xl md:text-2xl font-medium my-6 shadow-inner">
+                    <p>{game.question}</p>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                    {game.options.map((option, index) => {
+                        const baseClasses = "p-4 rounded-xl cursor-pointer transition-all duration-300 text-center font-semibold text-lg border-2 dir-ltr";
+                        const stateClasses = hasAnswered
+                            ? option === game.correctAnswer
+                                ? 'bg-green-100 dark:bg-green-900/50 border-green-400 dark:border-green-600 text-green-800 dark:text-green-200'
+                                : option === selectedAnswer
+                                ? 'bg-red-100 dark:bg-red-900/50 border-red-400 dark:border-red-600 text-red-800 dark:text-red-200'
+                                : 'bg-gray-100 dark:bg-slate-700/50 border-transparent opacity-60'
+                            : 'bg-white dark:bg-slate-700 hover:bg-secondary/10 dark:hover:bg-secondary/20 border-gray-200 dark:border-slate-600';
+
+                        return (
+                            <button key={index} onClick={() => handleSelectAnswer(option)} disabled={hasAnswered} className={`${baseClasses} ${stateClasses}`}>
+                                {option}
+                            </button>
+                        )
+                    })}
+                </div>
+                {isCorrect && hasAnswered && (
+                    <div className="mt-4 p-3 text-center rounded-lg bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-200 font-bold animate-fadeIn flex flex-col items-center gap-2">
+                        <span>🎉 إجابة صحيحة!</span>
+                        <button onClick={onGameComplete} className="btn bg-green-500 hover:bg-green-600 text-white py-2 px-6 rounded-full font-bold transition-transform hover:scale-105">
+                           اللعبة التالية
+                        </button>
+                    </div>
+                )}
+            </div>
+        </GameCard>
+    );
+};
+
+
+const GamesSection: React.FC<GamesSectionProps> = ({ language, apiKey, isSubscribed, onUnlockClick }) => {
     const [games, setGames] = useState<GamesCollection | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [isLocked, setIsLocked] = useState(false);
+    const [timeLeft, setTimeLeft] = useState('');
+
+    const LOCAL_STORAGE_KEY = `mindlingo_last_game_${language.code}`;
+
+    const formatTimeLeft = (ms: number) => {
+        const totalSeconds = Math.floor(ms / 1000);
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+        return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    };
 
     const loadGames = useCallback(async () => {
+        if (!isSubscribed) {
+            const lastPlayTimestamp = localStorage.getItem(LOCAL_STORAGE_KEY);
+            if (lastPlayTimestamp) {
+                const timePassed = Date.now() - parseInt(lastPlayTimestamp, 10);
+                const timeRemaining = (24 * 60 * 60 * 1000) - timePassed;
+                if (timeRemaining > 0) {
+                    setIsLocked(true);
+                    setTimeLeft(formatTimeLeft(timeRemaining));
+                    setIsLoading(false);
+                    return;
+                } else {
+                    localStorage.removeItem(LOCAL_STORAGE_KEY);
+                }
+            }
+        }
+        
         setIsLoading(true);
         setError(null);
         try {
+            if (!isSubscribed) {
+                localStorage.setItem(LOCAL_STORAGE_KEY, Date.now().toString());
+            }
             const gamesData = await getGames(language.name, apiKey);
              if (!gamesData || gamesData.games.length === 0) {
                  throw new Error(`فشل الذكاء الاصطناعي في توليد ألعاب صالحة للغة ${language.name}.`);
@@ -270,7 +355,7 @@ const GamesSection: React.FC<GamesSectionProps> = ({ language, apiKey }) => {
         } finally {
             setIsLoading(false);
         }
-    }, [language, apiKey]);
+    }, [language, apiKey, isSubscribed, LOCAL_STORAGE_KEY]);
 
     useEffect(() => {
         if (apiKey) {
@@ -279,7 +364,27 @@ const GamesSection: React.FC<GamesSectionProps> = ({ language, apiKey }) => {
             setError("الرجاء إدخال مفتاح API في الإعدادات لتوليد الألعاب.");
             setIsLoading(false);
         }
-    }, [loadGames, apiKey]);
+    }, [apiKey, language.code]);
+
+    useEffect(() => {
+        let timer: NodeJS.Timeout;
+        if (isLocked && !isSubscribed) {
+            timer = setInterval(() => {
+                const lastPlayTimestamp = localStorage.getItem(LOCAL_STORAGE_KEY);
+                if (lastPlayTimestamp) {
+                    const timePassed = Date.now() - parseInt(lastPlayTimestamp, 10);
+                    const timeRemaining = (24 * 60 * 60 * 1000) - timePassed;
+                    if (timeRemaining > 0) {
+                        setTimeLeft(formatTimeLeft(timeRemaining));
+                    } else {
+                        setIsLocked(false);
+                        clearInterval(timer);
+                    }
+                }
+            }, 1000);
+        }
+        return () => clearInterval(timer);
+    }, [isLocked, isSubscribed, LOCAL_STORAGE_KEY]);
 
     if (isLoading) {
         return (
@@ -294,6 +399,21 @@ const GamesSection: React.FC<GamesSectionProps> = ({ language, apiKey }) => {
         );
     }
     
+    if (isLocked) {
+        return (
+            <div className="flex-1 p-8 flex flex-col justify-center items-center text-center animate-fadeIn bg-dark/70 rounded-2xl m-4 border border-secondary/50">
+                <i className="fas fa-hourglass-half text-secondary text-5xl mb-4 animate-pulse"></i>
+                <h3 className="text-2xl font-bold text-white mb-2">لقد استنفدت محاولتك اليومية!</h3>
+                <p className="text-gray-300 mb-4">يعود قسم الألعاب بعد:</p>
+                <p className="text-4xl font-bold text-secondary font-mono mb-6">{timeLeft}</p>
+                <button onClick={onUnlockClick} className="btn bg-gradient-to-r from-secondary to-yellow-400 text-dark py-3 px-8 rounded-full font-bold transition-transform duration-300 hover:scale-105 flex items-center gap-2 shadow-lg">
+                    <i className="fas fa-unlock-alt"></i>
+                    افتح اللعب غير المحدود
+                </button>
+            </div>
+        );
+    }
+
     if (error) {
         return (
              <div className="flex-1 p-8 flex flex-col justify-center items-center text-center animate-fadeIn bg-white/10 rounded-2xl m-4">
@@ -323,7 +443,7 @@ const GamesSection: React.FC<GamesSectionProps> = ({ language, apiKey }) => {
                     <span className="hidden sm:inline">ألعاب جديدة</span>
                 </button>
             </div>
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {games.games.map((game, index) => {
                     const key = `${language.code}-${game.type}-${'title' in game ? game.title.replace(/\s/g, '') : index}-${index}`;
                     switch (game.type) {
@@ -333,6 +453,8 @@ const GamesSection: React.FC<GamesSectionProps> = ({ language, apiKey }) => {
                             return <MissingWordGameCard key={key} game={game} onGameComplete={loadGames} />;
                         case 'sentence_scramble':
                              return <SentenceScrambleGameCard key={key} game={game} onGameComplete={loadGames} />;
+                        case 'quiz':
+                             return <QuizGameCard key={key} game={game} onGameComplete={loadGames} />;
                         default:
                             return null;
                     }

@@ -100,40 +100,69 @@ export const logout = async (): Promise<void> => {
 export const onAuthChange = (callback: (user: User | null) => void): () => void => {
     ensureSupabaseIsConfigured();
     const { data: { subscription } } = supabase!.auth.onAuthStateChange(
-        async (event: string, session: any | null) => {
+        (event: string, session: any | null) => {
             const supabaseUser = session?.user;
-            if (supabaseUser) {
-                 // Fetch subscription data from the source of truth: the 'subscriptions' table
-                const { data: subData } = await supabase!
-                    .from('subscriptions')
-                    .select('tier, status, ends_at')
-                    .eq('user_id', supabaseUser.id)
-                    .single();
-
-                let isSubscribed = false;
-                let tier: User['subscription_tier'] = 'bronze';
-                let ends_at: string | undefined = undefined;
-
-                if (subData) {
-                    ends_at = subData.ends_at || undefined;
-                    tier = subData.tier as User['subscription_tier'] || 'bronze';
-                    const hasActiveStatus = subData.status === 'active';
-                    const notExpired = subData.ends_at ? new Date(subData.ends_at) > new Date() : false;
-                    isSubscribed = tier !== 'bronze' && hasActiveStatus && notExpired;
-                }
-
-                callback({
-                    id: supabaseUser.id,
-                    email: supabaseUser.email!,
-                    name: supabaseUser.user_metadata.name || 'مستخدم جديد',
-                    avatar: supabaseUser.user_metadata.avatar || '😊',
-                    subscription_ends_at: ends_at,
-                    is_subscribed: isSubscribed,
-                    subscription_tier: tier
-                });
-            } else {
+            
+            if (!supabaseUser) {
                 callback(null);
+                return;
             }
+
+            // Immediately create and send a basic user object.
+            // This unblocks the UI and prevents the infinite loading screen.
+            const basicUser: User = {
+                id: supabaseUser.id,
+                email: supabaseUser.email!,
+                name: supabaseUser.user_metadata.name || 'مستخدم جديد',
+                avatar: supabaseUser.user_metadata.avatar || '😊',
+                is_subscribed: false, // Assume not subscribed initially
+                subscription_tier: 'bronze', // Default tier
+            };
+            callback(basicUser);
+
+            // Now, asynchronously fetch subscription details to enhance the user object.
+            // This will not block the initial render.
+            (async () => {
+                try {
+                    const { data: subData, error: subError } = await supabase!
+                        .from('subscriptions')
+                        .select('tier, status, ends_at')
+                        .eq('user_id', supabaseUser.id)
+                        .single();
+
+                    if (subError && subError.code !== 'PGRST116') { // Ignore "no rows found"
+                        console.error('Error fetching subscription data:', subError.message);
+                        return; // User is already logged in with basic data, fail gracefully.
+                    }
+
+                    let isSubscribed = false;
+                    let tier: User['subscription_tier'] = 'bronze';
+                    let ends_at: string | undefined = undefined;
+
+                    if (subData) {
+                        ends_at = subData.ends_at || undefined;
+                        tier = subData.tier as User['subscription_tier'] || 'bronze';
+                        const hasActiveStatus = subData.status === 'active';
+                        const notExpired = subData.ends_at ? new Date(subData.ends_at) > new Date() : false;
+                        isSubscribed = tier !== 'bronze' && hasActiveStatus && notExpired;
+                    }
+                    
+                    // Create the full user object with subscription data
+                    const fullUser: User = {
+                        ...basicUser, // Use the already-sent basic data
+                        subscription_ends_at: ends_at,
+                        is_subscribed: isSubscribed,
+                        subscription_tier: tier,
+                    };
+                    
+                    // Call the callback again to update the UI with the full subscription details.
+                    callback(fullUser);
+
+                } catch (e) {
+                    console.error("Error fetching subscription details asynchronously:", e);
+                    // Do nothing on error, the user is already logged in with the basic object.
+                }
+            })();
         }
     );
     return () => subscription.unsubscribe();

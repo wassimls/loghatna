@@ -378,14 +378,7 @@ export interface Database {
           status?: string | null
           ends_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "subscriptions_user_id_fkey"
-            columns: ["user_id"]
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          }
-        ]
+        Relationships: []
       }
       user_favorite_words: {
         Row: {
@@ -409,14 +402,7 @@ export interface Database {
           user_id?: string
           word?: Json
         }
-        Relationships: [
-          {
-            foreignKeyName: "user_favorite_words_user_id_fkey"
-            columns: ["user_id"]
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          }
-        ]
+        Relationships: []
       }
       user_progress: {
         Row: {
@@ -449,14 +435,7 @@ export interface Database {
             created_at?: string
             updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "user_progress_user_id_fkey"
-            columns: ["user_id"]
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          }
-        ]
+        Relationships: []
       }
     }
     Views: {

@@ -1,8 +1,9 @@
 
 
+
 import React, { useState, useEffect } from 'react';
-import { Word, Language } from '../../types';
-import { speak } from '../../services/audioService';
+import { Word, Language } from '../../types.ts';
+import { speak } from '../../services/audioService.ts';
 
 interface FlashcardProps {
     word: Word;

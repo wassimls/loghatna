@@ -1,7 +1,7 @@
 import { User, Word, ChatMessage, Json, Database, UserProgress, CategoryId, LeaderboardEntry, Subscription } from '../types';
 import { AVATAR_EMOJIS } from '../constants';
 import { supabase, supabaseConfigError } from './supabase';
-import { AuthChangeEvent, Session, PostgrestResponse, PostgrestSingleResponse } from '@supabase/supabase-js';
+import { PostgrestResponse, PostgrestSingleResponse } from '@supabase/supabase-js';
 
 const ensureSupabaseIsConfigured = () => {
     if (supabaseConfigError || !supabase) {
@@ -37,7 +37,7 @@ export const signup = async (name: string, email: string, password: string): Pro
         password,
         options: {
             data: userData,
-        },
+        }
     });
 
     if (error) {
@@ -100,7 +100,7 @@ export const logout = async (): Promise<void> => {
 export const onAuthChange = (callback: (user: User | null) => void): () => void => {
     ensureSupabaseIsConfigured();
     const { data: { subscription } } = supabase!.auth.onAuthStateChange(
-        async (event: AuthChangeEvent, session: Session | null) => {
+        async (event: string, session: any | null) => {
             const supabaseUser = session?.user;
             if (supabaseUser) {
                  // Fetch subscription data from the source of truth: the 'subscriptions' table
@@ -119,7 +119,7 @@ export const onAuthChange = (callback: (user: User | null) => void): () => void 
                     tier = subData.tier as User['subscription_tier'] || 'bronze';
                     const hasActiveStatus = subData.status === 'active';
                     const notExpired = subData.ends_at ? new Date(subData.ends_at) > new Date() : false;
-                    isSubscribed = hasActiveStatus && notExpired;
+                    isSubscribed = tier !== 'bronze' && hasActiveStatus && notExpired;
                 }
 
                 callback({
@@ -160,14 +160,15 @@ export const updateUserName = async (name: string): Promise<User> => {
         throw new Error('فشل في تحديث الاسم. يرجى المحاولة مرة أخرى.');
     }
     
-    if (!data.user) {
+    const updatedUser = data.user;
+    if (!updatedUser) {
          throw new Error('لم يتم العثور على المستخدم لتحديثه.');
     }
 
     const { data: subData } = await supabase!
         .from('subscriptions')
         .select('tier, status, ends_at')
-        .eq('user_id', data.user.id)
+        .eq('user_id', updatedUser.id)
         .single();
     
     let isSubscribed = false;
@@ -179,14 +180,14 @@ export const updateUserName = async (name: string): Promise<User> => {
         tier = subData.tier as User['subscription_tier'] || 'bronze';
         const hasActiveStatus = subData.status === 'active';
         const notExpired = subData.ends_at ? new Date(subData.ends_at) > new Date() : false;
-        isSubscribed = hasActiveStatus && notExpired;
+        isSubscribed = tier !== 'bronze' && hasActiveStatus && notExpired;
     }
 
     return {
-        id: data.user.id,
-        email: data.user.email!,
-        name: data.user.user_metadata.name || 'مستخدم',
-        avatar: data.user.user_metadata.avatar || '😊',
+        id: updatedUser.id,
+        email: updatedUser.email!,
+        name: updatedUser.user_metadata.name || 'مستخدم',
+        avatar: updatedUser.user_metadata.avatar || '😊',
         subscription_ends_at: ends_at,
         is_subscribed: isSubscribed,
         subscription_tier: tier
@@ -206,14 +207,15 @@ export const updateUserAvatar = async (avatar: string): Promise<User> => {
         throw new Error('فشل في تحديث الصورة الرمزية.');
     }
     
-    if (!data.user) {
+    const updatedUser = data.user;
+    if (!updatedUser) {
          throw new Error('لم يتم العثور على المستخدم لتحديثه.');
     }
     
      const { data: subData } = await supabase!
         .from('subscriptions')
         .select('tier, status, ends_at')
-        .eq('user_id', data.user.id)
+        .eq('user_id', updatedUser.id)
         .single();
 
     let isSubscribed = false;
@@ -225,14 +227,14 @@ export const updateUserAvatar = async (avatar: string): Promise<User> => {
         tier = subData.tier as User['subscription_tier'] || 'bronze';
         const hasActiveStatus = subData.status === 'active';
         const notExpired = subData.ends_at ? new Date(subData.ends_at) > new Date() : false;
-        isSubscribed = hasActiveStatus && notExpired;
+        isSubscribed = tier !== 'bronze' && hasActiveStatus && notExpired;
     }
     
     return {
-        id: data.user.id,
-        email: data.user.email!,
-        name: data.user.user_metadata.name || 'مستخدم',
-        avatar: data.user.user_metadata.avatar || '😊',
+        id: updatedUser.id,
+        email: updatedUser.email!,
+        name: updatedUser.user_metadata.name || 'مستخدم',
+        avatar: updatedUser.user_metadata.avatar || '😊',
         subscription_ends_at: ends_at,
         is_subscribed: isSubscribed,
         subscription_tier: tier
@@ -242,15 +244,16 @@ export const updateUserAvatar = async (avatar: string): Promise<User> => {
 // Update the current user's password
 export const updateUserPassword = async (currentPassword: string, newPassword: string): Promise<void> => {
     ensureSupabaseIsConfigured();
-
-    // 1. Verify current password by trying to sign in again. This refreshes the user's session, which is required before updating a secure field like password.
+    
     const { data: { user } } = await supabase!.auth.getUser();
-    if (!user || !user.email) {
+
+    if (!user) {
         throw new Error('لا يمكن التحقق من المستخدم الحالي.');
     }
     
+    // We still need to verify the old password. The best way is to try signing in with it.
     const { error: signInError } = await supabase!.auth.signInWithPassword({
-        email: user.email,
+        email: user.email!,
         password: currentPassword,
     });
 
@@ -261,7 +264,7 @@ export const updateUserPassword = async (currentPassword: string, newPassword: s
         throw new Error('فشل التحقق من كلمة المرور الحالية.');
     }
     
-    // 2. If verification is successful, update to the new password.
+    // If verification is successful, update to the new password.
     const { error: updateError } = await supabase!.auth.updateUser({
         password: newPassword,
     });
@@ -284,7 +287,7 @@ export const setUserSubscribed = async (): Promise<User> => {
 
     // 1. Get current user
     const { data: { user } } = await supabase!.auth.getUser();
-    if (!user || !user.email) {
+    if (!user) {
         throw new Error("لا يمكن العثور على المستخدم الحالي أو بريده الإلكتروني لإتمام الاشتراك.");
     }
 
@@ -321,6 +324,57 @@ export const setUserSubscribed = async (): Promise<User> => {
         subscription_tier: newTier,
     };
 }
+
+export const extendSubscription = async (): Promise<User> => {
+    ensureSupabaseIsConfigured();
+
+    const { data: { user } } = await supabase!.auth.getUser();
+    if (!user) {
+        throw new Error("No user found to extend subscription.");
+    }
+
+    const { data: currentSub, error: fetchError } = await supabase!
+        .from('subscriptions')
+        .select('ends_at, tier')
+        .eq('user_id', user.id)
+        .single();
+
+    if (fetchError || !currentSub) {
+        // If no subscription, treat as a new one
+        return setUserSubscribed();
+    }
+
+    const currentEndDate = currentSub.ends_at ? new Date(currentSub.ends_at) : new Date();
+    // Start from today if subscription has expired
+    const startDate = currentEndDate > new Date() ? currentEndDate : new Date();
+    
+    const newEndDate = new Date(startDate);
+    newEndDate.setDate(newEndDate.getDate() + 30); // Add 30 days
+
+    const { error: updateError } = await supabase!
+        .from('subscriptions')
+        .update({
+            ends_at: newEndDate.toISOString(),
+            status: 'active'
+        })
+        .eq('user_id', user.id);
+    
+    if (updateError) {
+        console.error("Supabase extend subscription error:", updateError.message);
+        throw new Error("Failed to extend subscription.");
+    }
+    
+    // Optimistic user return
+    return {
+        id: user.id,
+        email: user.email!,
+        name: user.user_metadata.name || 'مستخدم',
+        avatar: user.user_metadata.avatar || '😊',
+        subscription_ends_at: newEndDate.toISOString(),
+        is_subscribed: true,
+        subscription_tier: currentSub.tier as User['subscription_tier'] || 'silver',
+    };
+};
 
 
 // --- Chat History ---

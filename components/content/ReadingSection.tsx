@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect } from 'react';
-import { ReadingExercise } from '../../types';
-import FeedbackFooter from '../shared/FeedbackFooter';
+import { ReadingExercise } from '../../types.ts';
+import FeedbackFooter from '../shared/FeedbackFooter.tsx';
 
 interface ReadingSectionProps {
     exercise: ReadingExercise | null;

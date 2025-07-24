@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect } from 'react';
-import { Quiz, QuizQuestion } from '../../types';
-import FeedbackFooter from '../shared/FeedbackFooter';
+import { Quiz, QuizQuestion } from '../../types.ts';
+import FeedbackFooter from '../shared/FeedbackFooter.tsx';
 
 
 interface QuizSectionProps {

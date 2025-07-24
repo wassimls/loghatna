@@ -28,11 +28,6 @@ export const createInvoice = async (
     referralCode: string | null
 ): Promise<{ payment_url: string }> => {
     
-    if (BACKEND_API_BASE_URL === 'https://mindlingo-payment.onrender.com/api' && !BACKEND_API_BASE_URL.includes('mindlingo-payment-backend')) {
-        // Remind the user to change the placeholder URL
-        console.warn("تنبيه: أنت تستخدم عنوان URL مؤقت للواجهة الخلفية. يرجى تحديثه في `services/paymentService.ts`.");
-    }
-
     const endpoint = `${BACKEND_API_BASE_URL}/create-invoice`;
     
     const requestBody: { [key: string]: any } = {

@@ -52,13 +52,12 @@ const useSpeechRecognition = (lang: string) => {
 interface ShadowingPracticeProps {
     video: YouTubeVideo;
     language: Language;
-    apiKey: string;
     onClose: () => void;
 }
 
 type Status = 'loading' | 'error' | 'ready' | 'recording' | 'evaluating' | 'feedback';
 
-const ShadowingPractice: React.FC<ShadowingPracticeProps> = ({ video, language, apiKey, onClose }) => {
+const ShadowingPractice: React.FC<ShadowingPracticeProps> = ({ video, language, onClose }) => {
     const [script, setScript] = useState<string[]>([]);
     const [currentSentenceIndex, setCurrentSentenceIndex] = useState(0);
     const [status, setStatus] = useState<Status>('loading');
@@ -72,7 +71,7 @@ const ShadowingPractice: React.FC<ShadowingPracticeProps> = ({ video, language, 
             setStatus('loading');
             setError(null);
             try {
-                const generatedScript = await generateVideoScript(video.videoId, language.name, apiKey);
+                const generatedScript = await generateVideoScript(video.videoId, language.name);
                 if (generatedScript && generatedScript.length > 0) {
                     setScript(generatedScript);
                     setStatus('ready');
@@ -86,7 +85,7 @@ const ShadowingPractice: React.FC<ShadowingPracticeProps> = ({ video, language, 
             }
         };
         fetchScript();
-    }, [video.videoId, language.name, apiKey]);
+    }, [video.videoId, language.name]);
 
     useEffect(() => {
         if (userTranscript && !isListening) {
@@ -94,7 +93,7 @@ const ShadowingPractice: React.FC<ShadowingPracticeProps> = ({ video, language, 
                 setStatus('evaluating');
                 setFeedback(null);
                 try {
-                    const result = await getPronunciationFeedback(script[currentSentenceIndex], userTranscript, language.name, apiKey);
+                    const result = await getPronunciationFeedback(script[currentSentenceIndex], userTranscript, language.name);
                     setFeedback(result);
                     if(result.score > 7) soundService.playCorrectSound(); else soundService.playIncorrectSound();
                 } catch (e) {
@@ -106,7 +105,7 @@ const ShadowingPractice: React.FC<ShadowingPracticeProps> = ({ video, language, 
             };
             evaluate();
         }
-    }, [userTranscript, isListening, script, currentSentenceIndex, language.name, apiKey]);
+    }, [userTranscript, isListening, script, currentSentenceIndex, language.name]);
 
     const resetPractice = () => {
         resetSpeech();

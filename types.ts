@@ -4,6 +4,10 @@
 // GENERAL & UI TYPES
 // ====================================================================================
 
+/** Defines the possible views/pages in the application. */
+export type View = 'dashboard' | 'lesson' | 'games' | 'grammar' | 'account' | 'explore' | 'placement_test' | 'chat' | 'admin';
+
+
 /** Defines the IDs for the main tabs in a lesson. */
 export type TabId = 'words' | 'reading' | 'writing' | 'listening' | 'speaking' | 'quiz' | 'chat';
 
@@ -141,6 +145,12 @@ export type PlacementTestQuestion = {
   options: string[];
   correctAnswer: string;
   level: 'easy' | 'medium' | 'hard';
+};
+
+/** Represents a YouTube video for shadowing practice. */
+export type YouTubeVideo = {
+    videoId: string;
+    title: string;
 };
 
 // ====================================================================================
@@ -467,6 +477,15 @@ export interface Database {
             status: string | null
             ends_at: string | null
             created_at: string
+        }[]
+      }
+      get_leaderboard: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+            language_code: string
+            user_name: string
+            user_avatar: string
+            total_score: number
         }[]
       }
     }

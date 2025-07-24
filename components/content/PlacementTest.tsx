@@ -6,11 +6,10 @@ import * as soundService from '../../services/soundService';
 
 interface PlacementTestProps {
     language: Language;
-    apiKey: string;
     onComplete: (score: number, total: number) => void;
 }
 
-const PlacementTest: React.FC<PlacementTestProps> = ({ language, apiKey, onComplete }) => {
+const PlacementTest: React.FC<PlacementTestProps> = ({ language, onComplete }) => {
     const [questions, setQuestions] = useState<PlacementTestQuestion[]>([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [score, setScore] = useState(0);
@@ -22,14 +21,9 @@ const PlacementTest: React.FC<PlacementTestProps> = ({ language, apiKey, onCompl
 
     useEffect(() => {
         const fetchTest = async () => {
-            if (!apiKey) {
-                setError("يرجى إدخال مفتاح API في الإعدادات لبدء الاختبار.");
-                setStatus('error');
-                return;
-            }
             setStatus('loading');
             try {
-                const testQuestions = await geminiService.generatePlacementTest(language.name, apiKey);
+                const testQuestions = await geminiService.generatePlacementTest(language.name);
                 if (testQuestions && testQuestions.length > 0) {
                     setQuestions(testQuestions);
                     setStatus('active');
@@ -43,7 +37,7 @@ const PlacementTest: React.FC<PlacementTestProps> = ({ language, apiKey, onCompl
         };
 
         fetchTest();
-    }, [language, apiKey]);
+    }, [language]);
 
     useEffect(() => {
         if (status === 'active' && questions.length > 0) {

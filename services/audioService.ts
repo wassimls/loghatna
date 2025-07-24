@@ -1,4 +1,5 @@
-import { SpeechSynthesisVoice } from '../types';
+
+import { SpeechSynthesisVoice } from '../types.ts';
 
 // This module provides a robust, singleton-based service for Text-to-Speech (TTS).
 

@@ -1,11 +1,12 @@
+
+
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Language, GamesCollection, MatchGame, MissingWordGame, SentenceScrambleGame, QuizGame } from '../../types';
-import { getGames } from '../../services/dataService';
-import * as soundService from '../../services/soundService';
+import { Language, GamesCollection, MatchGame, MissingWordGame, SentenceScrambleGame, QuizGame } from '../../types.ts';
+import { getGames } from '../../services/dataService.ts';
+import * as soundService from '../../services/soundService.ts';
 
 interface GamesSectionProps {
     language: Language;
-    apiKey: string;
     isSubscribed: boolean;
     onUnlockClick: () => void;
 }
@@ -304,7 +305,7 @@ const QuizGameCard: React.FC<{ game: QuizGame; onGameComplete: () => void; }> = 
 };
 
 
-const GamesSection: React.FC<GamesSectionProps> = ({ language, apiKey, isSubscribed, onUnlockClick }) => {
+const GamesSection: React.FC<GamesSectionProps> = ({ language, isSubscribed, onUnlockClick }) => {
     const [games, setGames] = useState<GamesCollection | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -344,7 +345,7 @@ const GamesSection: React.FC<GamesSectionProps> = ({ language, apiKey, isSubscri
             if (!isSubscribed) {
                 localStorage.setItem(LOCAL_STORAGE_KEY, Date.now().toString());
             }
-            const gamesData = await getGames(language.name, apiKey);
+            const gamesData = await getGames(language.name);
              if (!gamesData || gamesData.games.length === 0) {
                  throw new Error(`فشل الذكاء الاصطناعي في توليد ألعاب صالحة للغة ${language.name}.`);
             }
@@ -355,21 +356,16 @@ const GamesSection: React.FC<GamesSectionProps> = ({ language, apiKey, isSubscri
         } finally {
             setIsLoading(false);
         }
-    }, [language, apiKey, isSubscribed, LOCAL_STORAGE_KEY]);
+    }, [language, isSubscribed, LOCAL_STORAGE_KEY]);
 
     useEffect(() => {
-        if (apiKey) {
-            loadGames();
-        } else {
-            setError("الرجاء إدخال مفتاح API في الإعدادات لتوليد الألعاب.");
-            setIsLoading(false);
-        }
-    }, [apiKey, language.code]);
+        loadGames();
+    }, [language.code]);
 
     useEffect(() => {
-        let timer: NodeJS.Timeout;
+        let timer: number;
         if (isLocked && !isSubscribed) {
-            timer = setInterval(() => {
+            timer = window.setInterval(() => {
                 const lastPlayTimestamp = localStorage.getItem(LOCAL_STORAGE_KEY);
                 if (lastPlayTimestamp) {
                     const timePassed = Date.now() - parseInt(lastPlayTimestamp, 10);
@@ -378,12 +374,12 @@ const GamesSection: React.FC<GamesSectionProps> = ({ language, apiKey, isSubscri
                         setTimeLeft(formatTimeLeft(timeRemaining));
                     } else {
                         setIsLocked(false);
-                        clearInterval(timer);
+                        window.clearInterval(timer);
                     }
                 }
             }, 1000);
         }
-        return () => clearInterval(timer);
+        return () => window.clearInterval(timer);
     }, [isLocked, isSubscribed, LOCAL_STORAGE_KEY]);
 
     if (isLoading) {
@@ -438,7 +434,7 @@ const GamesSection: React.FC<GamesSectionProps> = ({ language, apiKey, isSubscri
                 <h2 className="text-secondary text-2xl font-bold">
                     ألعاب لغوية
                 </h2>
-                <button onClick={loadGames} className="text-secondary hover:text-yellow-300 transition-colors duration-300 font-bold flex items-center gap-2 disabled:opacity-50" title="توليد ألعاب جديدة" disabled={isLoading || !apiKey}>
+                <button onClick={loadGames} className="text-secondary hover:text-yellow-300 transition-colors duration-300 font-bold flex items-center gap-2 disabled:opacity-50" title="توليد ألعاب جديدة" disabled={isLoading}>
                     <i className="fas fa-redo-alt"></i>
                     <span className="hidden sm:inline">ألعاب جديدة</span>
                 </button>

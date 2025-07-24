@@ -1,16 +1,17 @@
-import { GeneratedContent, GamesCollection, CategoryId, CategoryContent, Quiz, QuizQuestion, Word } from '../types';
-import { CATEGORIES } from '../constants';
-import * as geminiService from './geminiService';
-import { ENGLISH_CONTENT } from './data/en';
-import { FRENCH_CONTENT } from './data/fr';
-import { SPANISH_CONTENT } from './data/es';
-import { ITALIAN_CONTENT } from './data/it';
-import { GERMAN_CONTENT } from './data/de';
-import { RUSSIAN_CONTENT } from './data/ru';
-import { TURKISH_CONTENT } from './data/tr';
-import { CHINESE_CONTENT } from './data/zh';
-import { JAPANESE_CONTENT } from './data/ja';
-import { KOREAN_CONTENT } from './data/ko';
+
+import { GeneratedContent, GamesCollection, CategoryId, CategoryContent, Quiz, QuizQuestion, Word } from '../types.ts';
+import { CATEGORIES } from '../constants.ts';
+import * as geminiService from './geminiService.ts';
+import { ENGLISH_CONTENT } from './data/en.ts';
+import { FRENCH_CONTENT } from './data/fr.ts';
+import { SPANISH_CONTENT } from './data/es.ts';
+import { ITALIAN_CONTENT } from './data/it.ts';
+import { GERMAN_CONTENT } from './data/de.ts';
+import { RUSSIAN_CONTENT } from './data/ru.ts';
+import { TURKISH_CONTENT } from './data/tr.ts';
+import { CHINESE_CONTENT } from './data/zh.ts';
+import { JAPANESE_CONTENT } from './data/ja.ts';
+import { KOREAN_CONTENT } from './data/ko.ts';
 
 // Helper to shuffle an array
 const shuffle = <T,>(array: T[]): T[] => {
@@ -121,12 +122,11 @@ export const getCategoryContent = (languageCode: string, categoryId: CategoryId)
 /**
  * Gets mini-games for a specific language from the AI service.
  * @param language The target language for the games.
- * @param apiKey The user-provided API key.
  * @returns A promise that resolves to the games collection.
  */
-export const getGames = async (language: string, apiKey: string): Promise<GamesCollection | null> => {
+export const getGames = async (language: string): Promise<GamesCollection | null> => {
     try {
-        const generatedGames = await geminiService.generateGamesForLanguage(language, apiKey);
+        const generatedGames = await geminiService.generateGamesForLanguage(language);
         if (generatedGames && generatedGames.games && generatedGames.games.length > 0) {
             return generatedGames;
         }

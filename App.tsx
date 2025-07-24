@@ -1,104 +1,41 @@
+
+
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
-import { CategoryId, Language, GeneratedContent, User, Word, Category, UserProgress } from './types';
-import { CATEGORIES, LANGUAGES } from './constants';
-import { getCategoryContent } from './services/dataService';
-import * as userService from './services/userService';
-import * as soundService from './services/soundService';
-import Header from './components/Header';
-import GamesSection from './components/content/GamesSection';
-import AuthPage from './components/auth/AuthPage';
-import Lesson from './components/Lesson';
-import ChatSection from './components/content/ChatSection';
-import GrammarSection from './components/content/GrammarSection';
-import FrenchGrammarSection from './components/content/FrenchGrammarSection';
-import ItalianGrammarSection from './components/content/ItalianGrammarSection';
-import SpanishGrammarSection from './components/content/SpanishGrammarSection';
-import GermanGrammarSection from './components/content/GermanGrammarSection';
-import RussianGrammarSection from './components/content/RussianGrammarSection';
-import KoreanGrammarSection from './components/content/KoreanGrammarSection';
-import ChineseGrammarSection from './components/content/ChineseGrammarSection';
-import JapaneseGrammarSection from './components/content/JapaneseGrammarSection';
-import TurkishGrammarSection from './components/content/TurkishGrammarSection';
-import ExploreSection from './components/content/ExploreSection';
-import PlaceholderSection from './components/content/PlaceholderSection';
-import Sidebar from './components/Sidebar';
-import LearningMap from './components/content/LearningMap';
-import ReferralModal from './components/shared/ReferralModal';
-import SupportModal from './components/shared/SupportModal';
-import PlansPage from './components/subscription/PlansPage';
-import SubscriptionPage from './components/subscription/SubscriptionPage';
-import SubscriptionSuccessPage from './components/subscription/SubscriptionSuccessPage';
-import AccountPage from './components/content/AccountPage';
-import PlacementTest from './components/content/PlacementTest';
-import PaymentVerificationPage from './components/subscription/PaymentVerificationPage';
-import AdminPage from './components/admin/AdminPage';
+import { CategoryId, Language, GeneratedContent, User, Word, Category, UserProgress, View } from './types.ts';
+import { CATEGORIES, LANGUAGES } from './constants.ts';
+import { getCategoryContent } from './services/dataService.ts';
+import * as userService from './services/userService.ts';
+import * as soundService from './services/soundService.ts';
+import Header from './components/Header.tsx';
+import GamesSection from './components/content/GamesSection.tsx';
+import AuthPage from './components/auth/AuthPage.tsx';
+import Lesson from './components/Lesson.tsx';
+import ChatSection from './components/content/ChatSection.tsx';
+import GrammarSection from './components/content/GrammarSection.tsx';
+import FrenchGrammarSection from './components/content/FrenchGrammarSection.tsx';
+import ItalianGrammarSection from './components/content/ItalianGrammarSection.tsx';
+import SpanishGrammarSection from './components/content/SpanishGrammarSection.tsx';
+import GermanGrammarSection from './components/content/GermanGrammarSection.tsx';
+import RussianGrammarSection from './components/content/RussianGrammarSection.tsx';
+import KoreanGrammarSection from './components/content/KoreanGrammarSection.tsx';
+import ChineseGrammarSection from './components/content/ChineseGrammarSection.tsx';
+import JapaneseGrammarSection from './components/content/JapaneseGrammarSection.tsx';
+import TurkishGrammarSection from './components/content/TurkishGrammarSection.tsx';
+import ExploreSection from './components/content/ExploreSection.tsx';
+import PlaceholderSection from './components/content/PlaceholderSection.tsx';
+import Sidebar from './components/Sidebar.tsx';
+import LearningMap from './components/content/LearningMap.tsx';
+import ReferralModal from './components/shared/ReferralModal.tsx';
+import SupportModal from './components/shared/SupportModal.tsx';
+import AccountPage from './components/content/AccountPage.tsx';
+import PlacementTest from './components/content/PlacementTest.tsx';
+import AdminPage from './components/admin/AdminPage.tsx';
+import UpgradeModal from './components/shared/UpgradeModal.tsx';
 
 
 type Theme = 'light' | 'dark';
-type View = 'dashboard' | 'lesson' | 'games' | 'grammar' | 'plans' | 'subscription' | 'subscription_success' | 'account' | 'explore' | 'placement_test' | 'chat' | 'payment_verification' | 'admin';
 
 
-const ApiKeyInput: React.FC<{ apiKey: string; onApiKeyChange: (key: string) => void; forModal?: boolean;}> = ({ apiKey, onApiKeyChange, forModal = false }) => {
-    const [localKey, setLocalKey] = useState(apiKey);
-    const [showKey, setShowKey] = useState(false);
-    const [justSaved, setJustSaved] = useState(false);
-
-    useEffect(() => {
-        setLocalKey(apiKey);
-    }, [apiKey]);
-
-    const handleSave = () => {
-        soundService.playGenericClick();
-        onApiKeyChange(localKey);
-        setJustSaved(true);
-        setTimeout(() => setJustSaved(false), 2000); // Display checkmark for 2 seconds
-    };
-    
-    const isDirty = localKey !== apiKey;
-
-    return (
-        <div className="api-key-section">
-            <label htmlFor={forModal ? "api-key-modal" : "api-key-sidebar"} className="block mb-2 font-medium text-white text-sm">مفتاح Gemini API:</label>
-            <div className="flex items-center gap-2">
-                <div className="relative grow">
-                    <input
-                        id={forModal ? "api-key-modal" : "api-key-sidebar"}
-                        type={showKey ? "text" : "password"}
-                        value={localKey}
-                        onChange={(e) => {
-                            setLocalKey(e.target.value);
-                            setJustSaved(false);
-                        }}
-                        className="w-full p-3 pl-10 pr-10 border-none rounded-xl font-mono text-xs bg-dark/70 text-white cursor-pointer transition-all duration-300 shadow-inner focus:outline-none focus:ring-2 focus:ring-secondary/50"
-                        placeholder="أدخل مفتاح API الخاص بك..."
-                    />
-                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-secondary">
-                        <i className="fas fa-key"></i>
-                    </div>
-                    <button 
-                        type="button" 
-                        onClick={() => setShowKey(!showKey)} 
-                        className="absolute inset-y-0 left-0 flex items-center px-3 text-gray-400 hover:text-white"
-                        aria-label={showKey ? "إخفاء المفتاح" : "إظهار المفتاح"}
-                    >
-                        <i className={`fas ${showKey ? 'fa-eye-slash' : 'fa-eye'}`}></i>
-                    </button>
-                </div>
-                <button
-                    type="button"
-                    onClick={handleSave}
-                    disabled={!isDirty}
-                    title={justSaved ? "تم الحفظ بنجاح!" : (isDirty ? "حفظ التغييرات" : "تم الحفظ")}
-                    className={`flex-shrink-0 w-12 h-12 rounded-xl text-white transition-all duration-300 flex items-center justify-center text-xl disabled:opacity-60 disabled:cursor-not-allowed
-                        ${justSaved ? 'bg-green-500' : isDirty ? 'bg-secondary' : 'bg-primary'}
-                    `}
-                >
-                    {justSaved ? <i className="fas fa-check"></i> : <i className="fas fa-save"></i>}
-                </button>
-            </div>
-        </div>
-    );
-};
 
 const SettingsModal: React.FC<{
     onClose: () => void;
@@ -107,12 +44,10 @@ const SettingsModal: React.FC<{
     onLanguageChange: (languageCode: string) => void;
     theme: 'light' | 'dark';
     onThemeChange: () => void;
-    apiKey: string;
-    onApiKeyChange: (key: string) => void;
     onLogout: () => void;
     onReferralClick: () => void;
     onSupportClick: () => void;
-}> = ({ onClose, languages, selectedLanguage, onLanguageChange, theme, onThemeChange, apiKey, onApiKeyChange, onLogout, onReferralClick, onSupportClick }) => {
+}> = ({ onClose, languages, selectedLanguage, onLanguageChange, theme, onThemeChange, onLogout, onReferralClick, onSupportClick }) => {
     return (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={onClose}>
             <div className="bg-dark/80 backdrop-blur-lg rounded-2xl p-6 w-full max-w-sm border border-white/10 text-white animate-fadeIn" onClick={e => e.stopPropagation()}>
@@ -138,8 +73,6 @@ const SettingsModal: React.FC<{
                             </div>
                         </div>
                     </div>
-
-                    <ApiKeyInput apiKey={apiKey} onApiKeyChange={onApiKeyChange} forModal={true} />
 
                     <div className="flex items-center justify-between">
                         <span className="font-medium">الوضع</span>
@@ -188,7 +121,7 @@ const BottomNav: React.FC<{
     
      const isViewActive = (view: View) => {
         if (view === 'dashboard') {
-            return ['dashboard', 'lesson', 'plans', 'subscription', 'subscription_success', 'placement_test', 'admin'].includes(currentView);
+            return ['dashboard', 'lesson', 'placement_test', 'admin', 'account'].includes(currentView);
         }
         return currentView === view;
     };
@@ -219,11 +152,11 @@ const App: React.FC = () => {
     const [theme, setTheme] = useState<Theme>('dark');
     const [favoriteWords, setFavoriteWords] = useState<Word[]>([]);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-    const [apiKey, setApiKey] = useState(localStorage.getItem('gemini_api_key') || '');
     const [userProgress, setUserProgress] = useState<UserProgress | null>(null);
     const [isProgressLoading, setIsProgressLoading] = useState(true);
     const [isReferralModalOpen, setIsReferralModalOpen] = useState(false);
     const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
+    const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
     const [authLoading, setAuthLoading] = useState(true);
     const [isAdmin, setIsAdmin] = useState(false);
 
@@ -234,13 +167,7 @@ const App: React.FC = () => {
             localStorage.setItem('referral_code', refId);
         }
 
-        const viewFromUrl = urlParams.get('view');
-        const invoiceFromUrl = urlParams.get('invoice');
-        if (viewFromUrl === 'payment_verification' && invoiceFromUrl) {
-            setView('payment_verification');
-        }
-
-        if (refId || viewFromUrl) {
+        if (refId) {
             const newUrl = `${window.location.protocol}//${window.location.host}${window.location.pathname}`;
             window.history.replaceState({ path: newUrl }, '', newUrl);
         }
@@ -287,11 +214,6 @@ const App: React.FC = () => {
     useEffect(() => {
         fetchUserProgress();
     }, [fetchUserProgress]);
-
-    const handleApiKeyChange = (key: string) => {
-        setApiKey(key);
-        localStorage.setItem('gemini_api_key', key);
-    };
 
     const fetchFavoriteWords = useCallback(async () => {
         if (user) {
@@ -368,6 +290,12 @@ const App: React.FC = () => {
         }
         setView(newView);
     };
+    
+    const handleUnlockClick = () => {
+        soundService.playNavigationSound();
+        setIsUpgradeModalOpen(true);
+    };
+
 
     const handleLessonComplete = async (score: number, totalQuestions: number) => {
         if (user && activeCategory) {
@@ -376,19 +304,6 @@ const App: React.FC = () => {
         }
         navigateTo('dashboard');
     };
-    
-    const handleSubscriptionSuccess = useCallback(async () => {
-        if (user) {
-            try {
-                const updatedUser = await userService.setUserSubscribed();
-                setUser(updatedUser);
-                navigateTo('subscription_success');
-            } catch (error) {
-                console.error("Failed to update user subscription status", error);
-                // Optionally set an error state to show in the UI
-            }
-        }
-    }, [user]);
 
     const handleStartPlacementTest = () => {
         soundService.playNavigationSound();
@@ -437,29 +352,26 @@ const App: React.FC = () => {
                                 onComplete={handleLessonComplete}
                                 favoriteWords={favoriteWords}
                                 onToggleFavorite={toggleFavoriteWord}
-                                apiKey={apiKey}
                             />;
                 }
                 return <PlaceholderSection title="اختر فئة" icon="fa-hand-pointer" badge="ابدأ رحلتك" />;
             case 'games':
                 return <GamesSection 
                             language={currentLanguage} 
-                            apiKey={apiKey}
                             isSubscribed={user?.is_subscribed || false}
-                            onUnlockClick={() => navigateTo('plans')}
+                            onUnlockClick={handleUnlockClick}
                         />;
             case 'explore':
                  return <ExploreSection 
                             language={currentLanguage} 
-                            apiKey={apiKey}
                             userTier={user?.subscription_tier || 'bronze'}
                             userId={user!.id}
-                            onUnlockClick={() => navigateTo('plans')}
+                            onUnlockClick={handleUnlockClick}
                         />;
             case 'grammar':
                 const grammarProps = {
                     isSubscribed: user?.is_subscribed || false,
-                    onUnlockClick: () => navigateTo('plans')
+                    onUnlockClick: handleUnlockClick
                 };
                 switch (selectedLanguage) {
                     case 'en-US': return <GrammarSection {...grammarProps} />;
@@ -474,17 +386,6 @@ const App: React.FC = () => {
                     case 'tr-TR': return <TurkishGrammarSection {...grammarProps} />;
                     default: return <GrammarSection {...grammarProps} />;
                 }
-            case 'plans':
-                return <PlansPage onSelectPlan={() => navigateTo('subscription')} />;
-            case 'subscription':
-                return <SubscriptionPage user={user!} />;
-            case 'payment_verification':
-                return <PaymentVerificationPage 
-                            onVerificationSuccess={handleSubscriptionSuccess}
-                            onVerificationFailure={() => navigateTo('plans')}
-                        />;
-            case 'subscription_success':
-                return <SubscriptionSuccessPage onGoToDashboard={() => navigateTo('dashboard')} />;
              case 'account':
                 return <AccountPage 
                             user={user!}
@@ -499,15 +400,13 @@ const App: React.FC = () => {
             case 'placement_test':
                 return <PlacementTest
                             language={currentLanguage}
-                            apiKey={apiKey}
                             onComplete={handlePlacementTestComplete}
                         />;
             case 'chat':
                 return <ChatSection
                     language={currentLanguage}
                     user={user!}
-                    apiKey={apiKey}
-                    onUnlockClick={() => navigateTo('plans')}
+                    onUnlockClick={handleUnlockClick}
                 />;
             case 'admin':
                 return isAdmin ? <AdminPage /> : <LearningMap 
@@ -515,7 +414,7 @@ const App: React.FC = () => {
                         progress={userProgress}
                         onCategoryClick={handleCategoryChange}
                         isSubscribed={user?.is_subscribed || false}
-                        onUnlockClick={() => navigateTo('plans')}
+                        onUnlockClick={handleUnlockClick}
                         onStartPlacementTest={handleStartPlacementTest}
                     />;
             case 'dashboard':
@@ -526,7 +425,7 @@ const App: React.FC = () => {
                         progress={userProgress}
                         onCategoryClick={handleCategoryChange}
                         isSubscribed={user?.is_subscribed || false}
-                        onUnlockClick={() => navigateTo('plans')}
+                        onUnlockClick={handleUnlockClick}
                         onStartPlacementTest={handleStartPlacementTest}
                     />
                 );
@@ -557,8 +456,6 @@ const App: React.FC = () => {
                 theme={theme}
                 onThemeChange={toggleTheme}
                 onLogout={handleLogout}
-                apiKey={apiKey}
-                onApiKeyChange={handleApiKeyChange}
                 onReferralClick={() => setIsReferralModalOpen(true)}
                 onSupportClick={() => setIsSupportModalOpen(true)}
             />
@@ -588,8 +485,6 @@ const App: React.FC = () => {
                     onLanguageChange={handleLanguageChange}
                     theme={theme}
                     onThemeChange={toggleTheme}
-                    apiKey={apiKey}
-                    onApiKeyChange={handleApiKeyChange}
                     onLogout={() => {
                         setIsSettingsOpen(false);
                         handleLogout();
@@ -615,6 +510,9 @@ const App: React.FC = () => {
                     user={user}
                     onClose={() => setIsSupportModalOpen(false)}
                 />
+            )}
+            {isUpgradeModalOpen && (
+                <UpgradeModal onClose={() => setIsUpgradeModalOpen(false)} />
             )}
         </div>
     );

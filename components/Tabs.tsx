@@ -1,5 +1,6 @@
+
 import React from 'react';
-import { Tab, TabId } from '../types';
+import { Tab, TabId } from '../types.ts';
 
 interface TabsProps {
     tabs: Tab[];

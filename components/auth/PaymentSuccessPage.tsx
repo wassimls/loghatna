@@ -28,10 +28,10 @@ const PaymentSuccessPage: React.FC = () => {
                     throw new Error("لم يتم العثور على معرّف الفاتورة.");
                 }
 
-                const invoice = await paymentService.getInvoiceStatus(invoiceId);
+                const { status: paymentStatus } = await paymentService.verifyPayment(invoiceId);
 
-                if (invoice.status !== 'paid') {
-                     throw new Error(`لم تكتمل عملية الدفع. الحالة: ${invoice.status}`);
+                if (paymentStatus !== 'paid') {
+                     throw new Error(`لم تكتمل عملية الدفع. الحالة: ${paymentStatus}`);
                 }
                 
                 soundService.playCorrectSound();

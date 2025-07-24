@@ -1,9 +1,11 @@
 
 
 
+
+
 import React from 'react';
-import { Word, Language } from '../../types';
-import { speak } from '../../services/audioService';
+import { Word, Language } from '../../types.ts';
+import { speak } from '../../services/audioService.ts';
 
 interface WordCardProps {
     word: Word;

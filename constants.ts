@@ -1,4 +1,5 @@
-import { Category, Language } from './types';
+
+import { Category, Language } from './types.ts';
 
 export const CATEGORIES: Category[] = [
     { id: 'alphabet', name: 'الحروف الأبجدية', icon: 'fas fa-font' },

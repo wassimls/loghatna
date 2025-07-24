@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
-import { Language, SpeechRecognition, SpeechRecognitionEvent, SpeechRecognitionErrorEvent } from '../../types';
-import { getPronunciationFeedback } from '../../services/geminiService';
-import { speak } from '../../services/audioService';
+import { Language, SpeechRecognition, SpeechRecognitionEvent, SpeechRecognitionErrorEvent } from '../../types.ts';
+import { getPronunciationFeedback } from '../../services/geminiService.ts';
+import { speak } from '../../services/audioService.ts';
 
 const useSpeechRecognition = (lang: string) => {
     const [text, setText] = useState('');
@@ -86,10 +87,9 @@ interface SpeakingSectionProps {
     language: Language;
     phrase: string;
     onComplete: (isCorrect: boolean) => void;
-    apiKey: string;
 }
 
-const SpeakingSection: React.FC<SpeakingSectionProps> = ({ language, phrase, onComplete, apiKey }) => {
+const SpeakingSection: React.FC<SpeakingSectionProps> = ({ language, phrase, onComplete }) => {
     const phraseToSay = phrase;
     const { text, isListening, startListening, error: speechError, reset: resetSpeech } = useSpeechRecognition(language.code);
     const [hasRecorded, setHasRecorded] = useState(false);
@@ -110,12 +110,12 @@ const SpeakingSection: React.FC<SpeakingSectionProps> = ({ language, phrase, onC
     }, [text, isListening]);
 
      useEffect(() => {
-        if (text && !isListening && hasRecorded && apiKey) {
+        if (text && !isListening && hasRecorded) {
             const evaluate = async () => {
                 setIsEvaluating(true);
                 setAiFeedback(null);
                 try {
-                    const feedback = await getPronunciationFeedback(phraseToSay, text, language.name, apiKey);
+                    const feedback = await getPronunciationFeedback(phraseToSay, text, language.name);
                     setAiFeedback(feedback);
                 } catch (e) {
                     const message = e instanceof Error ? e.message : 'An unknown error occurred.';
@@ -126,7 +126,7 @@ const SpeakingSection: React.FC<SpeakingSectionProps> = ({ language, phrase, onC
             };
             evaluate();
         }
-    }, [text, isListening, hasRecorded, phraseToSay, language.name, apiKey]);
+    }, [text, isListening, hasRecorded, phraseToSay, language.name]);
 
 
     const resetForRecording = () => {

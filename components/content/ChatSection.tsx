@@ -7,7 +7,6 @@ import { speak } from '../../services/audioService';
 interface ChatSectionProps {
     language: Language;
     user: User;
-    apiKey: string;
     onUnlockClick: () => void;
 }
 
@@ -171,7 +170,7 @@ const useChatSpeechRecognition = (lang: string, onTranscriptUpdate: (transcript:
 };
 
 
-const ChatSection: React.FC<ChatSectionProps> = ({ language, user, apiKey, onUnlockClick }) => {
+const ChatSection: React.FC<ChatSectionProps> = ({ language, user, onUnlockClick }) => {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -182,7 +181,6 @@ const ChatSection: React.FC<ChatSectionProps> = ({ language, user, apiKey, onUnl
     const [translations, setTranslations] = useState<{ [key: number]: string }>({});
     const [translatingIndex, setTranslatingIndex] = useState<number | null>(null);
     const [speakingIndex, setSpeakingIndex] = useState<number | null>(null);
-    const isReady = !!apiKey;
 
     const [isChatLocked, setIsChatLocked] = useState(false);
     const [messageCount, setMessageCount] = useState(0);
@@ -196,7 +194,7 @@ const ChatSection: React.FC<ChatSectionProps> = ({ language, user, apiKey, onUnl
 
      useEffect(() => {
         const loadHistory = async () => {
-            if (!user?.id || !isReady) {
+            if (!user?.id) {
                 setIsHistoryLoading(false);
                 return;
             };
@@ -230,7 +228,7 @@ const ChatSection: React.FC<ChatSectionProps> = ({ language, user, apiKey, onUnl
         setTranslations({});
         setTranslatingIndex(null);
         setSpeakingIndex(null);
-    }, [language, user, isReady, getLocalStorageKey]);
+    }, [language, user, getLocalStorageKey]);
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -249,10 +247,10 @@ const ChatSection: React.FC<ChatSectionProps> = ({ language, user, apiKey, onUnl
     };
 
     const handleTranslate = async (text: string, index: number) => {
-        if (translatingIndex !== null || translations[index] || !isReady) return;
+        if (translatingIndex !== null || translations[index]) return;
         setTranslatingIndex(index);
         try {
-            const translation = await translateText(text, language.name, 'Arabic', apiKey);
+            const translation = await translateText(text, language.name, 'Arabic');
             setTranslations(prev => ({...prev, [index]: translation}));
         } catch (e) {
             const errorMessage = e instanceof Error ? e.message : "فشل في الترجمة.";
@@ -263,7 +261,7 @@ const ChatSection: React.FC<ChatSectionProps> = ({ language, user, apiKey, onUnl
     };
 
     const sendMessage = async () => {
-        if (!input.trim() || isLoading || !isReady || isChatLocked) return;
+        if (!input.trim() || isLoading || isChatLocked) return;
 
         const userMessage: ChatMessage = { role: 'user', text: input };
 
@@ -284,7 +282,7 @@ const ChatSection: React.FC<ChatSectionProps> = ({ language, user, apiKey, onUnl
         setMessages(prev => [...prev, placeholderMessage]);
 
         try {
-            const stream = streamChatResponse(newMessages, systemInstruction, apiKey);
+            const stream = streamChatResponse(newMessages, systemInstruction);
             
             let currentModelMessage = '';
             for await (const chunk of stream) {
@@ -331,12 +329,6 @@ const ChatSection: React.FC<ChatSectionProps> = ({ language, user, apiKey, onUnl
                     <div className="flex-1 flex justify-center items-center">
                         <i className="fas fa-spinner fa-spin text-secondary text-3xl"></i>
                         <p className="ml-4 text-white">جاري تحميل سجل الدردشة...</p>
-                    </div>
-                ) : !isReady ? (
-                     <div className="flex-1 flex flex-col justify-center items-center text-center p-4">
-                        <i className="fas fa-key text-accent text-5xl mb-4"></i>
-                        <h3 className="text-2xl font-bold text-white mb-2">مفتاح API مطلوب</h3>
-                        <p className="text-gray-300 mb-6 max-w-md">الرجاء إدخال مفتاح API الخاص بـ Gemini في الإعدادات لتفعيل ميزة الدردشة.</p>
                     </div>
                 ) : (
                     <div className="messages-area flex-1 overflow-y-auto pr-2 space-y-4">
@@ -415,13 +407,13 @@ const ChatSection: React.FC<ChatSectionProps> = ({ language, user, apiKey, onUnl
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-                            placeholder={isListening ? 'جاري الاستماع...' : (isReady ? `اكتب شيئًا باللغة ${language.name}...` : 'أدخل مفتاح API لتفعيل الدردشة')}
+                            placeholder={isListening ? 'جاري الاستماع...' : `اكتب شيئًا باللغة ${language.name}...`}
                             className="flex-1 p-4 rounded-xl bg-white dark:bg-slate-700 border-2 text-dark dark:text-light border-transparent focus:border-blue-500 focus:outline-none transition-colors"
-                            disabled={isLoading || !isReady || isListening}
+                            disabled={isLoading || isListening}
                         />
                          <button
                             onClick={startListening}
-                            disabled={isLoading || !isReady || isListening}
+                            disabled={isLoading || isListening}
                             className={`w-12 h-12 rounded-xl text-xl flex-shrink-0 flex items-center justify-center transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed ${isListening ? 'bg-red-500 text-white' : 'bg-primary text-white'}`}
                             title="تسجيل صوتي"
                         >
@@ -429,7 +421,7 @@ const ChatSection: React.FC<ChatSectionProps> = ({ language, user, apiKey, onUnl
                         </button>
                         <button
                             onClick={sendMessage}
-                            disabled={isLoading || !input.trim() || !isReady}
+                            disabled={isLoading || !input.trim()}
                             className="w-12 h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xl flex-shrink-0 flex items-center justify-center transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             <i className="fas fa-paper-plane"></i>

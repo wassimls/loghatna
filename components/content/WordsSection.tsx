@@ -1,9 +1,10 @@
 
 
+
 import React, { useState, useEffect, useMemo } from 'react';
-import { Word, Language } from '../../types';
-import WordCard from '../shared/WordCard';
-import Flashcard from '../shared/Flashcard';
+import { Word, Language } from '../../types.ts';
+import WordCard from '../shared/WordCard.tsx';
+import Flashcard from '../shared/Flashcard.tsx';
 
 interface WordsSectionProps {
     words: Word[];

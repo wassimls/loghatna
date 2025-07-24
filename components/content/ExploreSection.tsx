@@ -6,7 +6,6 @@ import VoiceNotAvailableModal from '../shared/VoiceNotAvailableModal';
 
 interface ExploreSectionProps {
     language: Language;
-    apiKey: string;
     userTier: 'bronze' | 'silver' | 'gold';
     userId: string;
     onUnlockClick: () => void;
@@ -85,7 +84,7 @@ const LockedView: React.FC<{ tier: 'bronze' | 'silver'; onUnlockClick: () => voi
 };
 
 
-const ExploreSection: React.FC<ExploreSectionProps> = ({ language, apiKey, userTier, userId, onUnlockClick }) => {
+const ExploreSection: React.FC<ExploreSectionProps> = ({ language, userTier, userId, onUnlockClick }) => {
     const [view, setView] = useState<'genres' | 'story'>('genres');
     const [selectedGenre, setSelectedGenre] = useState<{ name: string; value: string; icon: string; } | null>(null);
     const [story, setStory] = useState('');
@@ -99,7 +98,6 @@ const ExploreSection: React.FC<ExploreSectionProps> = ({ language, apiKey, userT
     const [isLocked, setIsLocked] = useState(false);
     const [usageInfo, setUsageInfo] = useState({ count: 0, week: getWeekIdentifier(new Date()) });
 
-    const isReady = !!apiKey;
     const storageKey = `mindlingo_explore_usage_${userId}`;
 
     useEffect(() => {
@@ -141,7 +139,7 @@ const ExploreSection: React.FC<ExploreSectionProps> = ({ language, apiKey, userT
 
 
     const handleGenerateStory = async (genre: { name: string; value: string; icon: string; }) => {
-        if (!isReady || isLoading || isLocked) return;
+        if (isLoading || isLocked) return;
 
         cancelSpeech();
         setPlaybackState('idle');
@@ -153,7 +151,7 @@ const ExploreSection: React.FC<ExploreSectionProps> = ({ language, apiKey, userT
         setTranslation('');
 
         try {
-            const generatedStory = await generateAudioStory(language.name, genre.value, apiKey);
+            const generatedStory = await generateAudioStory(language.name, genre.value);
             if (generatedStory) {
                 setStory(generatedStory);
                  if (userTier !== 'gold') {
@@ -183,7 +181,7 @@ const ExploreSection: React.FC<ExploreSectionProps> = ({ language, apiKey, userT
         if (isTranslating || !story) return;
         setIsTranslating(true);
         try {
-            const translatedText = await translateText(story, language.name, 'Arabic', apiKey);
+            const translatedText = await translateText(story, language.name, 'Arabic');
             setTranslation(translatedText);
         } catch (err) {
             setTranslation("فشلت عملية الترجمة.");
@@ -307,25 +305,18 @@ const ExploreSection: React.FC<ExploreSectionProps> = ({ language, apiKey, userT
                         <p className="text-base md:text-lg text-gray-300 mt-2">اختر نوعاً واستمع لقصص قصيرة باللغة {language.name} مولدة بالذكاء الاصطناعي.</p>
                     </header>
                     
-                    {!isReady ? (
-                         <div className="text-center p-8 bg-yellow-500/10 rounded-lg">
-                            <i className="fas fa-key text-yellow-400 text-3xl mb-3"></i>
-                            <p className="text-yellow-300 font-bold">الرجاء إدخال مفتاح API في الإعدادات لتفعيل هذه الميزة.</p>
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
-                            {genres.map(genre => (
-                                <button 
-                                    key={genre.value}
-                                    onClick={() => handleGenerateStory(genre)}
-                                    className="bg-dark/50 backdrop-blur-sm p-6 rounded-2xl border border-white/10 text-center transition-all duration-300 hover:border-secondary hover:bg-secondary/10 hover:-translate-y-2 group shadow-lg"
-                                >
-                                    <i className={`fas ${genre.icon} text-3xl md:text-4xl text-secondary mb-3 transition-transform group-hover:scale-110`}></i>
-                                    <h2 className="text-xl md:text-2xl font-bold text-white">{genre.name}</h2>
-                                </button>
-                            ))}
-                        </div>
-                    )}
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+                        {genres.map(genre => (
+                            <button 
+                                key={genre.value}
+                                onClick={() => handleGenerateStory(genre)}
+                                className="bg-dark/50 backdrop-blur-sm p-6 rounded-2xl border border-white/10 text-center transition-all duration-300 hover:border-secondary hover:bg-secondary/10 hover:-translate-y-2 group shadow-lg"
+                            >
+                                <i className={`fas ${genre.icon} text-3xl md:text-4xl text-secondary mb-3 transition-transform group-hover:scale-110`}></i>
+                                <h2 className="text-xl md:text-2xl font-bold text-white">{genre.name}</h2>
+                            </button>
+                        ))}
+                    </div>
                 </>
             )
         }

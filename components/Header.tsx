@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { User } from '../types';
+import { User } from '../types.ts';
 
 interface HeaderProps {
     user: User;
@@ -11,9 +11,23 @@ interface HeaderProps {
     isAdmin: boolean;
 }
 
+const getPlanDetails = (tier: 'bronze' | 'silver' | 'gold' = 'bronze') => {
+    switch (tier) {
+        case 'gold':
+            return { name: 'الخطة الذهبية', color: 'text-secondary' };
+        case 'silver':
+            return { name: 'الخطة الفضية', color: 'text-secondary' };
+        case 'bronze':
+        default:
+            return { name: 'الخطة البرونزية', color: 'text-gray-400' };
+    }
+};
+
+
 const Header: React.FC<HeaderProps> = ({ user, onLogout, onAccountClick, onSettingsClick, onAdminClick, isAdmin }) => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const planDetails = getPlanDetails(user.subscription_tier);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -54,9 +68,9 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onAccountClick, onSetti
                             <div className="font-bold text-sm text-white">
                                 <span>{user.name}</span>
                             </div>
-                            <div className={`text-xs font-bold flex items-center justify-end gap-1 mt-0.5 ${user.is_subscribed ? 'text-secondary' : 'text-gray-400'}`}>
+                            <div className={`text-xs font-bold flex items-center justify-end gap-1 mt-0.5 ${planDetails.color}`}>
                                 <i className="fas fa-medal"></i>
-                                <span>{user.is_subscribed ? 'الخطة الفضية' : 'الخطة البرونزية'}</span>
+                                <span>{planDetails.name}</span>
                             </div>
                         </div>
                         <div

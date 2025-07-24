@@ -1,8 +1,9 @@
+
 import React, { useState, useEffect } from 'react';
-import { ListeningExercise, Language } from '../../types';
-import { speak } from '../../services/audioService';
-import FeedbackFooter from '../shared/FeedbackFooter';
-import VoiceNotAvailableModal from '../shared/VoiceNotAvailableModal';
+import { ListeningExercise, Language } from '../../types.ts';
+import { speak } from '../../services/audioService.ts';
+import FeedbackFooter from '../shared/FeedbackFooter.tsx';
+import VoiceNotAvailableModal from '../shared/VoiceNotAvailableModal.tsx';
 
 
 interface ListeningSectionProps {

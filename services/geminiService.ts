@@ -1,5 +1,43 @@
-import { GoogleGenAI, Type, GenerateContentResponse } from "@google/genai";
-import { GamesCollection, ChatMessage, PlacementTestQuestion } from '../types';
+import { Type, GenerateContentResponse } from "@google/genai";
+import { GamesCollection, ChatMessage, PlacementTestQuestion } from '../types.ts';
+
+// !!! هام: استبدل هذا بعنوان URL الخاص بدالة Supabase Edge Function بعد نشرها !!!
+const EDGE_FUNCTION_URL = '[YOUR_SUPABASE_EDGE_FUNCTION_URL]/gemini-proxy';
+
+/**
+ * A generic function to call the Gemini proxy Edge Function for non-streaming requests.
+ * @param payload - The data to send to the Gemini API via the proxy.
+ * @returns The response from the Gemini API.
+ */
+async function callGeminiProxy(payload: {
+    model: string,
+    contents: any,
+    config?: any,
+}): Promise<GenerateContentResponse> {
+    if (EDGE_FUNCTION_URL.includes('[YOUR_SUPABASE_EDGE_FUNCTION_URL]')) {
+        throw new Error("يرجى تحديث `EDGE_FUNCTION_URL` في `services/geminiService.ts` بعنوان URL الخاص بدالة Supabase Edge Function.");
+    }
+
+    const response = await fetch(EDGE_FUNCTION_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            stream: false,
+            apiMethod: 'generateContent',
+            ...payload
+        }),
+    });
+
+    const responseData = await response.json();
+
+    if (!response.ok) {
+        console.error("Error from Edge Function:", responseData);
+        throw new Error(responseData.error || 'فشل الاتصال بالخادم الوكيل للذكاء الاصطناعي.');
+    }
+    
+    return responseData as GenerateContentResponse;
+}
+
 
 /**
  * Parses a JSON string from the model response, handling potential markdown code fences.
@@ -24,11 +62,7 @@ const parseJsonResponse = <T>(jsonString: string): T | null => {
     }
 };
 
-export const generateGamesForLanguage = async (language: string, apiKey: string): Promise<GamesCollection | null> => {
-    if (!apiKey) {
-        throw new Error("مفتاح API الخاص بـ Gemini غير متوفر. يرجى إضافته في الإعدادات.");
-    }
-    const ai = new GoogleGenAI({ apiKey });
+export const generateGamesForLanguage = async (language: string): Promise<GamesCollection | null> => {
     const GEMINI_MODEL = 'gemini-2.5-flash';
 
     const systemInstruction = `You are a creative game designer. Your response MUST be a single, valid, minified JSON object with a 'games' key for an Arabic-speaking audience. All titles and descriptions must be in Arabic. Adhere strictly to JSON format rules.`;
@@ -50,7 +84,7 @@ export const generateGamesForLanguage = async (language: string, apiKey: string)
     `;
 
     try {
-        const response = await ai.models.generateContent({
+        const response = await callGeminiProxy({
             model: GEMINI_MODEL,
             contents: userPrompt,
             config: {
@@ -70,58 +104,62 @@ export const generateGamesForLanguage = async (language: string, apiKey: string)
     }
 };
 
-export async function* streamChatResponse(history: ChatMessage[], systemInstruction: string, apiKey: string): AsyncGenerator<string> {
-    if (!apiKey) {
-        throw new Error("مفتاح API الخاص بـ Gemini غير متوفر. يرجى إضافته في الإعدادات.");
+export async function* streamChatResponse(history: ChatMessage[], systemInstruction: string): AsyncGenerator<string> {
+    if (EDGE_FUNCTION_URL.includes('[YOUR_SUPABASE_EDGE_FUNCTION_URL]')) {
+        throw new Error("يرجى تحديث `EDGE_FUNCTION_URL` في `services/geminiService.ts` بعنوان URL الخاص بدالة Supabase Edge Function.");
     }
-    const ai = new GoogleGenAI({ apiKey });
-    const GEMINI_MODEL = 'gemini-2.5-flash';
-    
+
     const contents = history.map(msg => ({
         role: msg.role,
         parts: [{ text: msg.text }]
     }));
 
     try {
-        const responseStream = await ai.models.generateContentStream({
-            model: GEMINI_MODEL,
-            contents: contents,
-            config: {
-                systemInstruction: systemInstruction,
-            },
+        const response = await fetch(EDGE_FUNCTION_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                model: 'gemini-2.5-flash',
+                contents: contents,
+                config: { systemInstruction },
+                stream: true,
+            }),
         });
-
-        for await (const chunk of responseStream) {
-            if (chunk.text) {
-                yield chunk.text;
-            }
+        
+        if (!response.ok || !response.body) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'فشل بدء البث مع الخادم الوكيل.');
         }
-    } catch(error) {
-        console.error("Error streaming chat response from Gemini:", error);
-         if (error instanceof Error) {
-           throw new Error(`حدث خطأ أثناء الدردشة مع الذكاء الاصطناعي: ${error.message}`);
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+
+        while (true) {
+            const { value, done } = await reader.read();
+            if (done) break;
+            yield decoder.decode(value, { stream: true });
+        }
+
+    } catch (error) {
+        console.error("Error streaming chat response from proxy:", error);
+        if (error instanceof Error) {
+            throw new Error(`حدث خطأ أثناء الدردشة مع الذكاء الاصطناعي: ${error.message}`);
         }
         throw new Error("حدث خطأ غير معروف أثناء الدردشة.");
     }
 }
 
-export const translateText = async (text: string, sourceLang: string, targetLang: string, apiKey: string): Promise<string> => {
-    if (!apiKey) {
-        throw new Error("مفتاح API الخاص بـ Gemini غير متوفر. يرجى إضافته في الإعدادات.");
-    }
-    const ai = new GoogleGenAI({ apiKey });
+export const translateText = async (text: string, sourceLang: string, targetLang: string): Promise<string> => {
     const GEMINI_MODEL = 'gemini-2.5-flash';
 
     const systemInstruction = `You are an expert translator. Provide ONLY the direct translation of the user's text, with no extra commentary, explanations, or quotation marks.`;
     const userPrompt = `Translate the following text from ${sourceLang} to ${targetLang}:\n\n"${text}"`;
 
     try {
-        const response = await ai.models.generateContent({
+        const response = await callGeminiProxy({
             model: GEMINI_MODEL,
             contents: userPrompt,
-            config: {
-                systemInstruction
-            }
+            config: { systemInstruction }
         });
         
         return response.text.trim();
@@ -137,13 +175,8 @@ export const translateText = async (text: string, sourceLang: string, targetLang
 export const getPronunciationFeedback = async (
     originalText: string, 
     userTranscript: string, 
-    languageName: string, 
-    apiKey: string
+    languageName: string
 ): Promise<{ score: number; feedback: string; }> => {
-    if (!apiKey) {
-        throw new Error("مفتاح API الخاص بـ Gemini غير متوفر. يرجى إضافته في الإعدادات.");
-    }
-    const ai = new GoogleGenAI({ apiKey });
     const GEMINI_MODEL = 'gemini-2.5-flash';
 
     const systemInstruction = `You are a language pronunciation coach for an Arabic-speaking user learning ${languageName}.
@@ -175,7 +208,7 @@ export const getPronunciationFeedback = async (
     };
 
     try {
-        const response = await ai.models.generateContent({
+        const response = await callGeminiProxy({
             model: GEMINI_MODEL,
             contents: userPrompt,
             config: {
@@ -189,7 +222,6 @@ export const getPronunciationFeedback = async (
         const parsedResult = parseJsonResponse<{ score: number; feedback: string; }>(content);
 
         if (!parsedResult) {
-            // Fallback for when JSON parsing fails
             return { score: 0, feedback: "لم أتمكن من تقييم نطقك. حاول مرة أخرى." };
         }
         
@@ -206,13 +238,8 @@ export const getPronunciationFeedback = async (
 
 export const generateAudioStory = async (
     languageName: string,
-    genre: string,
-    apiKey: string
+    genre: string
 ): Promise<string | null> => {
-    if (!apiKey) {
-        throw new Error("مفتاح API الخاص بـ Gemini غير متوفر. يرجى إضافته في الإعدادات.");
-    }
-    const ai = new GoogleGenAI({ apiKey });
     const GEMINI_MODEL = 'gemini-2.5-flash';
 
     const systemInstruction = `You are a creative storyteller for language learners who are native Arabic speakers.
@@ -224,16 +251,13 @@ export const generateAudioStory = async (
     const userPrompt = `Please write a story in the "${genre}" genre.`;
 
     try {
-        const response = await ai.models.generateContent({
+        const response = await callGeminiProxy({
             model: GEMINI_MODEL,
             contents: userPrompt,
-            config: {
-                systemInstruction,
-            }
+            config: { systemInstruction }
         });
         
         const story = response.text.trim();
-        // Basic validation
         if (story && story.split(' ').length > 10) {
             return story;
         }
@@ -248,11 +272,7 @@ export const generateAudioStory = async (
 };
 
 
-export const generatePlacementTest = async (language: string, apiKey: string): Promise<PlacementTestQuestion[] | null> => {
-    if (!apiKey) {
-        throw new Error("مفتاح API الخاص بـ Gemini غير متوفر. يرجى إضافته في الإعدادات.");
-    }
-    const ai = new GoogleGenAI({ apiKey });
+export const generatePlacementTest = async (language: string): Promise<PlacementTestQuestion[] | null> => {
     const GEMINI_MODEL = 'gemini-2.5-flash';
 
     const systemInstruction = `You are an expert language test creator for Arabic-speaking users. Your entire response MUST be a single, valid, minified JSON array of objects that strictly adheres to the provided schema. Do not use markdown.`;
@@ -286,7 +306,7 @@ export const generatePlacementTest = async (language: string, apiKey: string): P
     };
 
     try {
-        const response = await ai.models.generateContent({
+        const response = await callGeminiProxy({
             model: GEMINI_MODEL,
             contents: userPrompt,
             config: {
@@ -297,7 +317,6 @@ export const generatePlacementTest = async (language: string, apiKey: string): P
         });
         
         const questions = parseJsonResponse<PlacementTestQuestion[]>(response.text);
-        // Basic validation to ensure we got a good response
         if (questions && questions.length === 10 && questions.every(q => q.options.length > 1)) {
             return questions;
         }
@@ -309,5 +328,52 @@ export const generatePlacementTest = async (language: string, apiKey: string): P
             throw new Error(`حدث خطأ أثناء إنشاء الاختبار: ${error.message}`);
         }
         throw new Error("حدث خطأ غير معروف أثناء إنشاء الاختبار.");
+    }
+};
+
+export const generateVideoScript = async (
+    videoId: string,
+    languageName: string
+): Promise<string[] | null> => {
+    const GEMINI_MODEL = 'gemini-2.5-flash';
+
+    const systemInstruction = `You are a helpful assistant that transcribes YouTube videos for language learners.
+    Given a YouTube video ID, provide a simplified transcript of the first 2-3 sentences spoken in the video in ${languageName}.
+    Your response MUST be a single, valid, minified JSON array of strings, where each string is a sentence.
+    If you cannot get a transcript, return an empty array. Do not use markdown.`;
+
+    const userPrompt = `Generate a simplified script for the YouTube video with ID: ${videoId}`;
+
+    const schema = {
+        type: Type.ARRAY,
+        items: {
+            type: Type.STRING,
+            description: 'A single sentence from the video transcript.'
+        }
+    };
+
+    try {
+        const response = await callGeminiProxy({
+            model: GEMINI_MODEL,
+            contents: `Create a plausible, simple 3-sentence script in ${languageName} for a video about daily life. The video ID is just a placeholder.`,
+            config: {
+                systemInstruction,
+                responseMimeType: "application/json",
+                responseSchema: schema
+            }
+        });
+
+        const script = parseJsonResponse<string[]>(response.text);
+        if (script && script.length > 0) {
+            return script;
+        }
+        return null;
+
+    } catch (error) {
+        console.error("Error generating video script with Gemini:", error);
+        if (error instanceof Error) {
+            throw new Error(`حدث خطأ أثناء إنشاء النص: ${error.message}`);
+        }
+        throw new Error("حدث خطأ غير معروف أثناء إنشاء النص.");
     }
 };

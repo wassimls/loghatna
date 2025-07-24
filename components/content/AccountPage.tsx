@@ -1,6 +1,3 @@
-
-
-
 import React, { useState, useEffect, FormEvent } from 'react';
 import { User, UserProgress, Category } from '../../types';
 import * as soundService from '../../services/soundService';
@@ -64,9 +61,6 @@ interface AccountPageProps {
     favoriteWordsCount: number;
     categories: Category[];
     isProgressLoading: boolean;
-    onReferralClick: () => void;
-    onSupportClick: () => void;
-    onLogout: () => void;
 }
 
 const AccountPage: React.FC<AccountPageProps> = ({ 
@@ -77,10 +71,7 @@ const AccountPage: React.FC<AccountPageProps> = ({
     progress, 
     favoriteWordsCount, 
     categories, 
-    isProgressLoading,
-    onReferralClick,
-    onSupportClick,
-    onLogout
+    isProgressLoading
 }) => {
     // Tab State
     const [activeTab, setActiveTab] = useState<'profile' | 'progress'>('profile');
@@ -197,7 +188,7 @@ const AccountPage: React.FC<AccountPageProps> = ({
             </div>
 
             {activeTab === 'profile' && (
-                <div className="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 animate-fadeIn">
+                <div className="max-w-2xl mx-auto grid grid-cols-1 gap-8 animate-fadeIn">
                     {/* Profile Information Section */}
                     <FormSection title="معلومات الملف الشخصي" icon="fa-user-edit">
                         <div className="flex flex-col items-center text-center">
@@ -269,40 +260,11 @@ const AccountPage: React.FC<AccountPageProps> = ({
                             </button>
                         </form>
                     </FormSection>
-
-                     <div className="lg:col-span-2">
-                        <FormSection title="إجراءات إضافية" icon="fa-ellipsis-h">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                <button
-                                    onClick={onReferralClick}
-                                    className="w-full p-4 rounded-xl flex items-center justify-center gap-3 text-center transition-all duration-300 bg-gradient-to-r from-accent to-pink-500 text-white shadow-lg hover:scale-105"
-                                >
-                                    <i className="fas fa-gift"></i>
-                                    <span className="font-semibold text-base">ادعُ صديقًا</span>
-                                </button>
-                                <button
-                                    onClick={onSupportClick}
-                                    className="w-full p-4 rounded-xl flex items-center justify-center gap-3 text-center transition-all duration-300 bg-blue-600 hover:bg-blue-700 text-white shadow-lg"
-                                >
-                                    <i className="fas fa-headset"></i>
-                                    <span className="font-semibold text-base">الدعم الفني</span>
-                                </button>
-                                 <button
-                                    onClick={onLogout}
-                                    className="w-full p-4 rounded-xl flex items-center justify-center gap-3 text-center transition-all duration-300 bg-dark/50 text-red-400 hover:bg-red-500 hover:text-white"
-                                >
-                                    <i className="fas fa-sign-out-alt"></i>
-                                    <span className="font-semibold text-base">تسجيل الخروج</span>
-                                </button>
-                            </div>
-                        </FormSection>
-                    </div>
-
                 </div>
             )}
             
             {activeTab === 'progress' && (
-                <div className="animate-fadeIn">
+                <div className="animate-fadeIn max-w-4xl mx-auto">
                     <ProgressSection
                         progress={progress}
                         favoriteWordsCount={favoriteWordsCount}

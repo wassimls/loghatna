@@ -80,6 +80,7 @@ interface SidebarProps {
     apiKey: string;
     onApiKeyChange: (key: string) => void;
     onReferralClick: () => void;
+    onSupportClick: () => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -94,7 +95,8 @@ const Sidebar: React.FC<SidebarProps> = ({
     onLogout,
     apiKey,
     onApiKeyChange,
-    onReferralClick
+    onReferralClick,
+    onSupportClick
 }) => {
     const navItems = [
         { view: 'dashboard', icon: 'fas fa-book-open', label: 'الدروس' },
@@ -132,6 +134,23 @@ const Sidebar: React.FC<SidebarProps> = ({
                 </div>
             </nav>
 
+            <div className="flex flex-col gap-2">
+                 <button
+                    onClick={onReferralClick}
+                    className="w-full p-4 rounded-xl flex items-center gap-4 text-right transition-all duration-300 bg-dark/50 text-white hover:bg-white/20"
+                >
+                    <i className="fas fa-gift text-lg w-6 text-center text-accent"></i>
+                    <span className="font-semibold text-base">ادعُ صديقًا</span>
+                </button>
+                <button
+                    onClick={onSupportClick}
+                    className="w-full p-4 rounded-xl flex items-center gap-4 text-right transition-all duration-300 bg-dark/50 text-white hover:bg-white/20"
+                >
+                    <i className="fas fa-headset text-lg w-6 text-center text-blue-400"></i>
+                    <span className="font-semibold text-base">الدعم الفني</span>
+                </button>
+            </div>
+
             <div className="sidebar-section bg-white/10 dark:bg-dark/50 rounded-2xl p-5 shadow-lg border border-white/10 space-y-5">
                 <h2 className="text-secondary mb-2 text-xl font-bold flex items-center gap-3"><i className="fas fa-cog"></i>الإعدادات</h2>
                 <div className="language-selector">
@@ -163,14 +182,6 @@ const Sidebar: React.FC<SidebarProps> = ({
                     </div>
                 </div>
             </div>
-
-            <button
-                onClick={onLogout}
-                className="w-full mt-auto p-4 rounded-xl flex items-center justify-center gap-4 text-right transition-all duration-300 bg-dark/50 text-red-400 hover:bg-accent hover:text-white"
-            >
-                <i className="fas fa-sign-out-alt text-lg w-6 text-center"></i>
-                <span className="font-semibold text-base">تسجيل الخروج</span>
-            </button>
         </aside>
     );
 };

@@ -60,6 +60,17 @@ export type User = {
     subscription_tier?: 'bronze' | 'silver' | 'gold';
 };
 
+/** Represents a full subscription record from the database, for admin use. */
+export type Subscription = {
+  id: number;
+  user_id: string;
+  email: string;
+  tier: 'bronze' | 'silver' | 'gold';
+  status: 'active' | 'canceled' | 'expired' | null;
+  ends_at: string | null;
+  created_at: string;
+};
+
 /** Represents a user's learning progress for a specific language. */
 export type UserProgress = {
     completed_lessons: CategoryId[];
@@ -329,6 +340,43 @@ export interface Database {
         }
         Relationships: []
       }
+      subscriptions: {
+        Row: {
+          id: number
+          created_at: string
+          user_id: string
+          email: string | null
+          tier: string
+          status: string | null
+          ends_at: string | null
+        }
+        Insert: {
+          id?: number
+          created_at?: string
+          user_id: string
+          email?: string | null
+          tier: string
+          status?: string | null
+          ends_at?: string | null
+        }
+        Update: {
+          id?: number
+          created_at?: string
+          user_id?: string
+          email?: string | null
+          tier?: string
+          status?: string | null
+          ends_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       user_favorite_words: {
         Row: {
           created_at: string
@@ -405,7 +453,22 @@ export interface Database {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      get_all_subscriptions_with_details: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+            id: number
+            user_id: string
+            email: string
+            tier: string
+            status: string | null
+            ends_at: string | null
+            created_at: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

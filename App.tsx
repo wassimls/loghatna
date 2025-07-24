@@ -30,10 +30,12 @@ import SubscriptionPage from './components/subscription/SubscriptionPage';
 import SubscriptionSuccessPage from './components/subscription/SubscriptionSuccessPage';
 import AccountPage from './components/content/AccountPage';
 import PlacementTest from './components/content/PlacementTest';
+import PaymentVerificationPage from './components/subscription/PaymentVerificationPage';
+import AdminPage from './components/admin/AdminPage';
 
 
 type Theme = 'light' | 'dark';
-type View = 'dashboard' | 'lesson' | 'games' | 'grammar' | 'plans' | 'subscription' | 'subscription_success' | 'account' | 'explore' | 'placement_test' | 'chat';
+type View = 'dashboard' | 'lesson' | 'games' | 'grammar' | 'plans' | 'subscription' | 'subscription_success' | 'account' | 'explore' | 'placement_test' | 'chat' | 'payment_verification' | 'admin';
 
 
 const ApiKeyInput: React.FC<{ apiKey: string; onApiKeyChange: (key: string) => void; forModal?: boolean;}> = ({ apiKey, onApiKeyChange, forModal = false }) => {
@@ -107,7 +109,10 @@ const SettingsModal: React.FC<{
     onThemeChange: () => void;
     apiKey: string;
     onApiKeyChange: (key: string) => void;
-}> = ({ onClose, languages, selectedLanguage, onLanguageChange, theme, onThemeChange, apiKey, onApiKeyChange }) => {
+    onLogout: () => void;
+    onReferralClick: () => void;
+    onSupportClick: () => void;
+}> = ({ onClose, languages, selectedLanguage, onLanguageChange, theme, onThemeChange, apiKey, onApiKeyChange, onLogout, onReferralClick, onSupportClick }) => {
     return (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={onClose}>
             <div className="bg-dark/80 backdrop-blur-lg rounded-2xl p-6 w-full max-w-sm border border-white/10 text-white animate-fadeIn" onClick={e => e.stopPropagation()}>
@@ -117,7 +122,7 @@ const SettingsModal: React.FC<{
                 </div>
                 
                 <div className="space-y-6">
-                    <div className="language-selector">
+                    <div>
                         <label htmlFor="language-modal" className="block mb-2 font-medium">اختر اللغة:</label>
                         <div className="relative">
                             <select
@@ -147,6 +152,21 @@ const SettingsModal: React.FC<{
                             </button>
                         </div>
                     </div>
+                    
+                    <div className="pt-4 border-t border-white/10 space-y-3">
+                        <button onClick={onReferralClick} className="w-full p-3 rounded-lg flex items-center justify-center gap-3 text-center transition-all duration-300 bg-dark/70 hover:bg-white/20 text-white font-semibold">
+                            <i className="fas fa-gift text-accent"></i>
+                            <span>ادعُ صديقًا</span>
+                        </button>
+                         <button onClick={onSupportClick} className="w-full p-3 rounded-lg flex items-center justify-center gap-3 text-center transition-all duration-300 bg-dark/70 hover:bg-white/20 text-white font-semibold">
+                            <i className="fas fa-headset text-blue-400"></i>
+                            <span>الدعم الفني</span>
+                        </button>
+                        <button onClick={onLogout} className="w-full p-3 rounded-lg flex items-center justify-center gap-3 text-center transition-all duration-300 bg-dark/70 text-red-400 hover:bg-red-500 hover:text-white font-semibold">
+                             <i className="fas fa-sign-out-alt"></i>
+                             <span>تسجيل الخروج</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -168,7 +188,7 @@ const BottomNav: React.FC<{
     
      const isViewActive = (view: View) => {
         if (view === 'dashboard') {
-            return ['dashboard', 'lesson', 'plans', 'subscription', 'subscription_success', 'placement_test'].includes(currentView);
+            return ['dashboard', 'lesson', 'plans', 'subscription', 'subscription_success', 'placement_test', 'admin'].includes(currentView);
         }
         return currentView === view;
     };
@@ -205,20 +225,40 @@ const App: React.FC = () => {
     const [isReferralModalOpen, setIsReferralModalOpen] = useState(false);
     const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
     const [authLoading, setAuthLoading] = useState(true);
+    const [isAdmin, setIsAdmin] = useState(false);
 
     useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
         const refId = urlParams.get('ref');
         if (refId) {
             localStorage.setItem('referral_code', refId);
+        }
+
+        const viewFromUrl = urlParams.get('view');
+        const invoiceFromUrl = urlParams.get('invoice');
+        if (viewFromUrl === 'payment_verification' && invoiceFromUrl) {
+            setView('payment_verification');
+        }
+
+        if (refId || viewFromUrl) {
             const newUrl = `${window.location.protocol}//${window.location.host}${window.location.pathname}`;
             window.history.replaceState({ path: newUrl }, '', newUrl);
         }
     }, []);
 
     useEffect(() => {
+        const checkAdminStatus = async () => {
+            const adminStatus = await userService.isCurrentUserAdmin();
+            setIsAdmin(adminStatus);
+        };
+
         const unsubscribe = userService.onAuthChange((user) => {
             setUser(user);
+            if (user) {
+                checkAdminStatus();
+            } else {
+                setIsAdmin(false);
+            }
             setAuthLoading(false);
         });
         return () => unsubscribe();
@@ -336,19 +376,19 @@ const App: React.FC = () => {
         }
         navigateTo('dashboard');
     };
-
-    const handleSubscribe = async () => {
+    
+    const handleSubscriptionSuccess = useCallback(async () => {
         if (user) {
             try {
                 const updatedUser = await userService.setUserSubscribed();
                 setUser(updatedUser);
                 navigateTo('subscription_success');
             } catch (error) {
-                console.error("Failed to subscribe user", error);
+                console.error("Failed to update user subscription status", error);
                 // Optionally set an error state to show in the UI
             }
         }
-    };
+    }, [user]);
 
     const handleStartPlacementTest = () => {
         soundService.playNavigationSound();
@@ -437,7 +477,12 @@ const App: React.FC = () => {
             case 'plans':
                 return <PlansPage onSelectPlan={() => navigateTo('subscription')} />;
             case 'subscription':
-                return <SubscriptionPage user={user!} onSubscribe={handleSubscribe} />;
+                return <SubscriptionPage user={user!} />;
+            case 'payment_verification':
+                return <PaymentVerificationPage 
+                            onVerificationSuccess={handleSubscriptionSuccess}
+                            onVerificationFailure={() => navigateTo('plans')}
+                        />;
             case 'subscription_success':
                 return <SubscriptionSuccessPage onGoToDashboard={() => navigateTo('dashboard')} />;
              case 'account':
@@ -450,9 +495,6 @@ const App: React.FC = () => {
                             favoriteWordsCount={favoriteWords.length}
                             categories={CATEGORIES}
                             isProgressLoading={isProgressLoading}
-                            onReferralClick={() => setIsReferralModalOpen(true)}
-                            onSupportClick={() => setIsSupportModalOpen(true)}
-                            onLogout={handleLogout}
                         />;
             case 'placement_test':
                 return <PlacementTest
@@ -467,6 +509,15 @@ const App: React.FC = () => {
                     apiKey={apiKey}
                     onUnlockClick={() => navigateTo('plans')}
                 />;
+            case 'admin':
+                return isAdmin ? <AdminPage /> : <LearningMap 
+                        categories={CATEGORIES}
+                        progress={userProgress}
+                        onCategoryClick={handleCategoryChange}
+                        isSubscribed={user?.is_subscribed || false}
+                        onUnlockClick={() => navigateTo('plans')}
+                        onStartPlacementTest={handleStartPlacementTest}
+                    />;
             case 'dashboard':
             default:
                 return (
@@ -509,6 +560,7 @@ const App: React.FC = () => {
                 apiKey={apiKey}
                 onApiKeyChange={handleApiKeyChange}
                 onReferralClick={() => setIsReferralModalOpen(true)}
+                onSupportClick={() => setIsSupportModalOpen(true)}
             />
             <div className="flex-1 flex flex-col h-full overflow-hidden">
                 <Header
@@ -516,8 +568,10 @@ const App: React.FC = () => {
                     onLogout={handleLogout}
                     onAccountClick={() => navigateTo('account')}
                     onSettingsClick={() => setIsSettingsOpen(true)}
+                    onAdminClick={() => navigateTo('admin')}
+                    isAdmin={isAdmin}
                 />
-                <main className="flex-1 overflow-y-auto bg-light dark:bg-slate-900/70">
+                <main className="flex-1 overflow-y-auto lg:bg-transparent bg-light dark:bg-slate-900/70">
                     {renderContent()}
                 </main>
                 <BottomNav
@@ -536,6 +590,18 @@ const App: React.FC = () => {
                     onThemeChange={toggleTheme}
                     apiKey={apiKey}
                     onApiKeyChange={handleApiKeyChange}
+                    onLogout={() => {
+                        setIsSettingsOpen(false);
+                        handleLogout();
+                    }}
+                    onReferralClick={() => {
+                        setIsSettingsOpen(false);
+                        setIsReferralModalOpen(true);
+                    }}
+                     onSupportClick={() => {
+                        setIsSettingsOpen(false);
+                        setIsSupportModalOpen(true);
+                    }}
                 />
             )}
             {isReferralModalOpen && user && (

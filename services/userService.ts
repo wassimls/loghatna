@@ -1,4 +1,4 @@
-import { User, Word, ChatMessage, Json, Database, UserProgress, CategoryId, LeaderboardEntry } from '../types';
+import { User, Word, ChatMessage, Json, Database, UserProgress, CategoryId, LeaderboardEntry, Subscription } from '../types';
 import { AVATAR_EMOJIS } from '../constants';
 import { supabase, supabaseConfigError } from './supabase';
 import { AuthChangeEvent, Session, PostgrestResponse, PostgrestSingleResponse } from '@supabase/supabase-js';
@@ -8,6 +8,14 @@ const ensureSupabaseIsConfigured = () => {
         throw new Error(supabaseConfigError || 'لم يتم تكوين Supabase بشكل صحيح. تحقق من ملف services/supabase.ts');
     }
 };
+
+// ====================================================================================
+// ADMIN CONSTANT
+// ====================================================================================
+// This should match the email in the `is_admin` function in your Supabase SQL.
+const ADMIN_EMAIL = 'admin@mindlingo.com';
+// ====================================================================================
+
 
 // Sign up a new user
 export const signup = async (name: string, email: string, password: string): Promise<{ confirmationSent: boolean }> => {
@@ -19,7 +27,6 @@ export const signup = async (name: string, email: string, password: string): Pro
     const userData: { [key: string]: any } = {
         name,
         avatar,
-        subscription_tier: 'bronze'
     };
     if (referrerId) {
         userData.referred_by = referrerId;
@@ -93,17 +100,35 @@ export const logout = async (): Promise<void> => {
 export const onAuthChange = (callback: (user: User | null) => void): () => void => {
     ensureSupabaseIsConfigured();
     const { data: { subscription } } = supabase!.auth.onAuthStateChange(
-        (event: AuthChangeEvent, session: Session | null) => {
+        async (event: AuthChangeEvent, session: Session | null) => {
             const supabaseUser = session?.user;
             if (supabaseUser) {
-                 const tier = supabaseUser.user_metadata.subscription_tier || (supabaseUser.user_metadata.is_subscribed ? 'silver' : 'bronze');
+                 // Fetch subscription data from the source of truth: the 'subscriptions' table
+                const { data: subData } = await supabase!
+                    .from('subscriptions')
+                    .select('tier, status, ends_at')
+                    .eq('user_id', supabaseUser.id)
+                    .single();
+
+                let isSubscribed = false;
+                let tier: User['subscription_tier'] = 'bronze';
+                let ends_at: string | undefined = undefined;
+
+                if (subData) {
+                    ends_at = subData.ends_at || undefined;
+                    tier = subData.tier as User['subscription_tier'] || 'bronze';
+                    const hasActiveStatus = subData.status === 'active';
+                    const notExpired = subData.ends_at ? new Date(subData.ends_at) > new Date() : false;
+                    isSubscribed = hasActiveStatus && notExpired;
+                }
+
                 callback({
                     id: supabaseUser.id,
                     email: supabaseUser.email!,
                     name: supabaseUser.user_metadata.name || 'مستخدم جديد',
                     avatar: supabaseUser.user_metadata.avatar || '😊',
-                    subscription_ends_at: supabaseUser.user_metadata.subscription_ends_at,
-                    is_subscribed: supabaseUser.user_metadata.is_subscribed || false,
+                    subscription_ends_at: ends_at,
+                    is_subscribed: isSubscribed,
                     subscription_tier: tier
                 });
             } else {
@@ -113,6 +138,14 @@ export const onAuthChange = (callback: (user: User | null) => void): () => void 
     );
     return () => subscription.unsubscribe();
 };
+
+// Check if the current user is an admin
+export const isCurrentUserAdmin = async (): Promise<boolean> => {
+    ensureSupabaseIsConfigured();
+    const { data: { user } } = await supabase!.auth.getUser();
+    return user?.email === ADMIN_EMAIL;
+};
+
 
 // Update the current user's name
 export const updateUserName = async (name: string): Promise<User> => {
@@ -131,14 +164,31 @@ export const updateUserName = async (name: string): Promise<User> => {
          throw new Error('لم يتم العثور على المستخدم لتحديثه.');
     }
 
-    const tier = data.user.user_metadata.subscription_tier || (data.user.user_metadata.is_subscribed ? 'silver' : 'bronze');
+    const { data: subData } = await supabase!
+        .from('subscriptions')
+        .select('tier, status, ends_at')
+        .eq('user_id', data.user.id)
+        .single();
+    
+    let isSubscribed = false;
+    let tier: User['subscription_tier'] = 'bronze';
+    let ends_at: string | undefined = undefined;
+
+    if (subData) {
+        ends_at = subData.ends_at || undefined;
+        tier = subData.tier as User['subscription_tier'] || 'bronze';
+        const hasActiveStatus = subData.status === 'active';
+        const notExpired = subData.ends_at ? new Date(subData.ends_at) > new Date() : false;
+        isSubscribed = hasActiveStatus && notExpired;
+    }
+
     return {
         id: data.user.id,
         email: data.user.email!,
         name: data.user.user_metadata.name || 'مستخدم',
         avatar: data.user.user_metadata.avatar || '😊',
-        subscription_ends_at: data.user.user_metadata.subscription_ends_at,
-        is_subscribed: data.user.user_metadata.is_subscribed || false,
+        subscription_ends_at: ends_at,
+        is_subscribed: isSubscribed,
         subscription_tier: tier
     };
 };
@@ -160,14 +210,31 @@ export const updateUserAvatar = async (avatar: string): Promise<User> => {
          throw new Error('لم يتم العثور على المستخدم لتحديثه.');
     }
     
-    const tier = data.user.user_metadata.subscription_tier || (data.user.user_metadata.is_subscribed ? 'silver' : 'bronze');
+     const { data: subData } = await supabase!
+        .from('subscriptions')
+        .select('tier, status, ends_at')
+        .eq('user_id', data.user.id)
+        .single();
+
+    let isSubscribed = false;
+    let tier: User['subscription_tier'] = 'bronze';
+    let ends_at: string | undefined = undefined;
+
+    if (subData) {
+        ends_at = subData.ends_at || undefined;
+        tier = subData.tier as User['subscription_tier'] || 'bronze';
+        const hasActiveStatus = subData.status === 'active';
+        const notExpired = subData.ends_at ? new Date(subData.ends_at) > new Date() : false;
+        isSubscribed = hasActiveStatus && notExpired;
+    }
+    
     return {
         id: data.user.id,
         email: data.user.email!,
         name: data.user.user_metadata.name || 'مستخدم',
         avatar: data.user.user_metadata.avatar || '😊',
-        subscription_ends_at: data.user.user_metadata.subscription_ends_at,
-        is_subscribed: data.user.user_metadata.is_subscribed || false,
+        subscription_ends_at: ends_at,
+        is_subscribed: isSubscribed,
         subscription_tier: tier
     };
 };
@@ -214,31 +281,44 @@ export const updateUserPassword = async (currentPassword: string, newPassword: s
 
 export const setUserSubscribed = async (): Promise<User> => {
     ensureSupabaseIsConfigured();
-    const { data, error } = await supabase!.auth.updateUser({
-        data: { 
-            is_subscribed: true,
-            subscription_tier: 'silver' // Default subscription is Silver
-        }
-    });
 
-    if (error) {
-        console.error("Supabase update user subscription error: ", error.message || error);
-        throw new Error('فشل في تحديث حالة الاشتراك.');
-    }
-    
-    if (!data.user) {
-         throw new Error('لم يتم العثور على المستخدم لتحديثه.');
+    // 1. Get current user
+    const { data: { user } } = await supabase!.auth.getUser();
+    if (!user || !user.email) {
+        throw new Error("لا يمكن العثور على المستخدم الحالي أو بريده الإلكتروني لإتمام الاشتراك.");
     }
 
-    const tier = data.user.user_metadata.subscription_tier || (data.user.user_metadata.is_subscribed ? 'silver' : 'bronze');
+    // 2. Add entry to the subscriptions table (the single source of truth)
+    const endsAt = new Date();
+    endsAt.setDate(endsAt.getDate() + 30);
+    const newTier = 'silver';
+
+    // Using upsert is safer for renewals or if an entry somehow exists
+    const { error: subscriptionError } = await supabase!
+        .from('subscriptions')
+        .upsert({
+            user_id: user.id,
+            email: user.email,
+            tier: newTier,
+            status: 'active',
+            ends_at: endsAt.toISOString(),
+        }, { onConflict: 'user_id' });
+
+    if (subscriptionError) {
+        console.error("Supabase upsert subscription error: ", subscriptionError.message || subscriptionError);
+        throw new Error('فشل في تسجيل الاشتراك في قاعدة البيانات.');
+    }
+
+    // 3. Return an optimistic User object for immediate UI update.
+    // onAuthChange will fetch this exact data from the DB on next app load/refresh.
     return {
-        id: data.user.id,
-        email: data.user.email!,
-        name: data.user.user_metadata.name || 'مستخدم',
-        avatar: data.user.user_metadata.avatar || '😊',
-        subscription_ends_at: data.user.user_metadata.subscription_ends_at,
-        is_subscribed: data.user.user_metadata.is_subscribed || false,
-        subscription_tier: tier,
+        id: user.id,
+        email: user.email!,
+        name: user.user_metadata.name || 'مستخدم',
+        avatar: user.user_metadata.avatar || '😊',
+        subscription_ends_at: endsAt.toISOString(),
+        is_subscribed: true,
+        subscription_tier: newTier,
     };
 }
 
@@ -509,4 +589,39 @@ export const logReferralUsage = async (referrerId: string, currentUser: User): P
         // as the subscription process is more critical.
         console.error('Error logging referral usage:', error.message);
     }
+};
+
+
+// --- ADMIN FUNCTIONS ---
+
+export const getAllSubscriptions = async (): Promise<Subscription[]> => {
+    ensureSupabaseIsConfigured();
+    const { data, error } = await supabase!.rpc('get_all_subscriptions_with_details');
+
+    if (error) {
+        console.error('Error fetching all subscriptions:', error);
+        throw new Error('فشل في جلب بيانات المشتركين. تأكد من أن لديك صلاحيات المسؤول وأن دالة RPC `get_all_subscriptions_with_details` موجودة.');
+    }
+
+    return data as Subscription[];
+};
+
+type SubscriptionUpdate = {
+    tier?: 'bronze' | 'silver' | 'gold';
+    status?: 'active' | 'canceled' | 'expired';
+    ends_at?: string | null;
+};
+
+export const updateSubscription = async (userId: string, updates: SubscriptionUpdate): Promise<void> => {
+    ensureSupabaseIsConfigured();
+    const { error } = await supabase!
+        .from('subscriptions')
+        .update(updates)
+        .eq('user_id', userId);
+
+    if (error) {
+        console.error('Error updating subscription:', error);
+        throw new Error('فشل في تحديث بيانات الاشتراك.');
+    }
+    // No longer need to sync to metadata, onAuthChange will handle it for the user on next session refresh.
 };

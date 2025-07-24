@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
 import { User } from '../../types';
 import * as soundService from '../../services/soundService';
-import * as userService from '../../services/userService';
+import * as paymentService from '../../services/paymentService';
 
 interface SubscriptionPageProps {
     user: User;
-    onSubscribe: () => Promise<void>;
 }
 
-const SubscriptionPage: React.FC<SubscriptionPageProps> = ({ user, onSubscribe }) => {
+const SubscriptionPage: React.FC<SubscriptionPageProps> = ({ user }) => {
     const [formData, setFormData] = useState({
         firstName: user.name.split(' ')[0] || '',
         lastName: user.name.split(' ')[1] || '',
@@ -30,16 +29,14 @@ const SubscriptionPage: React.FC<SubscriptionPageProps> = ({ user, onSubscribe }
     const handleReferralChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         let value = e.target.value;
         try {
-            // Check if the pasted value is a URL and try to extract the 'ref' parameter
             if (value.includes('?ref=') || value.includes('&ref=')) {
-                // A simple regex is more robust than new URL() which can throw an error on incomplete input
                 const match = value.match(/[?&]ref=([^&]+)/);
                 if (match && match[1]) {
                     value = match[1];
                 }
             }
         } catch (error) {
-            // It's not a valid URL or doesn't match, just use the value as is.
+            // Not a valid URL, use as is.
         }
         setReferralCode(value);
     };
@@ -48,7 +45,6 @@ const SubscriptionPage: React.FC<SubscriptionPageProps> = ({ user, onSubscribe }
         e.preventDefault();
         setError('');
         
-        // Basic validation
         for (const key in formData) {
             if (formData[key as keyof typeof formData].trim() === '') {
                 setError('الرجاء ملء جميع الحقول.');
@@ -59,13 +55,24 @@ const SubscriptionPage: React.FC<SubscriptionPageProps> = ({ user, onSubscribe }
         setIsLoading(true);
         soundService.playGenericClick();
         try {
-            // In a real app, this data would be sent to a backend.
-            // Here, we log referral usage and then proceed to the next step.
-            if (referralCode.trim()) {
-                await userService.logReferralUsage(referralCode.trim(), user);
+            const fullName = `${formData.firstName} ${formData.lastName}`;
+            const userDetails = {
+                email: formData.email,
+                fullName: fullName,
+                phone: formData.phone,
+                address: formData.address,
+            };
+            const referralCodeToPass = referralCode.trim() || null;
+            
+            const invoice = await paymentService.createInvoice(userDetails, referralCodeToPass);
+
+            if (invoice && invoice.payment_url) {
+                // Redirect user to the payment page provided by the backend
+                window.location.href = invoice.payment_url;
+            } else {
+                throw new Error("لم نتمكن من الحصول على رابط الدفع. يرجى المحاولة مرة أخرى.");
             }
-            console.log('Subscription data:', formData, 'Referral Code:', referralCode);
-            await onSubscribe();
+
         } catch (err) {
             setError(err instanceof Error ? err.message : 'حدث خطأ ما.');
             setIsLoading(false);
@@ -77,10 +84,10 @@ const SubscriptionPage: React.FC<SubscriptionPageProps> = ({ user, onSubscribe }
             <div className="w-full max-w-lg bg-dark/70 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-white/10">
                 <div className="text-center mb-8">
                      <div className="w-20 h-20 bg-secondary rounded-3xl flex items-center justify-center text-4xl text-dark shadow-2xl transform -rotate-12 mx-auto mb-4">
-                        <i className="fas fa-rocket"></i>
+                        <i className="fas fa-credit-card"></i>
                     </div>
-                    <h1 className="text-3xl font-extrabold text-white">افتح عالم اللغات!</h1>
-                    <p className="text-lg text-gray-300 mt-2">أكمل بياناتك لفتح جميع الدروس والميزات.</p>
+                    <h1 className="text-3xl font-extrabold text-white">إتمام عملية الدفع</h1>
+                    <p className="text-lg text-gray-300 mt-2">أكمل بيانات الفوترة للانتقال إلى بوابة الدفع الآمنة.</p>
                 </div>
                 
                 <form onSubmit={handleSubmit} className="space-y-4">
@@ -100,7 +107,7 @@ const SubscriptionPage: React.FC<SubscriptionPageProps> = ({ user, onSubscribe }
                     </div>
                     <div>
                         <label htmlFor="phone" className="block text-sm font-medium text-gray-200 mb-2">رقم الهاتف</label>
-                        <input id="phone" name="phone" type="tel" value={formData.phone} onChange={handleChange} required className="w-full p-3 rounded-lg bg-dark/70 text-white border-2 border-transparent focus:border-secondary focus:outline-none transition-colors" placeholder="+123456789" />
+                        <input id="phone" name="phone" type="tel" value={formData.phone} onChange={handleChange} required className="w-full p-3 rounded-lg bg-dark/70 text-white border-2 border-transparent focus:border-secondary focus:outline-none transition-colors" placeholder="05xxxxxxxx" />
                     </div>
                      <div>
                         <label htmlFor="referralCode" className="block text-sm font-medium text-gray-200 mb-2">رمز الدعوة (اختياري)</label>
@@ -114,7 +121,7 @@ const SubscriptionPage: React.FC<SubscriptionPageProps> = ({ user, onSubscribe }
                     {error && <p className="text-sm text-center text-red-300 font-bold bg-red-500/20 p-3 rounded-lg">{error}</p>}
                     
                     <button type="submit" disabled={isLoading} className="w-full mt-4 bg-gradient-to-r from-secondary to-yellow-400 text-dark py-3 rounded-lg font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-wait flex items-center justify-center">
-                        {isLoading ? <><i className="fas fa-spinner fa-spin mr-2"></i>جاري الإرسال...</> : 'إرسال والاشتراك'}
+                        {isLoading ? <><i className="fas fa-spinner fa-spin mr-2"></i>جاري التوجيه...</> : 'الانتقال إلى الدفع'}
                     </button>
                 </form>
             </div>

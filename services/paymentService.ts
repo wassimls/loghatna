@@ -1,77 +1,114 @@
 import { Invoice } from "../types";
 
-// NOTE: This API key should be stored in a secure backend or environment variable in a real-world application.
-// It is exposed here only for the purpose of this exercise.
-const SLICK_PAY_API_KEY = '27080|UrZLsMIBCf5eE1CNOL38lgPWNHwaLhODlQ4k0TN7';
-const API_BASE_URL = 'https://prodapi.slickpay.com/api/v2'; // Corrected URL
+// ====================================================================================
+// !!! ملاحظة هامة: يجب تحديث هذا الرابط !!!
+// ====================================================================================
+//
+// استبدل هذا الرابط بعنوان URL الخاص بالواجهة الخلفية (Backend) التي قمت بنشرها على render.com.
+//
+const BACKEND_API_BASE_URL = 'https://mindlingo-payment-backend.onrender.com/api'; 
+// مثال: 'https://your-app-name.onrender.com/api'
+//
+// ====================================================================================
+
 
 /**
- * Creates a new payment invoice using the Slick Pay API.
- * @param userEmail The email of the user making the payment.
- * @param userName The name of the user.
- * @param successUrlOverride Optional URL to redirect to on success.
- * @returns A promise that resolves to the created invoice data.
+ * Creates a new payment invoice by calling the backend service.
+ * @param userDetails - The user's details for the invoice.
+ * @param referralCode - An optional referral code.
+ * @returns A promise that resolves to an object containing the payment URL.
  */
-export const createInvoice = async (userEmail: string, userName: string, successUrlOverride?: string): Promise<Invoice> => {
-    // NOTE: The API documentation provided uses a static contact UUID.
-    // In a real application, you would first create a contact for the new user
-    // and use their unique contact ID here. We will use a placeholder as per the docs.
-    const contactId = '37990d08-fc51-4c32-ad40-1552d13c00d1'; 
-    const successUrl = successUrlOverride || `${window.location.origin}/payment-success`;
-
-    const response = await fetch(`${API_BASE_URL}/users/invoices`, {
-        method: 'POST',
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${SLICK_PAY_API_KEY}`,
-        },
-        body: JSON.stringify({
-            amount: 150000,
-            contact: contactId,
-            url: successUrl,
-            items: [
-                {
-                    name: "MindLingo Premium Subscription",
-                    price: 150000,
-                    quantity: 1
-                }
-            ]
-        })
-    });
-
-    if (!response.ok) {
-        const errorData = await response.json();
-        // Provide a more detailed error in the console for debugging, and a user-friendly one in the thrown Error.
-        console.error("Slick Pay Error:", JSON.stringify(errorData, null, 2));
-        const message = errorData.message || (errorData.errors ? JSON.stringify(errorData.errors) : 'فشل الاتصال بخدمة الدفع.');
-        throw new Error(`فشل في إنشاء فاتورة الدفع: ${message}`);
+export const createInvoice = async (
+    userDetails: {
+        email: string;
+        fullName: string;
+        phone: string;
+        address: string;
+    },
+    referralCode: string | null
+): Promise<{ payment_url: string }> => {
+    
+    if (BACKEND_API_BASE_URL === 'https://mindlingo-payment.onrender.com/api' && !BACKEND_API_BASE_URL.includes('mindlingo-payment-backend')) {
+        // Remind the user to change the placeholder URL
+        console.warn("تنبيه: أنت تستخدم عنوان URL مؤقت للواجهة الخلفية. يرجى تحديثه في `services/paymentService.ts`.");
     }
 
-    // A common API pattern is to return the created resource directly.
-    const data = await response.json();
-    return data as Invoice; 
+    const endpoint = `${BACKEND_API_BASE_URL}/create-invoice`;
+    
+    const requestBody: { [key: string]: any } = {
+        email: userDetails.email,
+        fullName: userDetails.fullName,
+        phone: userDetails.phone,
+        address: userDetails.address,
+    };
+    if (referralCode) {
+        requestBody.referralCode = referralCode;
+    }
+
+    try {
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify(requestBody)
+        });
+
+        const responseData = await response.json();
+
+        if (!response.ok) {
+            const errorMessage = responseData.error || `فشل الاتصال بالخادم (الحالة: ${response.status})`;
+            throw new Error(errorMessage);
+        }
+
+        if (!responseData.payment_url) {
+            throw new Error("لم يتمكن الخادم من توفير رابط الدفع.");
+        }
+
+        return responseData;
+
+    } catch (error) {
+        console.error("Error creating invoice via backend:", error);
+        if (error instanceof Error) {
+            throw new Error(`فشل في إنشاء فاتورة الدفع: ${error.message}`);
+        }
+        throw new Error("فشل في إنشاء فاتورة الدفع بسبب خطأ غير متوقع.");
+    }
 };
 
 /**
- * Fetches the status of an existing invoice from the Slick Pay API.
- * @param invoiceId The unique ID of the invoice to check.
- * @returns A promise that resolves to the invoice data.
+ * Verifies the status of a payment by calling the backend service.
+ * @param invoiceId - The unique ID of the invoice to check.
+ * @returns A promise that resolves to an object containing the payment status.
  */
-export const getInvoiceStatus = async (invoiceId: string): Promise<Invoice> => {
-    const response = await fetch(`${API_BASE_URL}/users/invoices/${invoiceId}`, {
-        method: 'GET',
-        headers: {
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${SLICK_PAY_API_KEY}`,
+export const verifyPayment = async (invoiceId: string): Promise<{ status: string }> => {
+    const endpoint = `${BACKEND_API_BASE_URL}/verify-payment`;
+
+    try {
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify({ invoiceId })
+        });
+
+        const responseData = await response.json();
+
+        if (!response.ok) {
+            const errorMessage = responseData.error || `فشل الاتصال بالخادم (الحالة: ${response.status})`;
+            throw new Error(errorMessage);
         }
-    });
+        
+        return responseData;
 
-    if (!response.ok) {
-        throw new Error('فشل التحقق من حالة الدفع.');
+    } catch (error) {
+         console.error("Error verifying payment via backend:", error);
+         if (error instanceof Error) {
+            throw new Error(`فشل التحقق من حالة الدفع: ${error.message}`);
+         }
+         throw new Error("فشل التحقق من حالة الدفع بسبب خطأ غير متوقع.");
     }
-
-    const data = await response.json();
-    // Also assuming the data is not nested here.
-    return data as Invoice;
 };

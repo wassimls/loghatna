@@ -237,19 +237,19 @@ const ExploreSection: React.FC<ExploreSectionProps> = ({ language, apiKey, userT
     const renderStoryView = () => {
         if (view === 'story' && selectedGenre) {
             return (
-                <div className="p-4 md:p-8 w-full h-full flex flex-col animate-fadeIn">
+                <div className="p-0 md:p-4 w-full h-full flex flex-col animate-fadeIn">
                     <header className="flex-shrink-0 mb-6">
                         <button onClick={() => { setView('genres'); handleStop(); }} className="btn bg-dark/50 hover:bg-white/20 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2">
                             <i className="fas fa-arrow-right"></i>
                             تغيير النوع
                         </button>
                         <div className="text-center -mt-8">
-                            <i className={`fas ${selectedGenre.icon} text-secondary text-3xl mb-2`}></i>
-                            <h2 className="text-3xl font-bold text-white">{selectedGenre.name}</h2>
+                            <i className={`fas ${selectedGenre.icon} text-secondary text-2xl md:text-3xl mb-2`}></i>
+                            <h2 className="text-2xl md:text-3xl font-bold text-white">{selectedGenre.name}</h2>
                         </div>
                     </header>
     
-                    <div className="flex-1 bg-dark/60 backdrop-blur-sm rounded-2xl p-6 border border-white/10 flex flex-col justify-between overflow-hidden">
+                    <div className="flex-1 bg-dark/60 backdrop-blur-sm rounded-2xl p-4 md:p-6 border border-white/10 flex flex-col justify-between overflow-hidden">
                         {isLoading ? (
                             <div className="flex-1 flex flex-col items-center justify-center text-center">
                                 <i className="fas fa-book-open text-secondary text-5xl fa-spin mb-4"></i>
@@ -259,7 +259,7 @@ const ExploreSection: React.FC<ExploreSectionProps> = ({ language, apiKey, userT
                         ) : (
                            <>
                                 <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
-                                    <h3 className="text-lg font-bold text-gray-300">نص القصة:</h3>
+                                    <h3 className="text-base md:text-lg font-bold text-gray-300">نص القصة:</h3>
                                     <SpeedControl rate={playbackRate} onRateChange={handleRateChange} />
                                 </div>
                                 <div className="story-content flex-1 overflow-y-auto pr-2">
@@ -270,10 +270,10 @@ const ExploreSection: React.FC<ExploreSectionProps> = ({ language, apiKey, userT
                                             <p className="text-gray-300 max-w-md">{error}</p>
                                         </div>
                                     )}
-                                    <p className="text-xl leading-relaxed text-white whitespace-pre-wrap dir-ltr">{story}</p>
+                                    <p className="text-lg md:text-xl leading-relaxed text-white whitespace-pre-wrap dir-ltr">{story}</p>
                                     {translation && (
                                         <div className="mt-4 pt-4 border-t-2 border-dashed border-white/20">
-                                            <p className="text-lg leading-relaxed text-gray-300 whitespace-pre-wrap dir-rtl">{translation}</p>
+                                            <p className="text-base md:text-lg leading-relaxed text-gray-300 whitespace-pre-wrap dir-rtl">{translation}</p>
                                         </div>
                                     )}
                                 </div>
@@ -302,9 +302,9 @@ const ExploreSection: React.FC<ExploreSectionProps> = ({ language, apiKey, userT
         if (view === 'genres') {
             return (
                 <>
-                    <header className="text-center mb-12">
-                        <h1 className="text-4xl font-extrabold text-white">الكتب الصوتية</h1>
-                        <p className="text-lg text-gray-300 mt-2">اختر نوعاً واستمع لقصص قصيرة باللغة {language.name} مولدة بالذكاء الاصطناعي.</p>
+                    <header className="text-center mb-8 md:mb-12">
+                        <h1 className="text-3xl md:text-4xl font-extrabold text-white">الكتب الصوتية</h1>
+                        <p className="text-base md:text-lg text-gray-300 mt-2">اختر نوعاً واستمع لقصص قصيرة باللغة {language.name} مولدة بالذكاء الاصطناعي.</p>
                     </header>
                     
                     {!isReady ? (
@@ -313,15 +313,15 @@ const ExploreSection: React.FC<ExploreSectionProps> = ({ language, apiKey, userT
                             <p className="text-yellow-300 font-bold">الرجاء إدخال مفتاح API في الإعدادات لتفعيل هذه الميزة.</p>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
                             {genres.map(genre => (
                                 <button 
                                     key={genre.value}
                                     onClick={() => handleGenerateStory(genre)}
-                                    className="bg-dark/50 backdrop-blur-sm p-8 rounded-2xl border border-white/10 text-center transition-all duration-300 hover:border-secondary hover:bg-secondary/10 hover:-translate-y-2 group shadow-lg"
+                                    className="bg-dark/50 backdrop-blur-sm p-6 rounded-2xl border border-white/10 text-center transition-all duration-300 hover:border-secondary hover:bg-secondary/10 hover:-translate-y-2 group shadow-lg"
                                 >
-                                    <i className={`fas ${genre.icon} text-4xl text-secondary mb-4 transition-transform group-hover:scale-110`}></i>
-                                    <h2 className="text-2xl font-bold text-white">{genre.name}</h2>
+                                    <i className={`fas ${genre.icon} text-3xl md:text-4xl text-secondary mb-3 transition-transform group-hover:scale-110`}></i>
+                                    <h2 className="text-xl md:text-2xl font-bold text-white">{genre.name}</h2>
                                 </button>
                             ))}
                         </div>

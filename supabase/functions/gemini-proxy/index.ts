@@ -1,7 +1,7 @@
-/// <reference types="https://esm.sh/v135/@supabase/functions-js@2.4.1/src/edge-runtime.d.ts" />
+/// <reference types="https://esm.sh/@supabase/functions-js@2/src/edge-runtime.d.ts" />
 
 // Deno standard library for serving HTTP requests
-import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
+import { serve } from 'https://deno.land/std@0.224.0/http/server.ts';
 // Import GoogleGenerativeAI from esm.sh to use the official SDK in Deno
 import { GoogleGenAI, GenerateContentResponse } from 'https://esm.sh/@google/genai@1.10.0';
 // Import shared CORS headers

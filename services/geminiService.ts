@@ -1,19 +1,37 @@
+
 import { GoogleGenAI, Type, GenerateContentResponse } from "@google/genai";
 import { GamesCollection, ChatMessage, PlacementTestQuestion } from '../types.ts';
 
-const getApiKey = (): string | null => {
-    // Retrieves the API key from the browser's local storage.
-    return localStorage.getItem('gemini_api_key');
-};
+// State for round-robin key selection.
+// In a client-side context, this state persists for the duration of the user's session in the browser tab.
+let keyIndex = 0;
 
-const getGenAIClient = (): GoogleGenAI => {
-    const apiKey = getApiKey();
-    if (!apiKey) {
-        throw new Error("يرجى إعداد مفتاح Gemini API الخاص بك في الإعدادات.");
+/**
+ * Selects an API key from a comma-separated list in environment variables
+ * using a round-robin strategy and initializes a Gemini client.
+ * @returns {GoogleGenAI} An initialized GoogleGenAI client instance.
+ */
+const getAiClient = (): GoogleGenAI => {
+    // 1. Get API keys from environment variables.
+    const geminiApiKeys = process.env.API_KEY!;
+    if (!geminiApiKeys) {
+        throw new Error('لم يتم العثور على متغير بيئة مفتاح API. الرجاء التأكد من تكوينه.');
     }
-    // Initializes the GoogleGenAI client with the user-provided key.
+    
+    // 2. Split the string into an array of keys, trimming whitespace and removing empty entries.
+    const keys = geminiApiKeys.split(',').map(k => k.trim()).filter(Boolean);
+    if (keys.length === 0) {
+        throw new Error('لم يتم العثور على مفاتيح API صالحة في متغير البيئة.');
+    }
+
+    // 3. Select an API key using a round-robin strategy.
+    const apiKey = keys[keyIndex];
+    keyIndex = (keyIndex + 1) % keys.length; // Move to the next key for the subsequent call.
+
+    // 4. Initialize and return the Gemini AI client with the selected key.
     return new GoogleGenAI({ apiKey });
 };
+
 
 /**
  * Parses a JSON string from the model response, handling potential markdown code fences.
@@ -38,23 +56,8 @@ const parseJsonResponse = <T>(jsonString: string): T | null => {
     }
 };
 
-const handleApiError = (error: unknown, context: string): never => {
-    console.error(`Error in ${context}:`, error);
-    if (error instanceof Error) {
-        if (error.message.includes('API key not valid')) {
-            throw new Error(`مفتاح API غير صالح. يرجى التحقق منه في الإعدادات.`);
-        }
-        if (error.message.includes('400')) {
-             throw new Error(`حدث خطأ في الطلب (400). قد يكون هناك مشكلة في البيانات المرسلة. ${error.message}`);
-        }
-        throw new Error(`حدث خطأ أثناء الاتصال بالذكاء الاصطناعي: ${error.message}`);
-    }
-    throw new Error(`حدث خطأ غير معروف في ${context}.`);
-};
-
-
 export const generateGamesForLanguage = async (language: string): Promise<GamesCollection | null> => {
-    const ai = getGenAIClient();
+    const ai = getAiClient(); // Get a client for this request
     const GEMINI_MODEL = 'gemini-2.5-flash';
 
     const systemInstruction = `You are a creative game designer. Your response MUST be a single, valid, minified JSON object with a 'games' key for an Arabic-speaking audience. All titles and descriptions must be in Arabic. Adhere strictly to JSON format rules.`;
@@ -88,13 +91,16 @@ export const generateGamesForLanguage = async (language: string): Promise<GamesC
         const content = response.text;
         return parseJsonResponse<GamesCollection>(content);
     } catch (error) {
-        handleApiError(error, "generateGamesForLanguage");
+        console.error("Error generating games with Gemini:", error);
+        if (error instanceof Error) {
+            throw new Error(`حدث خطأ أثناء الاتصال بالذكاء الاصطناعي: ${error.message}`);
+        }
+        throw new Error("حدث خطأ أثناء توليد الألعاب.");
     }
 };
 
 export async function* streamChatResponse(history: ChatMessage[], systemInstruction: string): AsyncGenerator<string> {
-    const ai = getGenAIClient();
-    
+    const ai = getAiClient(); // Get a client for this request
     const contents = history.map(msg => ({
         role: msg.role,
         parts: [{ text: msg.text }]
@@ -114,9 +120,6 @@ export async function* streamChatResponse(history: ChatMessage[], systemInstruct
     } catch (error) {
         console.error("Error streaming chat response from Gemini:", error);
         if (error instanceof Error) {
-            if (error.message.includes('API key not valid')) {
-                 throw new Error(`مفتاح API غير صالح. يرجى التحقق منه في الإعدادات.`);
-            }
             throw new Error(`حدث خطأ أثناء الدردشة مع الذكاء الاصطناعي: ${error.message}`);
         }
         throw new Error("حدث خطأ غير معروف أثناء الدردشة.");
@@ -124,7 +127,7 @@ export async function* streamChatResponse(history: ChatMessage[], systemInstruct
 }
 
 export const translateText = async (text: string, sourceLang: string, targetLang: string): Promise<string> => {
-    const ai = getGenAIClient();
+    const ai = getAiClient(); // Get a client for this request
     const GEMINI_MODEL = 'gemini-2.5-flash';
 
     const systemInstruction = `You are an expert translator. Provide ONLY the direct translation of the user's text, with no extra commentary, explanations, or quotation marks.`;
@@ -139,7 +142,11 @@ export const translateText = async (text: string, sourceLang: string, targetLang
         
         return response.text.trim();
     } catch (error) {
-       handleApiError(error, "translateText");
+        console.error(`Error translating text with Gemini:`, error);
+        if (error instanceof Error) {
+           throw new Error(`حدث خطأ أثناء الترجمة: ${error.message}`);
+        }
+        throw new Error("حدث خطأ غير معروف أثناء الترجمة.");
     }
 };
 
@@ -148,7 +155,7 @@ export const getPronunciationFeedback = async (
     userTranscript: string, 
     languageName: string
 ): Promise<{ score: number; feedback: string; }> => {
-    const ai = getGenAIClient();
+    const ai = getAiClient(); // Get a client for this request
     const GEMINI_MODEL = 'gemini-2.5-flash';
 
     const systemInstruction = `You are a language pronunciation coach for an Arabic-speaking user learning ${languageName}.
@@ -200,7 +207,11 @@ export const getPronunciationFeedback = async (
         return parsedResult;
 
     } catch (error) {
-        handleApiError(error, "getPronunciationFeedback");
+        console.error("Error getting pronunciation feedback from Gemini:", error);
+        if (error instanceof Error) {
+            throw new Error(`حدث خطأ أثناء تقييم النطق: ${error.message}`);
+        }
+        throw new Error("حدث خطأ غير معروف أثناء تقييم النطق.");
     }
 };
 
@@ -208,7 +219,7 @@ export const generateAudioStory = async (
     languageName: string,
     genre: string
 ): Promise<string | null> => {
-    const ai = getGenAIClient();
+    const ai = getAiClient(); // Get a client for this request
     const GEMINI_MODEL = 'gemini-2.5-flash';
 
     const systemInstruction = `You are a creative storyteller for language learners who are native Arabic speakers.
@@ -232,18 +243,34 @@ export const generateAudioStory = async (
         }
         return null;
     } catch (error) {
-        handleApiError(error, "generateAudioStory");
+        console.error("Error generating story with Gemini:", error);
+        if (error instanceof Error) {
+            throw new Error(`حدث خطأ أثناء الاتصال بالذكاء الاصطناعي: ${error.message}`);
+        }
+        throw new Error("حدث خطأ أثناء توليد القصة.");
     }
 };
 
 
 export const generatePlacementTest = async (language: string): Promise<PlacementTestQuestion[] | null> => {
-    const ai = getGenAIClient();
+    const ai = getAiClient(); // Get a client for this request
     const GEMINI_MODEL = 'gemini-2.5-flash';
 
     const systemInstruction = `You are an expert language test creator for Arabic-speaking users. Your entire response MUST be a single, valid, minified JSON array of objects that strictly adheres to the provided schema. Do not use markdown.`;
     
-    const userPrompt = `...`; // same prompt
+    const userPrompt = `
+        Create a high-quality 10-question placement test for an Arabic-speaking user learning ${language}.
+        The questions must be practical and test contextual understanding of vocabulary and grammar, not just simple translation.
+        
+        CRITICAL INSTRUCTIONS:
+        1. The "questionText" MUST be in ARABIC. It should provide context or a scenario. For example, instead of asking for a direct translation of 'book', ask "أي كلمة تعني 'كتاب'؟".
+        2. The "options" and "correctAnswer" MUST be in ${language}.
+        3. All options must be plausible and grammatically correct possibilities, with only one being the correct answer for the question's context. Avoid joke answers.
+        4. The difficulty MUST be mixed and progressive:
+            - 3 "easy" questions (A1 level): Focus on basic vocabulary (greetings, colors, common objects) and simple sentence completion. Example: "اختر الكلمة المناسبة لإكمال التحية: 'Good ___!'".
+            - 4 "medium" questions (A2 level): Focus on everyday scenarios, basic verb conjugations, and prepositions. Example: "أكمل الجملة: 'I am reading a ___.' باللغة ${language}." with options: book, car, tree, pen.
+            - 3 "hard" questions (B1 level): Focus on understanding different tenses, more complex sentence structures, and nuanced vocabulary choices. Example: "أي جملة هي الأنسب لوصف شيء حدث بالأمس وانتهى؟" with options being sentences in ${language} using different past tenses.
+    `;
     
     const schema = {
         type: Type.ARRAY,
@@ -277,7 +304,11 @@ export const generatePlacementTest = async (language: string): Promise<Placement
         return null;
 
     } catch (error) {
-        handleApiError(error, "generatePlacementTest");
+        console.error("Error generating placement test with Gemini:", error);
+        if (error instanceof Error) {
+            throw new Error(`حدث خطأ أثناء إنشاء الاختبار: ${error.message}`);
+        }
+        throw new Error("حدث خطأ غير معروف أثناء إنشاء الاختبار.");
     }
 };
 
@@ -285,7 +316,7 @@ export const generateVideoScript = async (
     videoId: string,
     languageName: string
 ): Promise<string[] | null> => {
-    const ai = getGenAIClient();
+    const ai = getAiClient(); // Get a client for this request
     const GEMINI_MODEL = 'gemini-2.5-flash';
 
     const systemInstruction = `You are a helpful assistant that transcribes YouTube videos for language learners.
@@ -321,6 +352,10 @@ export const generateVideoScript = async (
         return null;
 
     } catch (error) {
-        handleApiError(error, "generateVideoScript");
+        console.error("Error generating video script with Gemini:", error);
+        if (error instanceof Error) {
+            throw new Error(`حدث خطأ أثناء إنشاء النص: ${error.message}`);
+        }
+        throw new Error("حدث خطأ غير معروف أثناء إنشاء النص.");
     }
 };

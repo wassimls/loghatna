@@ -35,70 +35,6 @@ import UpgradeModal from './components/shared/UpgradeModal.tsx';
 
 type Theme = 'light' | 'dark';
 
-const ApiKeyInput: React.FC<{ apiKey: string; onApiKeyChange: (key: string) => void; }> = ({ apiKey, onApiKeyChange }) => {
-    const [localKey, setLocalKey] = useState(apiKey);
-    const [showKey, setShowKey] = useState(false);
-    const [justSaved, setJustSaved] = useState(false);
-
-    useEffect(() => {
-        setLocalKey(apiKey);
-    }, [apiKey]);
-
-    const handleSave = () => {
-        soundService.playGenericClick();
-        onApiKeyChange(localKey);
-        setJustSaved(true);
-        setTimeout(() => setJustSaved(false), 2000);
-    };
-    
-    const isDirty = localKey !== apiKey;
-
-    return (
-        <div>
-            <label htmlFor="api-key-input-modal" className="block mb-2 font-medium">مفتاح Gemini API:</label>
-             <div className="flex items-center gap-2">
-                <div className="relative grow">
-                    <input
-                        id="api-key-input-modal"
-                        type={showKey ? "text" : "password"}
-                        value={localKey}
-                        onChange={(e) => {
-                            setLocalKey(e.target.value);
-                            setJustSaved(false);
-                        }}
-                        className="w-full p-3 pl-10 pr-10 border-none rounded-xl font-mono text-xs bg-dark/70 text-white cursor-pointer transition-all duration-300 shadow-inner focus:outline-none focus:ring-2 focus:ring-secondary/50"
-                        placeholder="أدخل مفتاح API الخاص بك..."
-                    />
-                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-secondary">
-                        <i className="fas fa-key"></i>
-                    </div>
-                    <button 
-                        type="button" 
-                        onClick={() => setShowKey(!showKey)} 
-                        className="absolute inset-y-0 left-0 flex items-center px-3 text-gray-400 hover:text-white"
-                        aria-label={showKey ? "إخفاء المفتاح" : "إظهار المفتاح"}
-                    >
-                        <i className={`fas ${showKey ? 'fa-eye-slash' : 'fa-eye'}`}></i>
-                    </button>
-                </div>
-                <button
-                    type="button"
-                    onClick={handleSave}
-                    disabled={!isDirty || justSaved}
-                    title={justSaved ? "تم الحفظ!" : (isDirty ? "حفظ" : "محفوظ")}
-                    className={`flex-shrink-0 w-12 h-12 rounded-xl text-white transition-all duration-300 flex items-center justify-center text-xl disabled:opacity-60 disabled:cursor-not-allowed
-                        ${justSaved ? 'bg-green-500' : isDirty ? 'bg-secondary' : 'bg-dark/70'}
-                    `}
-                >
-                    {justSaved ? <i className="fas fa-check"></i> : <i className="fas fa-save"></i>}
-                </button>
-            </div>
-             <p className="text-xs text-gray-400 mt-2">
-               مفتاحك يتم حفظه في متصفحك فقط ولا يتم إرساله إلى خوادمنا.
-            </p>
-        </div>
-    );
-};
 
 
 const SettingsModal: React.FC<{
@@ -111,9 +47,7 @@ const SettingsModal: React.FC<{
     onLogout: () => void;
     onReferralClick: () => void;
     onSupportClick: () => void;
-    apiKey: string;
-    onApiKeyChange: (key: string) => void;
-}> = ({ onClose, languages, selectedLanguage, onLanguageChange, theme, onThemeChange, onLogout, onReferralClick, onSupportClick, apiKey, onApiKeyChange }) => {
+}> = ({ onClose, languages, selectedLanguage, onLanguageChange, theme, onThemeChange, onLogout, onReferralClick, onSupportClick }) => {
     return (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={onClose}>
             <div className="bg-dark/80 backdrop-blur-lg rounded-2xl p-6 w-full max-w-sm border border-white/10 text-white animate-fadeIn" onClick={e => e.stopPropagation()}>
@@ -150,10 +84,6 @@ const SettingsModal: React.FC<{
                                 <i className="fas fa-moon text-white"></i>
                             </button>
                         </div>
-                    </div>
-
-                     <div className="pt-4 border-t border-white/10">
-                        <ApiKeyInput apiKey={apiKey} onApiKeyChange={onApiKeyChange} />
                     </div>
                     
                     <div className="pt-4 border-t border-white/10 space-y-3">
@@ -229,20 +159,6 @@ const App: React.FC = () => {
     const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
     const [authLoading, setAuthLoading] = useState(true);
     const [isAdmin, setIsAdmin] = useState(false);
-    const [apiKey, setApiKey] = useState<string>('');
-
-     useEffect(() => {
-        const savedKey = localStorage.getItem('gemini_api_key');
-        if (savedKey) {
-            setApiKey(savedKey);
-        }
-    }, []);
-
-    const handleApiKeyChange = (key: string) => {
-        setApiKey(key);
-        localStorage.setItem('gemini_api_key', key);
-    };
-
 
     useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
@@ -542,8 +458,6 @@ const App: React.FC = () => {
                 onLogout={handleLogout}
                 onReferralClick={() => setIsReferralModalOpen(true)}
                 onSupportClick={() => setIsSupportModalOpen(true)}
-                apiKey={apiKey}
-                onApiKeyChange={handleApiKeyChange}
             />
             <div className="flex-1 flex flex-col h-full overflow-hidden">
                 <Header
@@ -583,8 +497,6 @@ const App: React.FC = () => {
                         setIsSettingsOpen(false);
                         setIsSupportModalOpen(true);
                     }}
-                    apiKey={apiKey}
-                    onApiKeyChange={handleApiKeyChange}
                 />
             )}
             {isReferralModalOpen && user && (

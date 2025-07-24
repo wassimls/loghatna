@@ -4,6 +4,72 @@ import React, { useState, useEffect } from 'react';
 import { Language, View } from '../types.ts';
 import * as soundService from '../services/soundService.ts';
 
+const ApiKeyInput: React.FC<{ apiKey: string; onApiKeyChange: (key: string) => void; }> = ({ apiKey, onApiKeyChange }) => {
+    const [localKey, setLocalKey] = useState(apiKey);
+    const [showKey, setShowKey] = useState(false);
+    const [justSaved, setJustSaved] = useState(false);
+
+    useEffect(() => {
+        setLocalKey(apiKey);
+    }, [apiKey]);
+
+    const handleSave = () => {
+        soundService.playGenericClick();
+        onApiKeyChange(localKey);
+        setJustSaved(true);
+        setTimeout(() => setJustSaved(false), 2000);
+    };
+    
+    const isDirty = localKey !== apiKey;
+
+    return (
+        <div>
+            <label htmlFor="api-key-input-sidebar" className="block mb-2 font-medium text-white text-sm">مفتاح Gemini API:</label>
+            <div className="flex items-center gap-2">
+                <div className="relative grow">
+                    <input
+                        id="api-key-input-sidebar"
+                        type={showKey ? "text" : "password"}
+                        value={localKey}
+                        onChange={(e) => {
+                            setLocalKey(e.target.value);
+                            setJustSaved(false);
+                        }}
+                        className="w-full p-3 pl-10 pr-10 border-none rounded-xl font-mono text-xs bg-dark/70 text-white cursor-pointer transition-all duration-300 shadow-inner focus:outline-none focus:ring-2 focus:ring-secondary/50"
+                        placeholder="أدخل مفتاح API الخاص بك..."
+                    />
+                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-secondary">
+                        <i className="fas fa-key"></i>
+                    </div>
+                    <button 
+                        type="button" 
+                        onClick={() => setShowKey(!showKey)} 
+                        className="absolute inset-y-0 left-0 flex items-center px-3 text-gray-400 hover:text-white"
+                        aria-label={showKey ? "إخفاء المفتاح" : "إظهار المفتاح"}
+                    >
+                        <i className={`fas ${showKey ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                    </button>
+                </div>
+                <button
+                    type="button"
+                    onClick={handleSave}
+                    disabled={!isDirty || justSaved}
+                    title={justSaved ? "تم الحفظ!" : (isDirty ? "حفظ" : "محفوظ")}
+                    className={`flex-shrink-0 w-12 h-12 rounded-xl text-white transition-all duration-300 flex items-center justify-center text-xl disabled:opacity-60 disabled:cursor-not-allowed
+                        ${justSaved ? 'bg-green-500' : isDirty ? 'bg-secondary' : 'bg-dark/70'}
+                    `}
+                >
+                    {justSaved ? <i className="fas fa-check"></i> : <i className="fas fa-save"></i>}
+                </button>
+            </div>
+             <p className="text-xs text-gray-400 mt-2">
+               مفتاحك يتم حفظه في متصفحك فقط.
+            </p>
+        </div>
+    );
+};
+
+
 interface SidebarProps {
     className?: string;
     currentView: View;
@@ -16,6 +82,8 @@ interface SidebarProps {
     onLogout: () => void;
     onReferralClick: () => void;
     onSupportClick: () => void;
+    apiKey: string;
+    onApiKeyChange: (key: string) => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -29,7 +97,9 @@ const Sidebar: React.FC<SidebarProps> = ({
     onThemeChange,
     onLogout,
     onReferralClick,
-    onSupportClick
+    onSupportClick,
+    apiKey,
+    onApiKeyChange
 }) => {
     const navItems = [
         { view: 'dashboard', icon: 'fas fa-book-open', label: 'الدروس' },
@@ -102,6 +172,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                         </div>
                     </div>
                 </div>
+                 <ApiKeyInput apiKey={apiKey} onApiKeyChange={onApiKeyChange} />
                 <div className="flex items-center justify-between pt-2">
                     <span className="font-medium text-white text-sm">الوضع</span>
                     <div className="flex items-center gap-2 rounded-full p-1 bg-dark/70">

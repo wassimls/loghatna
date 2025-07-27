@@ -1,4 +1,4 @@
-import { User, Word, ChatMessage, Json, Database, UserProgress, CategoryId, LeaderboardEntry, Subscription } from '../types';
+import { User, Word, ChatMessage, Json, Database, UserProgress, CategoryId, LeaderboardEntry, Subscription, ReferredUserWithPlan } from '../types';
 import { AVATAR_EMOJIS } from '../constants';
 import { supabase, supabaseConfigError } from './supabase';
 import { PostgrestResponse, PostgrestSingleResponse } from '@supabase/supabase-js';
@@ -32,12 +32,11 @@ export const signup = async (name: string, email: string, password: string): Pro
         userData.referred_by = referrerId;
     }
 
-    const { data, error } = await supabase!.auth.signUp({
+    const { user, session, error } = await supabase!.auth.signUp({
         email,
         password,
-        options: {
-            data: userData,
-        }
+    }, {
+        data: userData,
     });
 
     if (error) {
@@ -61,14 +60,14 @@ export const signup = async (name: string, email: string, password: string): Pro
     }
     
     // Returns true if the user exists, but there's no session, which means confirmation is required.
-    const confirmationSent = !!(data.user && !data.session);
+    const confirmationSent = !!(user && !session);
     return { confirmationSent };
 };
 
 // Log in an existing user
 export const login = async (email: string, password: string): Promise<void> => {
     ensureSupabaseIsConfigured();
-    const { error } = await supabase!.auth.signInWithPassword({
+    const { error } = await supabase!.auth.signIn({
         email,
         password,
     });
@@ -99,7 +98,7 @@ export const logout = async (): Promise<void> => {
 // Listen for authentication state changes
 export const onAuthChange = (callback: (user: User | null) => void): () => void => {
     ensureSupabaseIsConfigured();
-    const { data: { subscription } } = supabase!.auth.onAuthStateChange(
+    const { data: authListener } = supabase!.auth.onAuthStateChange(
         (event: string, session: any | null) => {
             const supabaseUser = session?.user;
             
@@ -179,13 +178,13 @@ export const onAuthChange = (callback: (user: User | null) => void): () => void 
             })();
         }
     );
-    return () => subscription.unsubscribe();
+    return () => authListener?.unsubscribe();
 };
 
 // Check if the current user is an admin
 export const isCurrentUserAdmin = async (): Promise<boolean> => {
     ensureSupabaseIsConfigured();
-    const { data: { user } } = await supabase!.auth.getUser();
+    const user = supabase!.auth.user();
     return user?.email === ADMIN_EMAIL;
 };
 
@@ -194,7 +193,7 @@ export const isCurrentUserAdmin = async (): Promise<boolean> => {
 export const updateUserName = async (name: string): Promise<User> => {
     ensureSupabaseIsConfigured();
 
-    const { data, error } = await supabase!.auth.updateUser({
+    const { user: updatedUser, error } = await supabase!.auth.update({
         data: { name }
     });
 
@@ -203,7 +202,6 @@ export const updateUserName = async (name: string): Promise<User> => {
         throw new Error('فشل في تحديث الاسم. يرجى المحاولة مرة أخرى.');
     }
     
-    const updatedUser = data.user;
     if (!updatedUser) {
          throw new Error('لم يتم العثور على المستخدم لتحديثه.');
     }
@@ -241,7 +239,7 @@ export const updateUserName = async (name: string): Promise<User> => {
 export const updateUserAvatar = async (avatar: string): Promise<User> => {
     ensureSupabaseIsConfigured();
 
-    const { data, error } = await supabase!.auth.updateUser({
+    const { user: updatedUser, error } = await supabase!.auth.update({
         data: { avatar }
     });
 
@@ -250,7 +248,6 @@ export const updateUserAvatar = async (avatar: string): Promise<User> => {
         throw new Error('فشل في تحديث الصورة الرمزية.');
     }
     
-    const updatedUser = data.user;
     if (!updatedUser) {
          throw new Error('لم يتم العثور على المستخدم لتحديثه.');
     }
@@ -288,14 +285,14 @@ export const updateUserAvatar = async (avatar: string): Promise<User> => {
 export const updateUserPassword = async (currentPassword: string, newPassword: string): Promise<void> => {
     ensureSupabaseIsConfigured();
     
-    const { data: { user } } = await supabase!.auth.getUser();
+    const user = supabase!.auth.user();
 
     if (!user) {
         throw new Error('لا يمكن التحقق من المستخدم الحالي.');
     }
     
     // We still need to verify the old password. The best way is to try signing in with it.
-    const { error: signInError } = await supabase!.auth.signInWithPassword({
+    const { error: signInError } = await supabase!.auth.signIn({
         email: user.email!,
         password: currentPassword,
     });
@@ -308,7 +305,7 @@ export const updateUserPassword = async (currentPassword: string, newPassword: s
     }
     
     // If verification is successful, update to the new password.
-    const { error: updateError } = await supabase!.auth.updateUser({
+    const { error: updateError } = await supabase!.auth.update({
         password: newPassword,
     });
 
@@ -329,7 +326,7 @@ export const setUserSubscribed = async (): Promise<User> => {
     ensureSupabaseIsConfigured();
 
     // 1. Get current user
-    const { data: { user } } = await supabase!.auth.getUser();
+    const user = supabase!.auth.user();
     if (!user) {
         throw new Error("لا يمكن العثور على المستخدم الحالي أو بريده الإلكتروني لإتمام الاشتراك.");
     }
@@ -371,7 +368,7 @@ export const setUserSubscribed = async (): Promise<User> => {
 export const extendSubscription = async (): Promise<User> => {
     ensureSupabaseIsConfigured();
 
-    const { data: { user } } = await supabase!.auth.getUser();
+    const user = supabase!.auth.user();
     if (!user) {
         throw new Error("No user found to extend subscription.");
     }
@@ -664,22 +661,55 @@ export const getLeaderboard = async (): Promise<LeaderboardEntry[]> => {
 
 // --- Referral Usage ---
 
-export const getReferredUsers = async (referrerId: string): Promise<Database['public']['Tables']['referral_usage']['Row'][]> => {
+export const getReferredUsers = async (referrerId: string): Promise<ReferredUserWithPlan[]> => {
     ensureSupabaseIsConfigured();
     
-    const { data, error } = await supabase!
+    // 1. Fetch the list of referred users
+    const { data: referredUsers, error: referralError } = await supabase!
         .from('referral_usage')
         .select('*')
         .eq('referrer_user_id', referrerId)
         .order('created_at', { ascending: false });
-
-    if (error) {
-        console.error('Error fetching referred users:', error.message);
-        // Return empty array but don't throw an error to the user for this non-critical feature
+    
+    if (referralError) {
+        console.error('Error fetching referred users:', referralError.message);
+        return [];
+    }
+    
+    if (!referredUsers || referredUsers.length === 0) {
         return [];
     }
 
-    return data || [];
+    // 2. Extract user IDs to fetch their subscriptions
+    const referredUserIds = referredUsers.map(u => u.referred_user_id);
+
+    // 3. Fetch subscriptions for all referred users in a single query
+    const { data: subscriptions, error: subscriptionError } = await supabase!
+        .from('subscriptions')
+        .select('user_id, tier')
+        .in('user_id', referredUserIds);
+
+    if (subscriptionError) {
+        console.error('Error fetching subscriptions for referred users:', subscriptionError.message);
+        // Return users without plan info on error, defaulting to bronze
+        return referredUsers.map(u => ({ ...u, tier: 'bronze' as const }));
+    }
+
+    // 4. Create a map for quick lookup of subscription tiers
+    const subscriptionMap = new Map<string, 'bronze' | 'silver' | 'gold'>();
+    if(subscriptions){
+        subscriptions.forEach(sub => {
+            subscriptionMap.set(sub.user_id, sub.tier as 'bronze' | 'silver' | 'gold');
+        });
+    }
+
+    // 5. Merge referral data with subscription data
+    const referredUsersWithPlan = referredUsers.map(user => ({
+        ...user,
+        tier: subscriptionMap.get(user.referred_user_id) || 'bronze',
+    }));
+
+    return referredUsersWithPlan;
 };
 
 

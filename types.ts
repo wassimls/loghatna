@@ -90,6 +90,11 @@ export type LeaderboardEntry = {
     total_score: number;
 };
 
+/** Represents a referred user along with their subscription plan. */
+export type ReferredUserWithPlan = Database['public']['Tables']['referral_usage']['Row'] & {
+    tier: 'bronze' | 'silver' | 'gold';
+};
+
 
 // ====================================================================================
 // LESSON & CONTENT STRUCTURE

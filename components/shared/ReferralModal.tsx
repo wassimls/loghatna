@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import * as soundService from '../../services/soundService';
 import * as userService from '../../services/userService.ts';
-import { Database } from '../../types.ts';
-
-type ReferredUser = Database['public']['Tables']['referral_usage']['Row'];
+import { ReferredUserWithPlan } from '../../types.ts';
 
 interface ReferralModalProps {
     userId: string;
@@ -14,7 +12,7 @@ const ReferralModal: React.FC<ReferralModalProps> = ({ userId, onClose }) => {
     const [referralLink, setReferralLink] = useState('');
     const [isCopied, setIsCopied] = useState(false);
     const [canShare, setCanShare] = useState(false);
-    const [referredUsers, setReferredUsers] = useState<ReferredUser[]>([]);
+    const [referredUsers, setReferredUsers] = useState<ReferredUserWithPlan[]>([]);
     const [isLoadingReferrals, setIsLoadingReferrals] = useState(true);
 
     useEffect(() => {
@@ -49,6 +47,18 @@ const ReferralModal: React.FC<ReferralModalProps> = ({ userId, onClose }) => {
                 url: referralLink,
             })
             .catch((error) => console.log('Error sharing', error));
+        }
+    };
+    
+    const getPlanDetails = (tier: 'bronze' | 'silver' | 'gold') => {
+        switch (tier) {
+            case 'gold':
+                return { name: 'ذهبية', color: 'text-yellow-400' };
+            case 'silver':
+                return { name: 'فضية', color: 'text-gray-300' };
+            case 'bronze':
+            default:
+                return { name: 'برونزية', color: 'text-yellow-700' };
         }
     };
 
@@ -106,14 +116,23 @@ const ReferralModal: React.FC<ReferralModalProps> = ({ userId, onClose }) => {
                         <div className="text-center py-4"><i className="fas fa-spinner fa-spin text-secondary text-2xl"></i></div>
                     ) : referredUsers.length > 0 ? (
                         <ul className="space-y-2 max-h-32 overflow-y-auto pr-2">
-                            {referredUsers.map(user => (
+                            {referredUsers.map(user => {
+                                const plan = getPlanDetails(user.tier);
+                                return (
                                 <li key={user.id} className="bg-dark/70 p-2 px-3 rounded-md flex justify-between items-center text-sm">
                                     <span className="text-gray-200 font-semibold">{user.referred_user_name || 'صديق'}</span>
-                                    <span className="text-gray-400">
-                                        {new Date(user.created_at).toLocaleDateString('ar-EG-u-nu-latn')}
-                                    </span>
+                                    <div className="flex items-center gap-4">
+                                        <span className={`font-bold ${plan.color}`}>
+                                            <i className="fas fa-medal mr-1"></i>
+                                            {plan.name}
+                                        </span>
+                                        <span className="text-gray-400">
+                                            {new Date(user.created_at).toLocaleDateString('ar-EG-u-nu-latn')}
+                                        </span>
+                                    </div>
                                 </li>
-                            ))}
+                                );
+                            })}
                         </ul>
                     ) : (
                         <p className="text-gray-400 text-center text-sm py-4">لم ينضم أي صديق بعد. كن أول من يشارك الرابط!</p>

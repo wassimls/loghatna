@@ -190,18 +190,85 @@ const ChatSection: React.FC<ChatSectionProps> = ({ language, user, onUnlockClick
     // ---- New Voice Mode State ----
     const [isVoiceMode, setIsVoiceMode] = useState(false);
     const [voiceStatus, setVoiceStatus] = useState<Mood>('neutral');
-    
-    const handleVoiceMessage = useCallback((transcript: string) => {
-        sendVoiceMessage(transcript);
-    }, [messages, user, language]); // Add dependencies to useCallback
 
-    const { isListening: isMicListening, startListening: startMic, speechError } = useAutoSpeechRecognition(language.code, handleVoiceMessage);
-    
     const CHAT_LIMIT = 3;
     const getLocalStorageKey = useCallback(() => `galaxya_chat_${user.id}_${new Date().toISOString().split('T')[0]}`, [user.id]);
-
     const systemInstruction = `You are a helpful and friendly language practice partner. Converse with the user, whose name is ${user.name}, in ${language.name}. Keep your responses concise, friendly, and appropriate for a language learner. The user is a native Arabic speaker. You can gently correct their mistakes.`;
+    
+    const sendVoiceMessage = (transcript: string) => {
+        if (!transcript.trim() || isChatLocked) return;
+    
+        const userMessage: ChatMessage = { role: 'user', text: transcript };
+    
+        setVoiceStatus('thinking');
+        setError(null);
+    
+        // Use a functional update to get the most recent state and avoid stale closures.
+        setMessages(currentMessages => {
+            const newMessages = [...currentMessages, userMessage];
+            
+            if (!user.is_subscribed) {
+                setMessageCount(currentCount => {
+                    const newCount = currentCount + 1;
+                    localStorage.setItem(getLocalStorageKey(), newCount.toString());
+                    if (newCount >= CHAT_LIMIT) setIsChatLocked(true);
+                    return newCount;
+                });
+            }
+    
+            // Perform the async operation using the up-to-date `newMessages`.
+            (async () => {
+                try {
+                    const stream = streamChatResponse(newMessages, systemInstruction);
+                    let fullResponse = '';
+                    for await (const chunk of stream) {
+                        fullResponse += chunk;
+                    }
+    
+                    const finalModelMessage: ChatMessage = { role: 'model', text: fullResponse };
+                    const finalMessages = [...newMessages, finalModelMessage];
+                    
+                    setMessages(finalMessages);
+                    await userService.saveChatHistory(user.id, language.code, finalMessages);
+    
+                    speak(fullResponse, language.code, {
+                        onStart: () => setVoiceStatus('speaking'),
+                        onEnd: () => setVoiceStatus('neutral'),
+                        onError: () => {
+                            setError("حدث خطأ أثناء تشغيل الصوت.");
+                            setVoiceStatus('neutral');
+                        }
+                    });
+    
+                } catch (e) {
+                    console.error("Chat error:", e);
+                    const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred';
+                    setError(`عذرًا، حدث خطأ: ${errorMessage}`);
+                    setMessages(currentMessages); // Revert on error
+                    
+                     if (!user.is_subscribed) {
+                        setMessageCount(currentCount => {
+                            const newCount = Math.max(0, currentCount - 1);
+                            localStorage.setItem(getLocalStorageKey(), newCount.toString());
+                            if (newCount < CHAT_LIMIT) setIsChatLocked(false);
+                            return newCount;
+                        });
+                    }
+    
+                    speak(`عذراً, حدث خطأ ما. حاول مرة أخرى.`, 'ar-SA', { onEnd: () => setVoiceStatus('neutral') });
+                }
+            })();
+    
+            return newMessages;
+        });
+    };
 
+    const handleVoiceMessage = useCallback((transcript: string) => {
+        sendVoiceMessage(transcript);
+    }, [user.id, language.code, isChatLocked, getLocalStorageKey, systemInstruction]);
+    
+    const { isListening: isMicListening, startListening: startMic, speechError } = useAutoSpeechRecognition(language.code, handleVoiceMessage);
+    
      useEffect(() => {
         const loadHistory = async () => {
             if (!user?.id) {
@@ -286,53 +353,6 @@ const ChatSection: React.FC<ChatSectionProps> = ({ language, user, onUnlockClick
             setTranslatingIndex(null);
         }
     };
-    
-    // --- New Function for Voice Mode ---
-    const sendVoiceMessage = async (transcript: string) => {
-        if (!transcript || isChatLocked) return;
-
-        const userMessage: ChatMessage = { role: 'user', text: transcript };
-        if (!user.is_subscribed) {
-            const newCount = messageCount + 1;
-            setMessageCount(newCount);
-            localStorage.setItem(getLocalStorageKey(), newCount.toString());
-            if (newCount >= CHAT_LIMIT) setIsChatLocked(true);
-        }
-        
-        const newMessages = [...messages, userMessage];
-        setMessages(newMessages); // Update history in background
-        setVoiceStatus('thinking');
-        setError(null);
-
-        try {
-            const stream = streamChatResponse(newMessages, systemInstruction);
-            let fullResponse = '';
-            for await (const chunk of stream) {
-                fullResponse += chunk;
-            }
-
-            const finalModelMessage: ChatMessage = { role: 'model', text: fullResponse };
-            const finalMessages = [...newMessages, finalModelMessage];
-            setMessages(finalMessages);
-            await userService.saveChatHistory(user.id, language.code, finalMessages);
-
-            speak(fullResponse, language.code, {
-                onStart: () => setVoiceStatus('speaking'),
-                onEnd: () => setVoiceStatus('neutral'),
-                onError: () => {
-                    setError("حدث خطأ أثناء تشغيل الصوت.");
-                    setVoiceStatus('neutral');
-                }
-            });
-
-        } catch (e) {
-            console.error("Chat error:", e);
-            const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred';
-            setError(`عذرًا، حدث خطأ: ${errorMessage}`);
-            speak(`عذراً, حدث خطأ ما. حاول مرة أخرى.`, 'ar-SA', { onEnd: () => setVoiceStatus('neutral') });
-        }
-    };
-
 
     const sendTextMessage = async () => {
         if (!input.trim() || isLoading || isChatLocked) return;
@@ -377,10 +397,12 @@ const ChatSection: React.FC<ChatSectionProps> = ({ language, user, onUnlockClick
             setError(`عذرًا، حدث خطأ أثناء إرسال الرسالة: ${errorMessage}`);
             setMessages(prev => prev.slice(0, -1));
              if (!user.is_subscribed) {
-                const newCount = messageCount - 1;
-                setMessageCount(newCount);
-                localStorage.setItem(getLocalStorageKey(), (newCount).toString());
-                if (newCount < CHAT_LIMIT) setIsChatLocked(false);
+                setMessageCount(prevCount => {
+                    const newCount = prevCount > 0 ? prevCount - 1 : 0;
+                     localStorage.setItem(getLocalStorageKey(), newCount.toString());
+                     if (newCount < CHAT_LIMIT) setIsChatLocked(false);
+                     return newCount;
+                });
             }
         } finally {
             setIsLoading(false);

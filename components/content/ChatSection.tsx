@@ -2,7 +2,9 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Language, User, ChatMessage, SpeechRecognition, SpeechRecognitionEvent, SpeechRecognitionErrorEvent } from '../../types';
 import { streamChatResponse, translateText } from '../../services/geminiService';
 import * as userService from '../../services/userService';
-import { speak } from '../../services/audioService';
+import { speak, cancelSpeech } from '../../services/audioService';
+import * as soundService from '../../services/soundService';
+
 
 interface ChatSectionProps {
     language: Language;
@@ -11,7 +13,7 @@ interface ChatSectionProps {
 }
 
 // ---- Start of new interactive avatar components ----
-type Mood = 'neutral' | 'thinking' | 'happy' | 'sad' | 'idea';
+type Mood = 'neutral' | 'listening' | 'thinking' | 'speaking' | 'happy' | 'sad' | 'idea';
 
 const getMoodFromMessage = (text: string): Mood => {
     if (!text) return 'neutral';
@@ -35,70 +37,69 @@ const getMoodFromMessage = (text: string): Mood => {
     return 'neutral';
 };
 
-const RobotEye: React.FC<{ mood: Mood }> = ({ mood }) => {
-    const eyeBaseStyle = "transition-all duration-300";
-    const eyeGlowStyle = { boxShadow: '0 0 4px 1px rgba(56, 189, 248, 0.5)' };
+const AstronautVisor: React.FC<{ mood: Mood }> = ({ mood }) => {
+    const baseStyle = { transition: 'all 0.3s ease-in-out' };
+    let content;
 
     switch (mood) {
         case 'happy':
-            // Upward curve
-            return <div className={`w-2.5 h-1.5 border-cyan-300 border-b-2 rounded-b-full ${eyeBaseStyle}`} style={eyeGlowStyle}></div>;
+            content = <path d="M 6 14 Q 12 18 18 14" stroke="#86efac" strokeWidth="2" fill="none" strokeLinecap="round" />;
+            break;
         case 'sad':
-            // Downward curve
-            return <div className={`w-2.5 h-1.5 border-cyan-300 border-t-2 rounded-t-full ${eyeBaseStyle}`} style={eyeGlowStyle}></div>;
-        case 'idea':
-            // Wide open circle
-            return <div className={`w-2 h-2 border-2 border-cyan-300 rounded-full bg-dark/50 ${eyeBaseStyle}`} style={eyeGlowStyle}></div>;
+            content = <path d="M 6 16 Q 12 12 18 16" stroke="#f87171" strokeWidth="2" fill="none" strokeLinecap="round" />;
+            break;
+        case 'speaking':
+            content = (
+                <g stroke="#67e8f9" strokeWidth="1.5" strokeLinecap="round">
+                    <line x1="8" y1="13" x2="8" y2="11"><animate attributeName="y2" values="11;13;11" dur="0.6s" repeatCount="indefinite" /></line>
+                    <line x1="12" y1="14" x2="12" y2="10"><animate attributeName="y2" values="10;14;10" dur="0.6s" repeatCount="indefinite" /></line>
+                    <line x1="16" y1="13" x2="16" y2="11"><animate attributeName="y2" values="11;13;11" dur="0.6s" repeatCount="indefinite" /></line>
+                </g>
+            );
+            break;
+        case 'listening':
+            content = (
+                <line x1="7" y1="12" x2="17" y2="12" stroke="#67e8f9" strokeWidth="2" strokeLinecap="round">
+                     <animate attributeName="x2" values="17;14;17" dur="1s" repeatCount="indefinite" />
+                </line>
+            );
+            break;
         case 'thinking':
-        default: // neutral
-            // A simple horizontal line
-            return <div className={`w-2 h-0.5 bg-cyan-300 ${eyeBaseStyle}`} style={eyeGlowStyle}></div>;
-    }
-};
-
-const RobotMouth: React.FC<{ mood: Mood }> = ({ mood }) => {
-    const mouthBaseStyle = "transition-all duration-300";
-    const mouthGlowStyle = { boxShadow: '0 0 4px 1px rgba(56, 189, 248, 0.5)' };
-
-    switch (mood) {
-        case 'happy':
-            // Wide smile
-            return <div className={`w-4 h-2 border-b-2 border-cyan-300 rounded-b-full bg-transparent ${mouthBaseStyle}`} style={mouthGlowStyle}></div>;
-        case 'sad':
-            // Frown
-            return <div className={`w-4 h-2 border-t-2 border-cyan-300 rounded-t-full bg-transparent ${mouthBaseStyle}`} style={mouthGlowStyle}></div>;
+            content = (
+                <g fill="#67e8f9">
+                    <circle cx="8" cy="12" r="1.5"><animate attributeName="opacity" values="0;1;0" dur="1.2s" repeatCount="indefinite" begin="0s" /></circle>
+                    <circle cx="12" cy="12" r="1.5"><animate attributeName="opacity" values="0;1;0" dur="1.2s" repeatCount="indefinite" begin="0.3s" /></circle>
+                    <circle cx="16" cy="12" r="1.5"><animate attributeName="opacity" values="0;1;0" dur="1.2s" repeatCount="indefinite" begin="0.6s" /></circle>
+                </g>
+            );
+            break;
         case 'idea':
-            // 'O' shape
-            return <div className={`w-2 h-2 border-2 border-cyan-300 rounded-full bg-transparent ${mouthBaseStyle}`} style={mouthGlowStyle}></div>;
-        case 'thinking':
+             content = <path d="M12 7 a 3 3 0 0 1 3 3 c 0 1.5 -1.5 2.5 -3 4 c -1.5 -1.5 -3 -2.5 -3 -4 a 3 3 0 0 1 3 -3 M10 16 h 4" stroke="#facc15" fill="none" strokeWidth="1.5" strokeLinecap="round"/>;
+            break;
         case 'neutral':
         default:
-            // Flat line
-            return <div className={`w-3 h-0.5 bg-cyan-300 ${mouthBaseStyle}`} style={mouthGlowStyle}></div>;
+            content = <path d="M 4 12 Q 12 11 20 12" stroke="rgba(255, 255, 255, 0.4)" strokeWidth="1.5" fill="none" />;
+            break;
     }
+    return <svg viewBox="0 0 24 24" className="w-full h-full" style={baseStyle}>{content}</svg>;
 };
 
+const AstronautAvatar: React.FC<{ mood: Mood; size?: 'small' | 'large' }> = ({ mood, size = 'small' }) => {
+    const sizeClasses = size === 'small'
+        ? { container: 'w-10 h-10', visor: 'w-7 h-5' }
+        : { container: 'w-48 h-48', visor: 'w-32 h-24' };
 
-const RobotAvatar: React.FC<{ mood: Mood }> = ({ mood }) => {
-    const isThinking = mood === 'thinking';
     return (
-        <div className="w-10 h-10 rounded-full bg-slate-700 flex-shrink-0 flex flex-col items-center justify-center relative shadow-md p-1">
-            {/* Eyes Container */}
-            <div className="flex items-center justify-center gap-2 w-full h-4">
-                <RobotEye mood={mood} />
-                <RobotEye mood={mood} />
+        <div className={`${sizeClasses.container} rounded-full bg-slate-300 flex-shrink-0 flex items-center justify-center relative shadow-inner p-1`}>
+            <div className="w-full h-full bg-white rounded-full flex items-center justify-center">
+                <div className={`${sizeClasses.visor} bg-gray-900 rounded-[45%] border-4 border-gray-400 overflow-hidden`}>
+                     <AstronautVisor mood={mood} />
+                </div>
             </div>
-            {/* Mouth Container */}
-            <div className="flex items-center justify-center w-full h-4 mt-0.5">
-                <RobotMouth mood={mood} />
-            </div>
-            {/* Antenna */}
-            <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-0.5 h-3 bg-slate-400"></div>
-            <div className={`absolute -top-3.5 left-1/2 -translate-x-1/2 w-2.5 h-2.5 rounded-full border-2 border-slate-400 ${isThinking ? 'antenna-blink-animation' : 'bg-secondary'}`}></div>
         </div>
     );
 };
-// ---- End of new interactive avatar components ----
+// ---- End of interactive avatar components ----
 
 
 const TypingIndicator = () => (
@@ -107,10 +108,11 @@ const TypingIndicator = () => (
     </div>
 );
 
-const useChatSpeechRecognition = (lang: string, onTranscriptUpdate: (transcript: string) => void) => {
+const useAutoSpeechRecognition = (lang: string, onTranscriptFinalized: (transcript: string) => void) => {
     const [isListening, setIsListening] = useState(false);
     const [speechError, setSpeechError] = useState<string | null>(null);
     const recognitionRef = useRef<SpeechRecognition | null>(null);
+    const transcriptRef = useRef('');
 
     const startListening = useCallback(() => {
         if (isListening) return;
@@ -124,26 +126,23 @@ const useChatSpeechRecognition = (lang: string, onTranscriptUpdate: (transcript:
         recognitionRef.current = recognition;
         
         recognition.lang = lang;
-        recognition.continuous = false;
-        recognition.interimResults = true;
+        recognition.continuous = false; // Important for auto-sending on stop
+        recognition.interimResults = false;
 
         recognition.onstart = () => {
             setIsListening(true);
             setSpeechError(null);
-            onTranscriptUpdate('');
+            transcriptRef.current = '';
         };
 
         recognition.onresult = (event: SpeechRecognitionEvent) => {
-            let transcript = '';
-            for (let i = event.resultIndex; i < event.results.length; ++i) {
-                transcript += event.results[i][0].transcript;
-            }
-            onTranscriptUpdate(transcript);
+            const transcript = event.results[0][0].transcript;
+            transcriptRef.current = transcript;
         };
         
         recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
             let userMessage = `حدث خطأ غير متوقع: ${event.error}`;
-            if (event.error === 'no-speech') userMessage = 'لم يتم اكتشاف أي كلام. حاول التحدث بوضوح.';
+            if (event.error === 'no-speech') userMessage = 'لم أسمع شيئًا. حاول مرة أخرى.';
             if (event.error === 'audio-capture') userMessage = 'لا يمكن الوصول إلى الميكروفون. يرجى التأكد من أنك منحت الإذن.';
             if (event.error === 'not-allowed') userMessage = 'تم رفض الإذن باستخدام الميكروفون. يرجى تمكينه في إعدادات المتصفح.';
             setSpeechError(userMessage);
@@ -152,11 +151,14 @@ const useChatSpeechRecognition = (lang: string, onTranscriptUpdate: (transcript:
         
         recognition.onend = () => {
             setIsListening(false);
+            if (transcriptRef.current.trim()) {
+                onTranscriptFinalized(transcriptRef.current.trim());
+            }
         };
 
         recognition.start();
 
-    }, [isListening, lang, onTranscriptUpdate]);
+    }, [isListening, lang, onTranscriptFinalized]);
     
     useEffect(() => {
         return () => {
@@ -185,10 +187,18 @@ const ChatSection: React.FC<ChatSectionProps> = ({ language, user, onUnlockClick
     const [isChatLocked, setIsChatLocked] = useState(false);
     const [messageCount, setMessageCount] = useState(0);
 
-    const { isListening, startListening, speechError } = useChatSpeechRecognition(language.code, setInput);
+    // ---- New Voice Mode State ----
+    const [isVoiceMode, setIsVoiceMode] = useState(false);
+    const [voiceStatus, setVoiceStatus] = useState<Mood>('neutral');
+    
+    const handleVoiceMessage = useCallback((transcript: string) => {
+        sendVoiceMessage(transcript);
+    }, [messages, user, language]); // Add dependencies to useCallback
+
+    const { isListening: isMicListening, startListening: startMic, speechError } = useAutoSpeechRecognition(language.code, handleVoiceMessage);
     
     const CHAT_LIMIT = 3;
-    const getLocalStorageKey = useCallback(() => `mindlingo_chat_${user.id}_${new Date().toISOString().split('T')[0]}`, [user.id]);
+    const getLocalStorageKey = useCallback(() => `galaxya_chat_${user.id}_${new Date().toISOString().split('T')[0]}`, [user.id]);
 
     const systemInstruction = `You are a helpful and friendly language practice partner. Converse with the user, whose name is ${user.name}, in ${language.name}. Keep your responses concise, friendly, and appropriate for a language learner. The user is a native Arabic speaker. You can gently correct their mistakes.`;
 
@@ -234,6 +244,23 @@ const ChatSection: React.FC<ChatSectionProps> = ({ language, user, onUnlockClick
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages, translations, isHistoryLoading]);
 
+     useEffect(() => {
+        return () => { // Cleanup on unmount
+            cancelSpeech();
+        };
+    }, []);
+
+    useEffect(() => {
+        if (!isVoiceMode) {
+            cancelSpeech();
+            setVoiceStatus('neutral');
+        }
+    }, [isVoiceMode]);
+
+    useEffect(() => {
+        setVoiceStatus(isMicListening ? 'listening' : 'neutral');
+    }, [isMicListening]);
+
     const handleSpeak = (text: string, index: number) => {
         if (speakingIndex !== null) return;
         setSpeakingIndex(index);
@@ -259,17 +286,63 @@ const ChatSection: React.FC<ChatSectionProps> = ({ language, user, onUnlockClick
             setTranslatingIndex(null);
         }
     };
+    
+    // --- New Function for Voice Mode ---
+    const sendVoiceMessage = async (transcript: string) => {
+        if (!transcript || isChatLocked) return;
 
-    const sendMessage = async () => {
+        const userMessage: ChatMessage = { role: 'user', text: transcript };
+        if (!user.is_subscribed) {
+            const newCount = messageCount + 1;
+            setMessageCount(newCount);
+            localStorage.setItem(getLocalStorageKey(), newCount.toString());
+            if (newCount >= CHAT_LIMIT) setIsChatLocked(true);
+        }
+        
+        const newMessages = [...messages, userMessage];
+        setMessages(newMessages); // Update history in background
+        setVoiceStatus('thinking');
+        setError(null);
+
+        try {
+            const stream = streamChatResponse(newMessages, systemInstruction);
+            let fullResponse = '';
+            for await (const chunk of stream) {
+                fullResponse += chunk;
+            }
+
+            const finalModelMessage: ChatMessage = { role: 'model', text: fullResponse };
+            const finalMessages = [...newMessages, finalModelMessage];
+            setMessages(finalMessages);
+            await userService.saveChatHistory(user.id, language.code, finalMessages);
+
+            speak(fullResponse, language.code, {
+                onStart: () => setVoiceStatus('speaking'),
+                onEnd: () => setVoiceStatus('neutral'),
+                onError: () => {
+                    setError("حدث خطأ أثناء تشغيل الصوت.");
+                    setVoiceStatus('neutral');
+                }
+            });
+
+        } catch (e) {
+            console.error("Chat error:", e);
+            const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred';
+            setError(`عذرًا، حدث خطأ: ${errorMessage}`);
+            speak(`عذراً, حدث خطأ ما. حاول مرة أخرى.`, 'ar-SA', { onEnd: () => setVoiceStatus('neutral') });
+        }
+    };
+
+
+    const sendTextMessage = async () => {
         if (!input.trim() || isLoading || isChatLocked) return;
 
         const userMessage: ChatMessage = { role: 'user', text: input };
-
-        let newCount = messageCount;
         if (!user.is_subscribed) {
-            newCount = messageCount + 1;
+            const newCount = messageCount + 1;
             setMessageCount(newCount);
             localStorage.setItem(getLocalStorageKey(), newCount.toString());
+            if (newCount >= CHAT_LIMIT) setIsChatLocked(true);
         }
 
         const newMessages = [...messages, userMessage];
@@ -304,131 +377,156 @@ const ChatSection: React.FC<ChatSectionProps> = ({ language, user, onUnlockClick
             setError(`عذرًا، حدث خطأ أثناء إرسال الرسالة: ${errorMessage}`);
             setMessages(prev => prev.slice(0, -1));
              if (!user.is_subscribed) {
-                setMessageCount(newCount - 1);
-                localStorage.setItem(getLocalStorageKey(), (newCount - 1).toString());
+                const newCount = messageCount - 1;
+                setMessageCount(newCount);
+                localStorage.setItem(getLocalStorageKey(), (newCount).toString());
+                if (newCount < CHAT_LIMIT) setIsChatLocked(false);
             }
         } finally {
             setIsLoading(false);
-            if (!user.is_subscribed && newCount >= CHAT_LIMIT) {
-                setIsChatLocked(true);
-            }
+        }
+    };
+    
+     const getVoiceStatusText = () => {
+        switch (voiceStatus) {
+            case 'listening': return 'جاري الاستماع...';
+            case 'thinking': return '...يفكر';
+            case 'speaking': return '...يتحدث';
+            case 'neutral': return 'انقر على الميكروفون للتحدث';
+            default: return '';
         }
     };
     
     return (
         <div className="p-4 md:p-8 flex-1 flex flex-col h-full animate-fadeIn">
-            <div className="content-header mb-6">
-                <h2 className="text-secondary text-2xl font-bold flex items-center gap-3">
-                    <i className="fas fa-comments"></i>
-                    الدردشة مع الذكاء الاصطناعي
-                </h2>
-                <p className="text-gray-300">تدرب على {language.name} في محادثة حقيقية!</p>
-            </div>
-            <div className="flex-1 bg-dark/50 backdrop-blur-md rounded-2xl shadow-inner p-4 flex flex-col justify-between overflow-hidden border border-white/10">
-                 {isHistoryLoading ? (
-                    <div className="flex-1 flex justify-center items-center">
-                        <i className="fas fa-spinner fa-spin text-secondary text-3xl"></i>
-                        <p className="ml-4 text-white">جاري تحميل سجل الدردشة...</p>
+            <div className="content-header mb-6 flex justify-between items-center">
+                <div>
+                     <h2 className="text-secondary text-2xl font-bold flex items-center gap-3">
+                        <i className="fas fa-comments"></i>
+                        الدردشة مع الذكاء الاصطناعي
+                    </h2>
+                    <p className="text-gray-300">تدرب على {language.name} في محادثة حقيقية!</p>
+                </div>
+                 <div className="flex items-center gap-3 bg-dark/50 p-1.5 rounded-full border border-white/10">
+                    <span className={`px-2 text-sm font-bold ${!isVoiceMode ? 'text-secondary' : 'text-gray-400'}`}><i className="fas fa-keyboard"></i> نصي</span>
+                    <div onClick={() => setIsVoiceMode(!isVoiceMode)} className="w-12 h-7 bg-dark/70 rounded-full flex items-center p-1 cursor-pointer">
+                        <div className={`w-5 h-5 bg-white rounded-full shadow-md transform transition-transform ${isVoiceMode ? 'translate-x-5' : ''}`}></div>
                     </div>
-                ) : (
-                    <div className="messages-area flex-1 overflow-y-auto pr-2 space-y-4">
-                        {messages.map((msg, index) => (
-                            <div key={index} className={`flex items-end gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                {msg.role === 'model' && (
-                                    <RobotAvatar mood={ (isLoading && index === messages.length - 1) ? 'thinking' : getMoodFromMessage(msg.text) } />
-                                )}
-                                <div className={`max-w-xs md:max-w-md lg:max-w-lg p-4 rounded-2xl speech-bubble ${msg.role === 'user' ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-br-none speech-bubble-right' : 'bg-white dark:bg-slate-700 text-dark dark:text-light rounded-bl-none speech-bubble-left'}`}>
-                                    {msg.text.trim() === '' && isLoading && index === messages.length - 1 ? (
-                                        <TypingIndicator />
-                                    ) : (
-                                        <p className="text-base" style={{ direction: msg.text.charCodeAt(0) > 1000 ? 'rtl' : 'ltr', textAlign: 'left' }}>
-                                            {msg.text}
-                                        </p>
+                     <span className={`px-2 text-sm font-bold ${isVoiceMode ? 'text-secondary' : 'text-gray-400'}`}><i className="fas fa-microphone-alt"></i> صوتي</span>
+                </div>
+            </div>
+            
+            {isVoiceMode ? (
+                <div className="flex-1 bg-dark/50 backdrop-blur-md rounded-2xl shadow-inner p-4 flex flex-col justify-between items-center overflow-hidden border border-white/10">
+                    <div className="flex-1 flex flex-col justify-center items-center text-center">
+                         <AstronautAvatar mood={voiceStatus} size="large" />
+                         <p className="text-xl text-gray-200 mt-6 min-h-[28px]">{getVoiceStatusText()}</p>
+                         {(error || speechError) && <p className="text-red-400 font-semibold mt-2">{error || speechError}</p>}
+                    </div>
+                     {isChatLocked ? (
+                        <div className="mt-4 text-center p-4 bg-yellow-500/10 border-2 border-secondary rounded-xl">
+                            <h4 className="text-lg font-bold text-secondary"><i className="fas fa-lock mr-2"></i> لقد وصلت إلى الحد اليومي</h4>
+                            <button onClick={onUnlockClick} className="mt-2 btn bg-secondary text-dark py-2 px-4 rounded-full font-bold text-sm">الترقية للمحادثة بلا حدود</button>
+                        </div>
+                    ) : (
+                        <button
+                            onClick={startMic}
+                            disabled={voiceStatus !== 'neutral'}
+                            className={`w-24 h-24 rounded-full text-white text-4xl flex items-center justify-center transition-all duration-300 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed
+                                ${voiceStatus === 'listening' ? 'bg-red-500 animate-pulse scale-110' : 'bg-secondary hover:scale-110'}
+                            `}
+                        >
+                            <i className="fas fa-microphone-alt"></i>
+                        </button>
+                    )}
+                </div>
+            ) : (
+                <div className="flex-1 bg-dark/50 backdrop-blur-md rounded-2xl shadow-inner p-4 flex flex-col justify-between overflow-hidden border border-white/10">
+                     {isHistoryLoading ? (
+                        <div className="flex-1 flex justify-center items-center">
+                            <i className="fas fa-spinner fa-spin text-secondary text-3xl"></i>
+                            <p className="ml-4 text-white">جاري تحميل سجل الدردشة...</p>
+                        </div>
+                    ) : (
+                        <div className="messages-area flex-1 overflow-y-auto pr-2 space-y-4">
+                            {messages.map((msg, index) => (
+                                <div key={index} className={`flex items-end gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                    {msg.role === 'model' && (
+                                        <AstronautAvatar mood={ (isLoading && index === messages.length - 1) ? 'thinking' : getMoodFromMessage(msg.text) } />
                                     )}
-                                    
-                                    {translations[index] && (
-                                        <div className="mt-3 pt-3 border-t border-gray-200 dark:border-slate-600">
-                                            <p className="text-base text-gray-600 dark:text-gray-300" dir="rtl">{translations[index]}</p>
-                                        </div>
-                                    )}
-                                    
-                                    {msg.role === 'model' && msg.text && (
-                                        <div className="flex justify-end gap-4 mt-2 pt-2 border-t border-gray-200 dark:border-slate-600">
-                                            <button 
-                                                onClick={() => handleSpeak(msg.text, index)}
-                                                disabled={speakingIndex !== null}
-                                                className="text-gray-400 hover:text-primary transition-colors disabled:opacity-50"
-                                                title="الاستماع">
-                                                <i className={`fas fa-volume-up ${speakingIndex === index ? 'fa-beat' : ''}`}></i>
-                                            </button>
-                                            <button 
-                                                onClick={() => handleTranslate(msg.text, index)}
-                                                disabled={translatingIndex === index || !!translations[index]}
-                                                className="text-gray-400 hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                                title="ترجمة">
-                                                {translatingIndex === index ? <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-language"></i>}
-                                            </button>
+                                    <div className={`max-w-xs md:max-w-md lg:max-w-lg p-4 rounded-2xl speech-bubble ${msg.role === 'user' ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-br-none speech-bubble-right' : 'bg-white dark:bg-slate-700 text-dark dark:text-light rounded-bl-none speech-bubble-left'}`}>
+                                        {msg.text.trim() === '' && isLoading && index === messages.length - 1 ? (
+                                            <TypingIndicator />
+                                        ) : (
+                                            <p className="text-base" style={{ direction: msg.text.charCodeAt(0) > 1000 ? 'rtl' : 'ltr', textAlign: 'left' }}>
+                                                {msg.text}
+                                            </p>
+                                        )}
+                                        
+                                        {translations[index] && (
+                                            <div className="mt-3 pt-3 border-t border-gray-200 dark:border-slate-600">
+                                                <p className="text-base text-gray-600 dark:text-gray-300" dir="rtl">{translations[index]}</p>
+                                            </div>
+                                        )}
+                                        
+                                        {msg.role === 'model' && msg.text && (
+                                            <div className="flex justify-end gap-4 mt-2 pt-2 border-t border-gray-200 dark:border-slate-600">
+                                                <button 
+                                                    onClick={() => handleSpeak(msg.text, index)}
+                                                    disabled={speakingIndex !== null}
+                                                    className="text-gray-400 hover:text-primary transition-colors disabled:opacity-50"
+                                                    title="الاستماع">
+                                                    <i className={`fas fa-volume-up ${speakingIndex === index ? 'fa-beat' : ''}`}></i>
+                                                </button>
+                                                <button 
+                                                    onClick={() => handleTranslate(msg.text, index)}
+                                                    disabled={translatingIndex === index || !!translations[index]}
+                                                    className="text-gray-400 hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    title="ترجمة">
+                                                    {translatingIndex === index ? <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-language"></i>}
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                    {msg.role === 'user' && (
+                                        <div className="w-10 h-10 rounded-full bg-accent text-white flex items-center justify-center text-xl shadow-md flex-shrink-0">
+                                            <i className="fas fa-user"></i>
                                         </div>
                                     )}
                                 </div>
-                                {msg.role === 'user' && (
-                                    <div className="w-10 h-10 rounded-full bg-accent text-white flex items-center justify-center text-xl shadow-md flex-shrink-0">
-                                        <i className="fas fa-user"></i>
-                                    </div>
-                                )}
-                            </div>
-                        ))}
-                        <div ref={messagesEndRef} />
-                    </div>
-                 )}
-                {(error || speechError) && <p className="text-red-400 text-center text-sm my-2 font-semibold animate-shake">{error || speechError}</p>}
-                
-                {isChatLocked ? (
-                    <div className="mt-4 text-center p-4 bg-yellow-500/10 border-2 border-secondary rounded-xl">
-                        <h4 className="text-lg font-bold text-secondary">
-                            <i className="fas fa-lock mr-2"></i>
-                            لقد وصلت إلى الحد اليومي للرسائل
-                        </h4>
-                        <p className="text-gray-300 my-2">
-                            للمحادثة بلا حدود، قم بالترقية إلى الخطة الفضية.
-                        </p>
-                        <button
-                            onClick={onUnlockClick}
-                            className="btn bg-gradient-to-r from-secondary to-yellow-400 text-dark py-2 px-6 rounded-full font-bold transition-transform duration-300 hover:scale-105 shadow-lg"
-                        >
-                            <i className="fas fa-unlock-alt mr-2"></i>
-                            الترقية الآن
-                        </button>
-                    </div>
-                ) : (
-                    <div className="input-area mt-4 flex items-center gap-2">
-                        <input
-                            type="text"
-                            value={input}
-                            onChange={(e) => setInput(e.target.value)}
-                            onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-                            placeholder={isListening ? 'جاري الاستماع...' : `اكتب شيئًا باللغة ${language.name}...`}
-                            className="flex-1 p-4 rounded-xl bg-white dark:bg-slate-700 border-2 text-dark dark:text-light border-transparent focus:border-blue-500 focus:outline-none transition-colors"
-                            disabled={isLoading || isListening}
-                        />
-                         <button
-                            onClick={startListening}
-                            disabled={isLoading || isListening}
-                            className={`w-12 h-12 rounded-xl text-xl flex-shrink-0 flex items-center justify-center transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed ${isListening ? 'bg-red-500 text-white' : 'bg-primary text-white'}`}
-                            title="تسجيل صوتي"
-                        >
-                            <i className={`fas fa-microphone-alt ${isListening ? 'fa-beat' : ''}`}></i>
-                        </button>
-                        <button
-                            onClick={sendMessage}
-                            disabled={isLoading || !input.trim()}
-                            className="w-12 h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xl flex-shrink-0 flex items-center justify-center transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            <i className="fas fa-paper-plane"></i>
-                        </button>
-                    </div>
-                )}
-            </div>
+                            ))}
+                            <div ref={messagesEndRef} />
+                        </div>
+                     )}
+                    {error && <p className="text-red-400 text-center text-sm my-2 font-semibold animate-shake">{error}</p>}
+                    
+                    {isChatLocked ? (
+                        <div className="mt-4 text-center p-4 bg-yellow-500/10 border-2 border-secondary rounded-xl">
+                            <h4 className="text-lg font-bold text-secondary"><i className="fas fa-lock mr-2"></i> لقد وصلت إلى الحد اليومي للرسائل</h4>
+                            <button onClick={onUnlockClick} className="mt-2 btn bg-secondary text-dark py-2 px-4 rounded-full font-bold text-sm">الترقية للمحادثة بلا حدود</button>
+                        </div>
+                    ) : (
+                        <div className="input-area mt-4 flex items-center gap-2">
+                            <input
+                                type="text"
+                                value={input}
+                                onChange={(e) => setInput(e.target.value)}
+                                onKeyPress={(e) => e.key === 'Enter' && sendTextMessage()}
+                                placeholder={`اكتب شيئًا باللغة ${language.name}...`}
+                                className="flex-1 p-4 rounded-xl bg-white dark:bg-slate-700 border-2 text-dark dark:text-light border-transparent focus:border-blue-500 focus:outline-none transition-colors"
+                                disabled={isLoading}
+                            />
+                            <button
+                                onClick={sendTextMessage}
+                                disabled={isLoading || !input.trim()}
+                                className="w-12 h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xl flex-shrink-0 flex items-center justify-center transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                <i className="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     );
 };

@@ -234,6 +234,34 @@ const AccountPage: React.FC<AccountPageProps> = ({
                             <label className="block text-sm font-medium text-gray-300">البريد الإلكتروني</label>
                             <p className="p-3 mt-1 rounded-lg bg-dark/70 text-gray-400 font-mono text-sm">{user.email}</p>
                         </div>
+                        
+                        <div>
+                            <label className="block text-sm font-medium text-gray-300">خطة الاشتراك</label>
+                            <p className="p-3 mt-1 rounded-lg bg-dark/70 text-white font-bold flex items-center gap-2">
+                                <i className={`fas fa-medal ${
+                                    user.subscription_tier === 'gold' ? 'text-yellow-400' :
+                                    user.subscription_tier === 'silver' ? 'text-gray-300' :
+                                    'text-yellow-700'
+                                }`}></i>
+                                <span>{
+                                    user.subscription_tier === 'gold' ? 'الخطة الذهبية' :
+                                    user.subscription_tier === 'silver' ? 'الخطة الفضية' :
+                                    'الخطة البرونزية'
+                                }</span>
+                            </p>
+                        </div>
+                        {user.subscription_tier !== 'bronze' && user.subscription_ends_at && (
+                            <div>
+                                <label className="block text-sm font-medium text-gray-300">صلاحية الاشتراك تنتهي في</label>
+                                <p className="p-3 mt-1 rounded-lg bg-dark/70 text-white font-mono text-center">
+                                    {new Date(user.subscription_ends_at).toLocaleDateString('ar-EG-u-nu-latn', {
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric',
+                                    })}
+                                </p>
+                            </div>
+                        )}
                     </FormSection>
 
                     {/* Security Section */}

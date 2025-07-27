@@ -13,7 +13,7 @@ const ensureSupabaseIsConfigured = () => {
 // ADMIN CONSTANT
 // ====================================================================================
 // This should match the email in the `is_admin` function in your Supabase SQL.
-const ADMIN_EMAIL = 'admin@mindlingo.com';
+const ADMIN_EMAIL = 'admin@galaxya.com';
 // ====================================================================================
 
 
@@ -145,6 +145,20 @@ export const onAuthChange = (callback: (user: User | null) => void): () => void 
                         const hasActiveStatus = subData.status === 'active';
                         const notExpired = subData.ends_at ? new Date(subData.ends_at) > new Date() : false;
                         isSubscribed = tier !== 'bronze' && hasActiveStatus && notExpired;
+                    } else if (supabaseUser.email) {
+                        // FIX: If no subscription is found (e.g., DB trigger failed), create a default one client-side.
+                        const { error: insertError } = await supabase!
+                            .from('subscriptions')
+                            .insert({
+                                user_id: supabaseUser.id,
+                                email: supabaseUser.email,
+                                tier: 'bronze',
+                                status: 'active',
+                            });
+                        
+                        if (insertError) {
+                             console.error("Failed to create default subscription for new user:", insertError.message);
+                        }
                     }
                     
                     // Create the full user object with subscription data
@@ -330,7 +344,7 @@ export const setUserSubscribed = async (): Promise<User> => {
         .from('subscriptions')
         .upsert({
             user_id: user.id,
-            email: user.email,
+            email: user.email!,
             tier: newTier,
             status: 'active',
             ends_at: endsAt.toISOString(),
@@ -650,28 +664,22 @@ export const getLeaderboard = async (): Promise<LeaderboardEntry[]> => {
 
 // --- Referral Usage ---
 
-export const logReferralUsage = async (referrerId: string, currentUser: User): Promise<void> => {
+export const getReferredUsers = async (referrerId: string): Promise<Database['public']['Tables']['referral_usage']['Row'][]> => {
     ensureSupabaseIsConfigured();
-
-    if (!referrerId.trim() || referrerId === currentUser.id) {
-        // Don't log if the code is empty or if it's the user's own code
-        return;
-    }
-
-    const { error } = await supabase!
+    
+    const { data, error } = await supabase!
         .from('referral_usage')
-        .insert({
-            referrer_user_id: referrerId,
-            referred_user_id: currentUser.id,
-            referred_user_name: currentUser.name,
-            referred_user_email: currentUser.email,
-        });
+        .select('*')
+        .eq('referrer_user_id', referrerId)
+        .order('created_at', { ascending: false });
 
     if (error) {
-        // We log the error but don't throw it to the user,
-        // as the subscription process is more critical.
-        console.error('Error logging referral usage:', error.message);
+        console.error('Error fetching referred users:', error.message);
+        // Return empty array but don't throw an error to the user for this non-critical feature
+        return [];
     }
+
+    return data || [];
 };
 
 
@@ -686,7 +694,7 @@ export const getAllSubscriptions = async (): Promise<Subscription[]> => {
         throw new Error('فشل في جلب بيانات المشتركين. تأكد من أن لديك صلاحيات المسؤول وأن دالة RPC `get_all_subscriptions_with_details` موجودة.');
     }
 
-    return data as Subscription[];
+    return data as unknown as Subscription[];
 };
 
 type SubscriptionUpdate = {
@@ -707,4 +715,14 @@ export const updateSubscription = async (userId: string, updates: SubscriptionUp
         throw new Error('فشل في تحديث بيانات الاشتراك.');
     }
     // No longer need to sync to metadata, onAuthChange will handle it for the user on next session refresh.
+};
+
+export const backfillSubscriptionEmails = async (): Promise<string> => {
+    ensureSupabaseIsConfigured();
+    const { data, error } = await supabase!.rpc('backfill_subscription_emails');
+    if (error) {
+        console.error('Error backfilling subscription emails:', error);
+        throw new Error('فشل في تحديث بيانات البريد الإلكتروني للمشتركين.');
+    }
+    return data;
 };

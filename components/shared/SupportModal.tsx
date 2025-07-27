@@ -18,7 +18,7 @@ const SupportModal: React.FC<SupportModalProps> = ({ user, onClose }) => {
         setIsSubmitting(true);
         soundService.playGenericClick();
 
-        const recipient = 'mindlingo@hotmail.com';
+        const recipient = 'galaxya@hotmail.com';
         const subject = `Support Request from ${user.name} (User ID: ${user.id})`;
         const body = `
 User Name: ${user.name}

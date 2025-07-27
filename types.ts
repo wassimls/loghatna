@@ -442,6 +442,10 @@ export interface Database {
       [_ in never]: never
     }
     Functions: {
+      backfill_subscription_emails: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       is_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean

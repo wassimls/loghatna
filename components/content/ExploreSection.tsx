@@ -98,7 +98,7 @@ const ExploreSection: React.FC<ExploreSectionProps> = ({ language, userTier, use
     const [isLocked, setIsLocked] = useState(false);
     const [usageInfo, setUsageInfo] = useState({ count: 0, week: getWeekIdentifier(new Date()) });
 
-    const storageKey = `mindlingo_explore_usage_${userId}`;
+    const storageKey = `galaxya_explore_usage_${userId}`;
 
     useEffect(() => {
         if (userTier === 'gold') {

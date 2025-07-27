@@ -9,6 +9,9 @@ const AdminPage: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [editingSubscription, setEditingSubscription] = useState<Subscription | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
+    const [isBackfilling, setIsBackfilling] = useState(false);
+    const [backfillMessage, setBackfillMessage] = useState<string | null>(null);
+
 
     const fetchSubscriptions = useCallback(async () => {
         setIsLoading(true);
@@ -26,6 +29,25 @@ const AdminPage: React.FC = () => {
     useEffect(() => {
         fetchSubscriptions();
     }, [fetchSubscriptions]);
+
+    const handleBackfillEmails = async () => {
+        if (!confirm('هل أنت متأكد أنك تريد تحديث جميع رسائل البريد الإلكتروني في جدول الاشتراكات؟ هذه العملية ستقوم بجلب البريد الإلكتروني من سجل المصادقة لكل مستخدم وتحديثه. لا يمكن التراجع عن هذه العملية.')) {
+            return;
+        }
+        setIsBackfilling(true);
+        setBackfillMessage(null);
+        try {
+            const resultMessage = await userService.backfillSubscriptionEmails();
+            setBackfillMessage(resultMessage);
+            await fetchSubscriptions(); // Refresh the table
+            setTimeout(() => setBackfillMessage(null), 7000);
+        } catch (err) {
+            const message = err instanceof Error ? err.message : 'حدث خطأ غير متوقع.';
+            setBackfillMessage(`خطأ: ${message}`);
+        } finally {
+            setIsBackfilling(false);
+        }
+    };
 
     const handleEdit = (subscription: Subscription) => {
         setEditingSubscription(subscription);
@@ -46,7 +68,7 @@ const AdminPage: React.FC = () => {
     };
 
     const filteredSubscriptions = subscriptions.filter(sub =>
-        sub.email.toLowerCase().includes(searchTerm.toLowerCase())
+        sub.email && sub.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     const renderContent = () => {
@@ -71,7 +93,7 @@ const AdminPage: React.FC = () => {
             return <p className="text-center text-gray-400 p-8">لم يتم العثور على أي اشتراكات.</p>;
         }
         
-        if (filteredSubscriptions.length === 0) {
+        if (filteredSubscriptions.length === 0 && searchTerm) {
             return <p className="text-center text-gray-400 p-8">لا توجد نتائج مطابقة لبحثك.</p>;
         }
 
@@ -89,9 +111,9 @@ const AdminPage: React.FC = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {filteredSubscriptions.map(sub => (
+                        {(searchTerm ? filteredSubscriptions : subscriptions).map(sub => (
                             <tr key={sub.id} className="border-b border-white/5 hover:bg-white/5">
-                                <td className="p-4 text-white font-mono text-sm break-all">{sub.email}</td>
+                                <td className="p-4 text-white font-mono text-sm break-all">{sub.email || <span className="text-red-400">فارغ</span>}</td>
                                 <td className="p-4 text-white font-mono text-sm max-w-24 truncate" title={sub.user_id}>{sub.user_id}</td>
                                 <td className="p-4 text-center text-white">
                                     <span className={`px-3 py-1 text-xs font-bold rounded-full ${
@@ -137,16 +159,28 @@ const AdminPage: React.FC = () => {
                 <p className="text-lg text-gray-300 mt-2">إدارة اشتراكات المستخدمين.</p>
             </header>
             <div className="bg-dark/70 backdrop-blur-md p-6 rounded-2xl shadow-lg border border-white/10">
-                <div className="mb-4 relative">
-                    <input
-                        type="text"
-                        placeholder="ابحث بالبريد الإلكتروني..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full p-3 pl-10 rounded-lg bg-dark/70 text-white border-2 border-transparent focus:border-secondary focus:outline-none transition-colors"
-                    />
-                    <i className="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
+                    <div className="relative flex-grow w-full sm:w-auto">
+                        <input
+                            type="text"
+                            placeholder="ابحث بالبريد الإلكتروني..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full p-3 pl-10 rounded-lg bg-dark/70 text-white border-2 border-transparent focus:border-secondary focus:outline-none transition-colors"
+                        />
+                        <i className="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                     <button
+                        onClick={handleBackfillEmails}
+                        disabled={isBackfilling}
+                        className="bg-accent text-white font-bold py-3 px-4 rounded-lg hover:bg-pink-600 transition-colors disabled:opacity-50 flex items-center gap-2 w-full sm:w-auto justify-center"
+                        title="تحديث الإيميلات المفقودة في جدول الاشتراكات من جدول المصادقة"
+                    >
+                        {isBackfilling ? <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-sync-alt"></i>}
+                        <span>تحديث الإيميلات</span>
+                    </button>
                 </div>
+                 {backfillMessage && <div className={`p-3 rounded-lg text-center mb-4 font-semibold ${backfillMessage.startsWith('خطأ') ? 'bg-red-500/20 text-red-300' : 'bg-green-500/20 text-green-300'}`}>{backfillMessage}</div>}
                 {renderContent()}
             </div>
             {editingSubscription && (

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MindLingo - استكشف اللغات</title>
+    <title>Galaxya | مَجَرَّة اللغات</title>
     <link rel="manifest" href="manifest.json" />
     <link rel="apple-touch-icon" href="icon.svg" />
     <meta name="theme-color" content="#4D3E8E" />
@@ -32,15 +32,43 @@
             height: 100%;
             display: flex;
             flex-direction: column;
+            position: relative;
+            overflow: hidden;
             background: #0f0c29; /* fallback for old browsers */
             background: -webkit-linear-gradient(to right, #24243e, #302b63, #0f0c29);
             background: linear-gradient(to right, #24243e, #302b63, #0f0c29);
             background-image:
-                radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.1) 0.5px, transparent 1px),
-                radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 0.5px, transparent 1px),
-                radial-gradient(circle at 50% 90%, rgba(255, 255, 255, 0.05) 1px, transparent 2px);
-            background-size: 50px 50px;
-            animation: moveStars 60s linear infinite;
+                radial-gradient(circle at 15% 15%, rgba(255, 255, 255, 0.4) 0.5px, transparent 1.5px),
+                radial-gradient(circle at 5% 55%, rgba(255, 255, 255, 0.2) 0.5px, transparent 1px),
+                radial-gradient(circle at 85% 90%, rgba(255, 255, 255, 0.3) 1px, transparent 2px),
+                radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.1) 0.5px, transparent 1px),
+                radial-gradient(circle at 90% 10%, rgba(255, 255, 255, 0.5) 1.5px, transparent 3px);
+            background-size: 100px 100px;
+            animation: moveStars 120s linear infinite;
+        }
+
+        #root::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: conic-gradient(
+                from 180deg at 50% 70%,
+                #0C0A24,
+                #ec4899,
+                #8b5cf6,
+                #facc15,
+                #302b63,
+                #0C0A24
+            );
+            filter: blur(100px);
+            opacity: 0.25;
+            z-index: 0;
+            animation: rotateAurora 25s linear infinite;
+        }
+
+        #root > * {
+            position: relative;
+            z-index: 1;
         }
         
         @media (max-width: 767px) {
@@ -69,7 +97,12 @@
 
         @keyframes moveStars {
             from { background-position: 0 0; }
-            to { background-position: -1000px 500px; }
+            to { background-position: -2000px 1000px; }
+        }
+
+        @keyframes rotateAurora {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
 
         @keyframes fadeIn {
@@ -98,11 +131,11 @@
         @keyframes pulse-glow {
             0%, 100% {
                 transform: scale(1);
-                box-shadow: 0 0 10px #ffc700, 0 0 20px #ffc700;
+                box-shadow: 0 0 10px #facc15, 0 0 20px #facc15;
             }
             50% {
                 transform: scale(1.05);
-                box-shadow: 0 0 20px #ffc700, 0 0 40px #ffc700;
+                box-shadow: 0 0 20px #facc15, 0 0 40px #facc15;
             }
         }
         .animate-pulse-glow {
@@ -110,12 +143,18 @@
         }
 
         @keyframes antenna-blink {
-            0% { background-color: #ffc700; box-shadow: 0 0 5px #ffc700, 0 0 8px #ffc700; }
+            0% { background-color: #facc15; box-shadow: 0 0 5px #facc15, 0 0 8px #facc15; }
             50% { background-color: #f8fafc; box-shadow: none; }
-            100% { background-color: #ffc700; box-shadow: 0 0 5px #ffc700, 0 0 8px #ffc700; }
+            100% { background-color: #facc15; box-shadow: 0 0 5px #facc15, 0 0 8px #facc15; }
         }
         .antenna-blink-animation {
             animation: antenna-blink 1.2s linear infinite;
+        }
+        
+        .text-gradient {
+            background: -webkit-linear-gradient(45deg, #facc15, #ec4899, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         /* Speech bubble styles */
@@ -202,13 +241,13 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: '#4D3E8E', // Deep purple
-                        secondary: '#FFC700', // Yellow/Gold
-                        accent: '#F95A77', // Pinkish
-                        dark: '#1A113A',
+                        primary: '#8b5cf6', // violet-500
+                        secondary: '#facc15', // yellow-400
+                        accent: '#ec4899', // pink-500
+                        dark: '#0C0A24',
                         light: '#F8FAFC',
-                        'space-start': '#1A113A',
-                        'space-end': '#3D2F72',
+                        'space-start': '#0C0A24',
+                        'space-end': '#302b63',
                     },
                     fontFamily: {
                         sans: ['Tajawal', 'sans-serif'],

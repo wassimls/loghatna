@@ -86,10 +86,10 @@ const AuthPage: React.FC = () => {
         <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-space-start to-space-end p-4 animate-fadeIn">
             <div className="flex items-center gap-4 z-10 mb-8">
                  <div className="w-20 h-20 bg-secondary rounded-3xl flex items-center justify-center text-4xl text-dark shadow-2xl transform -rotate-12">
-                    <i className="fas fa-language"></i>
+                    <i className="fas fa-meteor"></i>
                 </div>
                 <div>
-                    <h1 className="text-4xl md:text-6xl font-extrabold text-white tracking-tight">MindLingo</h1>
+                    <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-gradient">Galaxya</h1>
                     <p className="text-lg text-gray-300 mt-1">بوابتك لتعلم اللغات بذكاء ومتعة</p>
                 </div>
             </div>
@@ -171,7 +171,7 @@ const AuthPage: React.FC = () => {
             </div>
 
             <footer className="mt-8 text-gray-400 text-sm">
-                <p>© 2024 MindLingo - جميع الحقوق محفوظة</p>
+                <p>© 2024 Galaxya - جميع الحقوق محفوظة</p>
             </footer>
         </div>
     );

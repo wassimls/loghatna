@@ -40,13 +40,13 @@ const PaymentSuccessPage: React.FC = () => {
                     await userService.extendSubscription();
                     setStatus('success_renewal');
                 } else {
-                    const userDataString = sessionStorage.getItem('mindlingo_signup_data');
+                    const userDataString = sessionStorage.getItem('galaxya_signup_data');
                     if (!userDataString) {
                         throw new Error("لم يتم العثور على بيانات المستخدم لإكمال التسجيل. يرجى محاولة التسجيل مرة أخرى.");
                     }
                     const { name, email, password } = JSON.parse(userDataString);
                     await userService.signup(name, email, password);
-                    sessionStorage.removeItem('mindlingo_signup_data');
+                    sessionStorage.removeItem('galaxya_signup_data');
                     setStatus('success_signup');
                 }
                 

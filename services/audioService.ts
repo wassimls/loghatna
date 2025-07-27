@@ -1,4 +1,3 @@
-
 import { SpeechSynthesisVoice } from '../types.ts';
 
 // This module provides a robust, singleton-based service for Text-to-Speech (TTS).
@@ -153,18 +152,29 @@ export const speak = async (
         // for better engine compatibility.
         utterance.lang = bestVoice.lang;
     } else {
-        const errorMsg = `No voice found for language ${lang}. The browser might not have it installed.`;
-        console.warn(errorMsg);
-        if (options.onError) {
-            // Create a synthetic event-like object for consistency, since SpeechSynthesisErrorEvent is not constructible.
-            const errorEvent = { 
-                type: 'error', 
-                error: 'no-voice-found', 
-                message: errorMsg 
-            } as unknown as SpeechSynthesisEvent;
-            options.onError(errorEvent);
+        // If no voice is found for the specific language, try a broader search for any Arabic voice as a fallback for error messages.
+        if (lang.startsWith('ar-')) {
+            const arabicFallback = availableVoices.find(v => v.lang.startsWith('ar'));
+            if (arabicFallback) {
+                utterance.voice = arabicFallback;
+                utterance.lang = arabicFallback.lang;
+            }
         }
-        return; // Important: Stop execution to prevent speaking with a wrong voice.
+
+        if (!utterance.voice) {
+            const errorMsg = `No voice found for language ${lang}. The browser might not have it installed.`;
+            console.warn(errorMsg);
+            if (options.onError) {
+                // Create a synthetic event-like object for consistency, since SpeechSynthesisErrorEvent is not constructible.
+                const errorEvent = { 
+                    type: 'error', 
+                    error: 'no-voice-found', 
+                    message: errorMsg 
+                } as unknown as SpeechSynthesisEvent;
+                options.onError(errorEvent);
+            }
+            return; // Important: Stop execution to prevent speaking with a wrong voice.
+        }
     }
 
     // Assign callbacks

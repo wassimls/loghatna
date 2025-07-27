@@ -312,7 +312,7 @@ const GamesSection: React.FC<GamesSectionProps> = ({ language, isSubscribed, onU
     const [isLocked, setIsLocked] = useState(false);
     const [timeLeft, setTimeLeft] = useState('');
 
-    const LOCAL_STORAGE_KEY = `mindlingo_last_game_${language.code}`;
+    const LOCAL_STORAGE_KEY = `galaxya_last_game_${language.code}`;
 
     const formatTimeLeft = (ms: number) => {
         const totalSeconds = Math.floor(ms / 1000);

@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import * as soundService from '../../services/soundService';
+import * as userService from '../../services/userService.ts';
+import { Database } from '../../types.ts';
+
+type ReferredUser = Database['public']['Tables']['referral_usage']['Row'];
 
 interface ReferralModalProps {
     userId: string;
@@ -10,6 +14,8 @@ const ReferralModal: React.FC<ReferralModalProps> = ({ userId, onClose }) => {
     const [referralLink, setReferralLink] = useState('');
     const [isCopied, setIsCopied] = useState(false);
     const [canShare, setCanShare] = useState(false);
+    const [referredUsers, setReferredUsers] = useState<ReferredUser[]>([]);
+    const [isLoadingReferrals, setIsLoadingReferrals] = useState(true);
 
     useEffect(() => {
         // Construct the link only when the component mounts on the client-side
@@ -17,6 +23,14 @@ const ReferralModal: React.FC<ReferralModalProps> = ({ userId, onClose }) => {
         if (navigator.share) {
             setCanShare(true);
         }
+        
+        const fetchReferredUsers = async () => {
+            setIsLoadingReferrals(true);
+            const users = await userService.getReferredUsers(userId);
+            setReferredUsers(users);
+            setIsLoadingReferrals(false);
+        };
+        fetchReferredUsers();
     }, [userId]);
 
     const handleCopy = () => {
@@ -30,8 +44,8 @@ const ReferralModal: React.FC<ReferralModalProps> = ({ userId, onClose }) => {
     const handleShare = () => {
         if (navigator.share) {
             navigator.share({
-                title: 'انضم إلي في MindLingo!',
-                text: 'أنا أتعلم لغات جديدة مع MindLingo، أعتقد أنك ستحبه أيضاً! استخدم الرابط الخاص بي للتسجيل:',
+                title: 'انضم إلي في Galaxya!',
+                text: 'أنا أتعلم لغات جديدة مع Galaxya، أعتقد أنك ستحبه أيضاً! استخدم الرابط الخاص بي للتسجيل:',
                 url: referralLink,
             })
             .catch((error) => console.log('Error sharing', error));
@@ -52,7 +66,7 @@ const ReferralModal: React.FC<ReferralModalProps> = ({ userId, onClose }) => {
                 <div className="text-center">
                     <i className="fas fa-rocket text-5xl text-accent my-4"></i>
                     <p className="text-lg text-gray-200 mb-4">
-                        شارك رابطك الخاص وادعُ أصدقاءك للانضمام إلى مغامرة تعلم اللغات في MindLingo!
+                        شارك رابطك الخاص وادعُ أصدقاءك للانضمام إلى مغامرة تعلم اللغات في Galaxya!
                     </p>
 
                     <div className="my-6">
@@ -83,6 +97,26 @@ const ReferralModal: React.FC<ReferralModalProps> = ({ userId, onClose }) => {
                             <i className="fas fa-share-alt"></i>
                             أو شارك مباشرةً
                         </button>
+                    )}
+                </div>
+
+                <div className="mt-6 pt-4 border-t border-white/10">
+                    <h3 className="text-lg font-bold text-white mb-3 text-center">الأصدقاء الذين انضموا عبرك</h3>
+                    {isLoadingReferrals ? (
+                        <div className="text-center py-4"><i className="fas fa-spinner fa-spin text-secondary text-2xl"></i></div>
+                    ) : referredUsers.length > 0 ? (
+                        <ul className="space-y-2 max-h-32 overflow-y-auto pr-2">
+                            {referredUsers.map(user => (
+                                <li key={user.id} className="bg-dark/70 p-2 px-3 rounded-md flex justify-between items-center text-sm">
+                                    <span className="text-gray-200 font-semibold">{user.referred_user_name || 'صديق'}</span>
+                                    <span className="text-gray-400">
+                                        {new Date(user.created_at).toLocaleDateString('ar-EG-u-nu-latn')}
+                                    </span>
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <p className="text-gray-400 text-center text-sm py-4">لم ينضم أي صديق بعد. كن أول من يشارك الرابط!</p>
                     )}
                 </div>
             </div>

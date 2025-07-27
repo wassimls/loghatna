@@ -43,7 +43,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onAccountClick, onSetti
 
     return (
         <header className="bg-dark/20 backdrop-blur-sm relative z-20">
-            <div className="p-3 flex justify-between items-center border-b border-white/10">
+            <div className="p-3 flex justify-between items-center border-b border-primary/50">
                 <div className="flex items-center gap-3">
                      <button 
                         onClick={onSettingsClick}
@@ -53,7 +53,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onAccountClick, onSetti
                         <i className="fas fa-cog text-xl"></i>
                     </button>
                     <div className="text-right">
-                        <h1 className="text-2xl font-extrabold tracking-wide text-white">MindLingo</h1>
+                        <h1 className="text-2xl font-extrabold tracking-wide text-gradient">Galaxya</h1>
                     </div>
                 </div>
                 <div className="relative" ref={dropdownRef}>

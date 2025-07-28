@@ -1,6 +1,80 @@
-
 import React, { useState } from 'react';
 import { speak } from '../../services/audioService';
+import * as soundService from '../../services/soundService';
+
+// --- Exercise Component ---
+const Exercise: React.FC<{
+    question: string;
+    options: string[];
+    correctAnswer: string;
+}> = ({ question, options, correctAnswer }) => {
+    const [selectedOption, setSelectedOption] = useState<string | null>(null);
+    const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
+
+    const handleOptionClick = (option: string) => {
+        if (selectedOption) return;
+        setSelectedOption(option);
+        if (option === correctAnswer) {
+            setFeedback('correct');
+            soundService.playCorrectSound();
+        } else {
+            setFeedback('incorrect');
+            soundService.playIncorrectSound();
+        }
+    };
+
+    const resetExercise = () => {
+        setSelectedOption(null);
+        setFeedback(null);
+        soundService.playGenericClick();
+    };
+
+    const getOptionClass = (option: string) => {
+        if (!selectedOption) {
+            return 'bg-dark/70 hover:bg-primary/70';
+        }
+        if (option === correctAnswer) {
+            return 'bg-green-500/80';
+        }
+        if (option === selectedOption && option !== correctAnswer) {
+            return 'bg-red-500/80';
+        }
+        return 'bg-dark/50 opacity-60';
+    };
+
+    return (
+        <div className="mt-8 pt-6 border-t-2 border-dashed border-white/10">
+            <h4 className="text-xl font-bold text-secondary mb-4 text-center">
+                <i className="fas fa-question-circle mr-2"></i>
+                اختبر فهمك
+            </h4>
+            <div className="bg-dark/70 p-6 rounded-lg text-center mb-4">
+                <p className="text-lg text-white font-semibold dir-ltr">{question}</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {options.map((option, index) => (
+                    <button
+                        key={index}
+                        onClick={() => handleOptionClick(option)}
+                        disabled={!!selectedOption}
+                        className={`p-4 rounded-lg text-white font-bold transition-colors duration-300 ${getOptionClass(option)}`}
+                    >
+                        {option}
+                    </button>
+                ))}
+            </div>
+            {selectedOption && (
+                <div className="text-center mt-4">
+                    <button onClick={resetExercise} className="btn bg-secondary text-dark py-2 px-6 rounded-full font-bold">
+                        <i className="fas fa-sync-alt mr-2"></i>
+                        حاول مرة أخرى
+                    </button>
+                </div>
+            )}
+        </div>
+    );
+};
+
 
 // --- Data for the component ---
 const frenchGrammarContent = {
@@ -19,7 +93,12 @@ const frenchGrammarContent = {
                         { en: 'un garçon', ar: 'ولد (مذكر)' },
                         { en: 'une fille', ar: 'بنت (مؤنث)' },
                     ],
-                    tip: 'معظم الكلمات المنتهية بـ -e تكون مؤنثة، ولكن هناك استثناءات كثيرة، لذا الحفظ مهم.'
+                    tip: 'معظم الكلمات المنتهية بـ -e تكون مؤنثة، ولكن هناك استثناءات كثيرة، لذا الحفظ مهم.',
+                     exercise: {
+                        question: 'اختر الأداة الصحيحة: Je vois ___ voiture.',
+                        options: ['un', 'une', 'le', 'des'],
+                        correctAnswer: 'une',
+                    }
                 },
                 {
                     title: 'أدوات التعريف المعرفة (Les Articles Définis)',
@@ -31,7 +110,12 @@ const frenchGrammarContent = {
                         { en: 'l\'ami', ar: 'الصديق (المحدد)' },
                         { en: 'les enfants', ar: 'الأطفال (المحددون)' },
                     ],
-                    tip: 'استخدم l\' عندما تبدأ الكلمة بحرف علة (a, e, i, o, u) أو h صامتة.'
+                    tip: 'استخدم l\' عندما تبدأ الكلمة بحرف علة (a, e, i, o, u) أو h صامتة.',
+                    exercise: {
+                        question: 'اختر الأداة الصحيحة: ___ école est grande.',
+                        options: ['Le', 'La', 'L\'', 'Les'],
+                        correctAnswer: 'L\'',
+                    }
                 },
                 {
                     title: 'أدوات التعريف النكرة (Les Articles Indéfinis)',
@@ -42,7 +126,12 @@ const frenchGrammarContent = {
                         { en: 'Elle a une idée.', ar: 'لديها فكرة (فكرة ما).' },
                         { en: 'Il y a des livres sur la table.', ar: 'هناك كتب على الطاولة.' },
                     ],
-                    tip: 'في النفي، تتحول un, une, des عادةً إلى de أو d\'.'
+                    tip: 'في النفي، تتحول un, une, des عادةً إلى de أو d\'.',
+                    exercise: {
+                        question: 'اختر الأداة الصحيحة: Il a ___ amis.',
+                        options: ['un', 'une', 'de', 'des'],
+                        correctAnswer: 'des',
+                    }
                 },
                 {
                     title: 'أدوات التجزئة (Les Articles Partitifs)',
@@ -53,7 +142,12 @@ const frenchGrammarContent = {
                         { en: 'Elle boit de la soupe.', ar: 'هي تشرب حساءً.' },
                         { en: 'Tu veux de l\'eau ?', ar: 'هل تريد ماءً؟' },
                     ],
-                    tip: 'تستخدم بشكل شائع جداً عند الحديث عن الطعام والشراب.'
+                    tip: 'تستخدم بشكل شائع جداً عند الحديث عن الطعام والشراب.',
+                    exercise: {
+                        question: 'اختر الأداة الصحيحة: Je voudrais ___ café.',
+                        options: ['de la', 'de l\'', 'du', 'des'],
+                        correctAnswer: 'du',
+                    }
                 },
             ]
         },
@@ -70,7 +164,12 @@ const frenchGrammarContent = {
                         { en: 'Tu finis ton travail.', ar: 'أنت تنهي عملك.' },
                         { en: 'Il attend le bus.', ar: 'هو ينتظر الحافلة.' },
                     ],
-                    tip: 'تعلم تصريفات الأفعال الشاذة الشائعة (être, avoir, aller, faire) هو أمر أساسي ومهم جداً.'
+                    tip: 'تعلم تصريفات الأفعال الشاذة الشائعة (être, avoir, aller, faire) هو أمر أساسي ومهم جداً.',
+                    exercise: {
+                        question: 'أكمل الجملة: Nous ___ au cinéma.',
+                        options: ['allons', 'allez', 'vais', 'va'],
+                        correctAnswer: 'allons',
+                    }
                 },
                 {
                     title: 'الماضي المركب (Le Passé Composé)',
@@ -81,7 +180,12 @@ const frenchGrammarContent = {
                         { en: 'Elle est allée au cinéma.', ar: 'هي ذهبت إلى السينما.' },
                         { en: 'Nous avons vu un film.', ar: 'شاهدنا فيلماً.' },
                     ],
-                    tip: 'معظم الأفعال تستخدم "avoir" كفعل مساعد. الأفعال التي تصف الحركة أو تغير الحالة (مثل aller, venir, partir) تستخدم "être".'
+                    tip: 'معظم الأفعال تستخدم "avoir" كفعل مساعد. الأفعال التي تصف الحركة أو تغير الحالة (مثل aller, venir, partir) تستخدم "être".',
+                     exercise: {
+                        question: 'أكمل الجملة: Hier, tu ___ tes devoirs.',
+                        options: ['as fait', 'es fait', 'a fait', 'est fait'],
+                        correctAnswer: 'as fait',
+                    }
                 },
                 {
                     title: 'المستقبل البسيط (Le Futur Simple)',
@@ -91,7 +195,12 @@ const frenchGrammarContent = {
                         { en: 'Demain, je visiterai le musée.', ar: 'غداً، سأزور المتحف.' },
                         { en: 'Vous finirez ce projet.', ar: 'سوف تنهون هذا المشروع.' },
                     ],
-                    tip: 'هناك بعض الأفعال الشاذة في المستقبل مثل être (ser-), avoir (aur-), aller (ir-), faire (fer-).'
+                    tip: 'هناك بعض الأفعال الشاذة في المستقبل مثل être (ser-), avoir (aur-), aller (ir-), faire (fer-).',
+                     exercise: {
+                        question: 'أكمل الجملة: L\'année prochaine, elle ___ en France.',
+                        options: ['habitera', 'habite', 'a habité', 'habitait'],
+                        correctAnswer: 'habitera',
+                    }
                 },
             ]
         },
@@ -107,7 +216,12 @@ const frenchGrammarContent = {
                         { en: 'Je ne parle pas anglais.', ar: 'أنا لا أتحدث الإنجليزية.' },
                         { en: 'Il n\'aime pas le café.', ar: 'هو لا يحب القهوة.' },
                     ],
-                    tip: 'في اللغة المحكية، غالباً ما يتم حذف "ne" (مثال: Je parle pas). لكن في الكتابة الرسمية، يجب استخدامها.'
+                    tip: 'في اللغة المحكية، غالباً ما يتم حذف "ne" (مثال: Je parle pas). لكن في الكتابة الرسمية، يجب استخدامها.',
+                    exercise: {
+                        question: 'حوّل الجملة إلى النفي: "J\'aime les épinards."',
+                        options: ['Je n\'aime les épinards.', 'J\'aime ne pas les épinards.', 'Je n\'aime pas les épinards.', 'Je pas aime les épinards.'],
+                        correctAnswer: 'Je n\'aime pas les épinards.',
+                    }
                 },
                 {
                     title: 'الصفات (Les Adjectifs)',
@@ -118,7 +232,12 @@ const frenchGrammarContent = {
                         { en: 'une voiture rouge', ar: 'سيارة حمراء' },
                         { en: 'des livres intéressants', ar: 'كتب مثيرة للاهتمام' },
                     ],
-                    tip: 'بعض الصفات القصيرة والشائعة (مثل beau, grand, petit, bon) تأتي قبل الاسم.'
+                    tip: 'بعض الصفات القصيرة والشائعة (مثل beau, grand, petit, bon) تأتي قبل الاسم.',
+                     exercise: {
+                        question: 'اختر الصيغة الصحيحة: "J\'ai une ___ voiture."',
+                        options: ['grand', 'grande', 'grands', 'grandes'],
+                        correctAnswer: 'grande',
+                    }
                 }
             ]
         }
@@ -161,6 +280,14 @@ const TopicContent: React.FC<{ topic: Topic }> = ({ topic }) => (
                 <p className="text-yellow-300 font-bold flex items-center gap-2"><i className="fas fa-star"></i>نصيحة:</p>
                 <p className="text-gray-300 mt-2">{topic.tip}</p>
             </div>
+        )}
+
+        {topic.exercise && (
+            <Exercise
+                question={topic.exercise.question}
+                options={topic.exercise.options}
+                correctAnswer={topic.exercise.correctAnswer}
+            />
         )}
     </div>
 );

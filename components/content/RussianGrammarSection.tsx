@@ -1,6 +1,80 @@
-
 import React, { useState } from 'react';
 import { speak } from '../../services/audioService';
+import * as soundService from '../../services/soundService';
+
+// --- Exercise Component ---
+const Exercise: React.FC<{
+    question: string;
+    options: string[];
+    correctAnswer: string;
+}> = ({ question, options, correctAnswer }) => {
+    const [selectedOption, setSelectedOption] = useState<string | null>(null);
+    const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
+
+    const handleOptionClick = (option: string) => {
+        if (selectedOption) return;
+        setSelectedOption(option);
+        if (option === correctAnswer) {
+            setFeedback('correct');
+            soundService.playCorrectSound();
+        } else {
+            setFeedback('incorrect');
+            soundService.playIncorrectSound();
+        }
+    };
+
+    const resetExercise = () => {
+        setSelectedOption(null);
+        setFeedback(null);
+        soundService.playGenericClick();
+    };
+
+    const getOptionClass = (option: string) => {
+        if (!selectedOption) {
+            return 'bg-dark/70 hover:bg-primary/70';
+        }
+        if (option === correctAnswer) {
+            return 'bg-green-500/80';
+        }
+        if (option === selectedOption && option !== correctAnswer) {
+            return 'bg-red-500/80';
+        }
+        return 'bg-dark/50 opacity-60';
+    };
+
+    return (
+        <div className="mt-8 pt-6 border-t-2 border-dashed border-white/10">
+            <h4 className="text-xl font-bold text-secondary mb-4 text-center">
+                <i className="fas fa-question-circle mr-2"></i>
+                اختبر فهمك
+            </h4>
+            <div className="bg-dark/70 p-6 rounded-lg text-center mb-4">
+                <p className="text-lg text-white font-semibold dir-ltr">{question}</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {options.map((option, index) => (
+                    <button
+                        key={index}
+                        onClick={() => handleOptionClick(option)}
+                        disabled={!!selectedOption}
+                        className={`p-4 rounded-lg text-white font-bold transition-colors duration-300 ${getOptionClass(option)}`}
+                    >
+                        {option}
+                    </button>
+                ))}
+            </div>
+            {selectedOption && (
+                <div className="text-center mt-4">
+                    <button onClick={resetExercise} className="btn bg-secondary text-dark py-2 px-6 rounded-full font-bold">
+                        <i className="fas fa-sync-alt mr-2"></i>
+                        حاول مرة أخرى
+                    </button>
+                </div>
+            )}
+        </div>
+    );
+};
+
 
 // --- Data for the component ---
 const russianGrammarContent = {
@@ -19,7 +93,12 @@ const russianGrammarContent = {
                         { en: 'Нет (Nyet)', ar: 'لا' },
                         { en: 'Спасибо (Spasibo)', ar: 'شكراً' },
                     ],
-                    tip: 'تدرب على نطق كل حرف على حدة. هناك العديد من الموارد عبر الإنترنت لمساعدتك على إتقان النطق الصحيح.'
+                    tip: 'تدرب على نطق كل حرف على حدة. هناك العديد من الموارد عبر الإنترنت لمساعدتك على إتقان النطق الصحيح.',
+                     exercise: {
+                        question: 'ما هو نطق الحرف "В" في الروسية؟',
+                        options: ['B', 'V', 'G', 'D'],
+                        correctAnswer: 'V',
+                    }
                 },
                 {
                     title: 'الجنس (Род)',
@@ -30,7 +109,12 @@ const russianGrammarContent = {
                         { en: 'книга (kniga) - مؤنث', ar: 'كتاب' },
                         { en: 'окно (okno) - محايد', ar: 'نافذة' },
                     ],
-                    tip: 'هناك استثناءات، مثل "папа" (أب) وهو مذكر على الرغم من انتهائه بـ -а.'
+                    tip: 'هناك استثناءات، مثل "папа" (أب) وهو مذكر على الرغم من انتهائه بـ -а.',
+                     exercise: {
+                        question: 'ما هو جنس كلمة "машина" (سيارة)؟',
+                        options: ['مذكر', 'مؤنث', 'محايد'],
+                        correctAnswer: 'مؤنث',
+                    }
                 },
             ]
         },
@@ -46,18 +130,28 @@ const russianGrammarContent = {
                          { en: 'Это книга. (Nominative)', ar: 'هذا كتاب. (حالة الرفع - فاعل)' },
                          { en: 'Я читаю книгу. (Accusative)', ar: 'أنا أقرأ كتاباً. (حالة المفعول به)' },
                     ],
-                    tip: 'ابدأ بالتركيز على حالة الرفع (Nominative) والمفعول به (Accusative) والمجرور (Prepositional) لأنها الأكثر شيوعاً.'
+                    tip: 'ابدأ بالتركيز على حالة الرفع (Nominative) والمفعول به (Accusative) والمجرور (Prepositional) لأنها الأكثر شيوعاً.',
+                     exercise: {
+                        question: 'في جملة "Я вижу стол" (أنا أرى الطاولة)، كلمة "стол" في أي حالة؟',
+                        options: ['Nominative', 'Accusative', 'Genitive'],
+                        correctAnswer: 'Accusative',
+                    }
                 },
                 {
                     title: 'الماضي البسيط (Прошедшее время)',
                     explanation: 'يستخدم للتعبير عن أحداث وقعت وانتهت في الماضي. تصريفه أبسط من المضارع ويعتمد على جنس الفاعل وعدده.',
-                    rule: 'مذكر (-л), مؤنث (-ла), محايد (-ло), جمع (-ли)',
+                    rule: 'مذكر (-л), مؤнث (-ла), محايد (-ло), جمع (-ли)',
                     examples: [
                         { en: 'Он читал.', ar: 'هو قرأ.' },
                         { en: 'Она читала.', ar: 'هي قرأت.' },
                         { en: 'Они читали.', ar: 'هم قرأوا.' },
                     ],
-                    tip: 'على عكس المضارع، لا يتغير الفعل في الماضي بناءً على الشخص (أنا، أنت، هو). فقط الجنس والعدد.'
+                    tip: 'على عكس المضارع، لا يتغير الفعل في الماضي بناءً على الشخص (أنا، أنت، هو). فقط الجنس والعدد.',
+                     exercise: {
+                        question: 'اختر الصيغة الصحيحة: "Анна ___ письмо." (آنا كتبت رسالة)',
+                        options: ['писал', 'писала', 'писало', 'писали'],
+                        correctAnswer: 'писала',
+                    }
                 },
             ]
         },
@@ -100,6 +194,14 @@ const TopicContent: React.FC<{ topic: Topic }> = ({ topic }) => (
                 <p className="text-yellow-300 font-bold flex items-center gap-2"><i className="fas fa-star"></i>نصيحة:</p>
                 <p className="text-gray-300 mt-2">{topic.tip}</p>
             </div>
+        )}
+        
+        {topic.exercise && (
+            <Exercise
+                question={topic.exercise.question}
+                options={topic.exercise.options}
+                correctAnswer={topic.exercise.correctAnswer}
+            />
         )}
     </div>
 );

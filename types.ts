@@ -294,8 +294,8 @@ export type Json =
   | number
   | boolean
   | null
-  | { [key: string]: Json | undefined }
-  | Json[];
+  | { [key: string]: any }
+  | any[];
 
 /** The schema definition for the Supabase database. */
 export interface Database {
@@ -326,7 +326,6 @@ export interface Database {
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: []
       }
       referral_usage: {
         Row: {
@@ -353,7 +352,6 @@ export interface Database {
           referred_user_name?: string | null
           referred_user_email?: string | null
         }
-        Relationships: []
       }
       subscriptions: {
         Row: {
@@ -361,8 +359,8 @@ export interface Database {
           created_at: string
           user_id: string
           email: string | null
-          tier: string
-          status: string | null
+          tier: 'bronze' | 'silver' | 'gold'
+          status: 'active' | 'canceled' | 'expired' | null
           ends_at: string | null
         }
         Insert: {
@@ -370,8 +368,8 @@ export interface Database {
           created_at?: string
           user_id: string
           email?: string | null
-          tier: string
-          status?: string | null
+          tier: 'bronze' | 'silver' | 'gold'
+          status?: 'active' | 'canceled' | 'expired' | null
           ends_at?: string | null
         }
         Update: {
@@ -379,11 +377,10 @@ export interface Database {
           created_at?: string
           user_id?: string
           email?: string | null
-          tier?: string
-          status?: string | null
+          tier?: 'bronze' | 'silver' | 'gold'
+          status?: 'active' | 'canceled' | 'expired' | null
           ends_at?: string | null
         }
-        Relationships: []
       }
       user_favorite_words: {
         Row: {
@@ -407,7 +404,6 @@ export interface Database {
           user_id?: string
           word?: Json
         }
-        Relationships: []
       }
       user_progress: {
         Row: {
@@ -440,7 +436,6 @@ export interface Database {
             created_at?: string
             updated_at?: string | null
         }
-        Relationships: []
       }
     }
     Views: {
@@ -461,8 +456,8 @@ export interface Database {
             id: number
             user_id: string
             email: string
-            tier: string
-            status: string | null
+            tier: "bronze" | "silver" | "gold"
+            status: "active" | "canceled" | "expired" | null
             ends_at: string | null
             created_at: string
         }[]

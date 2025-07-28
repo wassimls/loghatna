@@ -1,6 +1,80 @@
-
 import React, { useState } from 'react';
 import { speak } from '../../services/audioService';
+import * as soundService from '../../services/soundService';
+
+// --- Exercise Component ---
+const Exercise: React.FC<{
+    question: string;
+    options: string[];
+    correctAnswer: string;
+}> = ({ question, options, correctAnswer }) => {
+    const [selectedOption, setSelectedOption] = useState<string | null>(null);
+    const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
+
+    const handleOptionClick = (option: string) => {
+        if (selectedOption) return;
+        setSelectedOption(option);
+        if (option === correctAnswer) {
+            setFeedback('correct');
+            soundService.playCorrectSound();
+        } else {
+            setFeedback('incorrect');
+            soundService.playIncorrectSound();
+        }
+    };
+
+    const resetExercise = () => {
+        setSelectedOption(null);
+        setFeedback(null);
+        soundService.playGenericClick();
+    };
+
+    const getOptionClass = (option: string) => {
+        if (!selectedOption) {
+            return 'bg-dark/70 hover:bg-primary/70';
+        }
+        if (option === correctAnswer) {
+            return 'bg-green-500/80';
+        }
+        if (option === selectedOption && option !== correctAnswer) {
+            return 'bg-red-500/80';
+        }
+        return 'bg-dark/50 opacity-60';
+    };
+
+    return (
+        <div className="mt-8 pt-6 border-t-2 border-dashed border-white/10">
+            <h4 className="text-xl font-bold text-secondary mb-4 text-center">
+                <i className="fas fa-question-circle mr-2"></i>
+                اختبر فهمك
+            </h4>
+            <div className="bg-dark/70 p-6 rounded-lg text-center mb-4">
+                <p className="text-lg text-white font-semibold dir-ltr">{question}</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {options.map((option, index) => (
+                    <button
+                        key={index}
+                        onClick={() => handleOptionClick(option)}
+                        disabled={!!selectedOption}
+                        className={`p-4 rounded-lg text-white font-bold transition-colors duration-300 ${getOptionClass(option)}`}
+                    >
+                        {option}
+                    </button>
+                ))}
+            </div>
+            {selectedOption && (
+                <div className="text-center mt-4">
+                    <button onClick={resetExercise} className="btn bg-secondary text-dark py-2 px-6 rounded-full font-bold">
+                        <i className="fas fa-sync-alt mr-2"></i>
+                        حاول مرة أخرى
+                    </button>
+                </div>
+            )}
+        </div>
+    );
+};
+
 
 // --- Data for the component ---
 const japaneseGrammarContent = {
@@ -18,7 +92,12 @@ const japaneseGrammarContent = {
                         { en: 'コーヒー (Kōhī)', ar: 'قهوة (كاتاكانا)' },
                         { en: '日本 (Nihon)', ar: 'اليابان (كانجي)' },
                     ],
-                    tip: 'إتقان هيراغانا وكاتاكانا أولاً هو مفتاح القدرة على قراءة معظم المواد اليابانية للمبتدئين.'
+                    tip: 'إتقان هيراغانا وكاتاكانا أولاً هو مفتاح القدرة على قراءة معظم المواد اليابانية للمبتدئين.',
+                    exercise: {
+                        question: 'أي نظام كتابة يستخدم للكلمات الأجنبية مثل "camera"؟',
+                        options: ['Hiragana', 'Katakana', 'Kanji'],
+                        correctAnswer: 'Katakana',
+                    }
                 },
                 {
                     title: 'بنية الجملة (SOV)',
@@ -28,7 +107,12 @@ const japaneseGrammarContent = {
                         { en: '私はリンゴを食べます。 (Watashi wa ringo o tabemasu.)', ar: 'أنا التفاح آكل. (أنا آكل التفاح)' },
                         { en: '彼は本を読みます。 (Kare wa hon o yomimasu.)', ar: 'هو الكتاب يقرأ. (هو يقرأ الكتاب)' },
                     ],
-                    tip: 'تذكر دائماً أن الفعل يأتي في نهاية الجملة. هذا هو أهم اختلاف هيكلي يجب التعود عليه.'
+                    tip: 'تذكر دائماً أن الفعل يأتي في نهاية الجملة. هذا هو أهم اختلاف هيكلي يجب التعود عليه.',
+                    exercise: {
+                        question: 'أي جملة تتبع بنية SOV الصحيحة؟',
+                        options: ['食べます私はパンを。', '私は食べますパンを。', '私はパンを食べます。'],
+                        correctAnswer: '私はパンを食べます。',
+                    }
                 },
                  {
                     title: 'الأدوات النحوية (助詞 - Joshi)',
@@ -40,7 +124,12 @@ const japaneseGrammarContent = {
                         { en: 'パン「を」食べます。 (Pan o tabemasu.)', ar: 'آكل الخبز. (を للمفعول به)' },
                          { en: '学校「に」行きます。 (Gakkō ni ikimasu.)', ar: 'أذهب إلى المدرسة. (に للاتجاه)' },
                     ],
-                    tip: 'فهم الفروق الدقيقة بين الأدوات، خاصة بين は (wa) و が (ga)، يتطلب وقتاً وممارسة.'
+                    tip: 'فهم الفروق الدقيقة بين الأدوات، خاصة بين は (wa) و が (ga)، يتطلب وقتاً وممارسة.',
+                    exercise: {
+                        question: 'اختر الأداة الصحيحة: "私___田中です。"',
+                        options: ['が', 'を', 'は', 'に'],
+                        correctAnswer: 'は',
+                    }
                 },
             ]
         },
@@ -57,7 +146,12 @@ const japaneseGrammarContent = {
                         { en: '飲む (nomu) -> 飲みます (nomimasu)', ar: 'يشرب -> يشرب' },
                         { en: '見る (miru) -> 見ます (mimasu)', ar: 'يرى -> يرى' },
                     ],
-                    tip: 'للنفي، نستخدم "-masen". للمضي، نستخدم "-mashita". للنفي في الماضي، نستخدم "-masen deshita".'
+                    tip: 'للنفي، نستخدم "-masen". للمضي، نستخدم "-mashita". للنفي في الماضي، نستخدم "-masen deshita".',
+                    exercise: {
+                        question: 'ما هو النفي لصيغة "食べます" (يأكل)؟',
+                        options: ['食べました', '食べません', '食べない', '食べる'],
+                        correctAnswer: '食べません',
+                    }
                 },
                 {
                     title: 'الصفات (い-صفات و な-صفات)',
@@ -68,7 +162,12 @@ const japaneseGrammarContent = {
                         { en: 'きれいな花 (kirei na hana)', ar: 'زهرة جميلة (な-صفة)' },
                         { en: 'この本は面白いです。 (Kono hon wa omoshiroi desu.)', ar: 'هذا الكتاب ممتع.' },
                     ],
-                    tip: 'الصفات من نوع "な" تحتاج إلى إضافة "な" عندما تأتي قبل الاسم.'
+                    tip: 'الصفات من نوع "な" تحتاج إلى إضافة "な" عندما تأتي قبل الاسم.',
+                    exercise: {
+                        question: 'أكمل الجملة: "これは___本です。" (هذا كتاب ممتع)',
+                        options: ['面白い', '面白いな', '面白いな'],
+                        correctAnswer: '面白い',
+                    }
                 },
             ]
         }
@@ -111,6 +210,14 @@ const TopicContent: React.FC<{ topic: Topic }> = ({ topic }) => (
                 <p className="text-yellow-300 font-bold flex items-center gap-2"><i className="fas fa-star"></i>نصيحة:</p>
                 <p className="text-gray-300 mt-2">{topic.tip}</p>
             </div>
+        )}
+
+        {topic.exercise && (
+            <Exercise
+                question={topic.exercise.question}
+                options={topic.exercise.options}
+                correctAnswer={topic.exercise.correctAnswer}
+            />
         )}
     </div>
 );

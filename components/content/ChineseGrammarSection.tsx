@@ -1,6 +1,80 @@
-
 import React, { useState } from 'react';
 import { speak } from '../../services/audioService';
+import * as soundService from '../../services/soundService';
+
+// --- Exercise Component ---
+const Exercise: React.FC<{
+    question: string;
+    options: string[];
+    correctAnswer: string;
+}> = ({ question, options, correctAnswer }) => {
+    const [selectedOption, setSelectedOption] = useState<string | null>(null);
+    const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
+
+    const handleOptionClick = (option: string) => {
+        if (selectedOption) return;
+        setSelectedOption(option);
+        if (option === correctAnswer) {
+            setFeedback('correct');
+            soundService.playCorrectSound();
+        } else {
+            setFeedback('incorrect');
+            soundService.playIncorrectSound();
+        }
+    };
+
+    const resetExercise = () => {
+        setSelectedOption(null);
+        setFeedback(null);
+        soundService.playGenericClick();
+    };
+
+    const getOptionClass = (option: string) => {
+        if (!selectedOption) {
+            return 'bg-dark/70 hover:bg-primary/70';
+        }
+        if (option === correctAnswer) {
+            return 'bg-green-500/80';
+        }
+        if (option === selectedOption && option !== correctAnswer) {
+            return 'bg-red-500/80';
+        }
+        return 'bg-dark/50 opacity-60';
+    };
+
+    return (
+        <div className="mt-8 pt-6 border-t-2 border-dashed border-white/10">
+            <h4 className="text-xl font-bold text-secondary mb-4 text-center">
+                <i className="fas fa-question-circle mr-2"></i>
+                اختبر فهمك
+            </h4>
+            <div className="bg-dark/70 p-6 rounded-lg text-center mb-4">
+                <p className="text-lg text-white font-semibold dir-ltr">{question}</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {options.map((option, index) => (
+                    <button
+                        key={index}
+                        onClick={() => handleOptionClick(option)}
+                        disabled={!!selectedOption}
+                        className={`p-4 rounded-lg text-white font-bold transition-colors duration-300 ${getOptionClass(option)}`}
+                    >
+                        {option}
+                    </button>
+                ))}
+            </div>
+            {selectedOption && (
+                <div className="text-center mt-4">
+                    <button onClick={resetExercise} className="btn bg-secondary text-dark py-2 px-6 rounded-full font-bold">
+                        <i className="fas fa-sync-alt mr-2"></i>
+                        حاول مرة أخرى
+                    </button>
+                </div>
+            )}
+        </div>
+    );
+};
+
 
 // --- Data for the component ---
 const chineseGrammarContent = {
@@ -18,7 +92,12 @@ const chineseGrammarContent = {
                         { en: 'xièxie', ar: 'شكراً' },
                         { en: 'zàijiàn', ar: 'مع السلامة' },
                     ],
-                    tip: 'ركز على التفريق بين الأصوات المتشابهة مثل "j", "q", "x" و "zh", "ch", "sh".'
+                    tip: 'ركز على التفريق بين الأصوات المتشابهة مثل "j", "q", "x" و "zh", "ch", "sh".',
+                    exercise: {
+                        question: 'ما هو البينيين لكلمة "你好" (مرحباً)؟',
+                        options: ['nǐ hǎo', 'wǒ hǎo', 'tā hǎo', 'zǎo ān'],
+                        correctAnswer: 'nǐ hǎo',
+                    }
                 },
                 {
                     title: 'النغمات الأربع (四声 - Sìshēng)',
@@ -30,7 +109,12 @@ const chineseGrammarContent = {
                         { en: 'mǎ (马) - حصان', ar: 'النغمة الثالثة' },
                         { en: 'mà (骂) - يوبخ', ar: 'النغمة الرابعة' },
                     ],
-                    tip: 'نطق النغمات بشكل خاطئ يمكن أن يغير معنى الكلمة تماماً. استمع كثيراً وحاول تقليد الناطقين الأصليين.'
+                    tip: 'نطق النغمات بشكل خاطئ يمكن أن يغير معنى الكلمة تماماً. استمع كثيراً وحاول تقليد الناطقين الأصليين.',
+                    exercise: {
+                        question: 'كلمة "mǎ" (حصان) تستخدم أي نغمة؟',
+                        options: ['الأولى', 'الثانية', 'الثالثة', 'الرابعة'],
+                        correctAnswer: 'الثالثة',
+                    }
                 },
                 {
                     title: 'بنية الجملة (SVO)',
@@ -41,7 +125,12 @@ const chineseGrammarContent = {
                         { en: '他吃饭 (tā chī fàn)', ar: 'هو يأكل الطعام' },
                         { en: '她看书 (tā kàn shū)', ar: 'هي تقرأ كتاباً' },
                     ],
-                    tip: 'الظروف الزمنية والمكانية (مثل "اليوم"، "في بكين") تأتي عادةً بعد الفاعل وقبل الفعل.'
+                    tip: 'الظروف الزمنية والمكانية (مثل "اليوم"، "في بكين") تأتي عادةً بعد الفاعل وقبل الفعل.',
+                    exercise: {
+                        question: 'أي جملة صحيحة نحوياً؟',
+                        options: ['我书看 (wǒ shū kàn)', '书我看 (shū wǒ kàn)', '我看书 (wǒ kàn shū)'],
+                        correctAnswer: '我看书 (wǒ kàn shū)',
+                    }
                 },
             ]
         },
@@ -58,7 +147,12 @@ const chineseGrammarContent = {
                         { en: '她的猫 (tā de māo)', ar: 'قطتها' },
                         { en: '中国的首都 (zhōngguó de shǒudū)', ar: 'عاصمة الصين' },
                     ],
-                    tip: 'يمكن حذف "的" في العلاقات العائلية أو الشخصية القريبة جداً (مثال: 我妈妈 بدلاً من 我的妈妈).'
+                    tip: 'يمكن حذف "的" في العلاقات العائلية أو الشخصية القريبة جداً (مثال: 我妈妈 بدلاً من 我的妈妈).',
+                    exercise: {
+                        question: 'كيف تقول "سيارة أحمد" بالصينية؟',
+                        options: ['艾哈迈德的汽车', '汽车的艾哈迈德', '艾哈迈德汽车的'],
+                        correctAnswer: '艾哈迈德的汽车',
+                    }
                 },
                 {
                     title: 'أداة الماضي 了 (le)',
@@ -69,7 +163,12 @@ const chineseGrammarContent = {
                         { en: '他来了 (tā lái le)', ar: 'لقد أتى.' },
                         { en: '下雨了 (xià yǔ le)', ar: 'بدأت تمطر (تغير في الحالة).' },
                     ],
-                    tip: 'وجود "了" لا يعني دائماً أن الجملة في الماضي. يمكن أن تشير إلى اكتمال سيحدث في المستقبل.'
+                    tip: 'وجود "了" لا يعني دائماً أن الجملة في الماضي. يمكن أن تشير إلى اكتمال سيحدث في المستقبل.',
+                     exercise: {
+                        question: 'أكمل الجملة: "我买___一件新衣服。"',
+                        options: ['吗', '的', '了', '不'],
+                        correctAnswer: '了',
+                    }
                 },
                 {
                     title: 'أداة الاستفهام 吗 (ma)',
@@ -80,7 +179,12 @@ const chineseGrammarContent = {
                         { en: '你是学生吗？(Nǐ shì xuéshēng ma?)', ar: 'هل أنت طالب؟' },
                         { en: '他喜欢咖啡吗？(Tā xǐhuān kāfēi ma?)', ar: 'هل هو يحب القهوة؟' },
                     ],
-                    tip: 'لا تستخدم "吗" مع كلمات الاستفهام الأخرى مثل "什么" (ماذا) أو "谁" (من).'
+                    tip: 'لا تستخدم "吗" مع كلمات الاستفهام الأخرى مثل "什么" (ماذا) أو "谁" (من).',
+                     exercise: {
+                        question: 'كيف تسأل "هل أنت مشغول؟" بالصينية؟',
+                        options: ['你忙？', '你忙吗？', '你什么忙？'],
+                        correctAnswer: '你忙吗？',
+                    }
                 },
                 {
                     title: 'كلمات العد (量词 - Liàngcí)',
@@ -91,7 +195,12 @@ const chineseGrammarContent = {
                         { en: '三本书 (sān běn shū)', ar: 'ثلاثة كتب ("本" تستخدم للكتب)' },
                         { en: '两只猫 (liǎng zhī māo)', ar: 'قطتان ("只" للحيوانات)' },
                     ],
-                    tip: 'كلمة العد الأكثر شيوعاً هي "个" (ge). عندما تكون في شك، استخدمها.'
+                    tip: 'كلمة العد الأكثر شيوعاً هي "个" (ge). عندما تكون في شك، استخدمها.',
+                     exercise: {
+                        question: 'اختر كلمة العد الصحيحة: "一张___" (一張)',
+                        options: ['人', '书', '桌子', '猫'],
+                        correctAnswer: '桌子',
+                    }
                 },
             ]
         }
@@ -134,6 +243,14 @@ const TopicContent: React.FC<{ topic: Topic }> = ({ topic }) => (
                 <p className="text-yellow-300 font-bold flex items-center gap-2"><i className="fas fa-star"></i>نصيحة:</p>
                 <p className="text-gray-300 mt-2">{topic.tip}</p>
             </div>
+        )}
+
+        {topic.exercise && (
+            <Exercise
+                question={topic.exercise.question}
+                options={topic.exercise.options}
+                correctAnswer={topic.exercise.correctAnswer}
+            />
         )}
     </div>
 );

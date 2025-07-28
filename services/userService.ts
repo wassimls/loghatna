@@ -32,11 +32,12 @@ export const signup = async (name: string, email: string, password: string): Pro
         userData.referred_by = referrerId;
     }
 
-    const { user, session, error } = await supabase!.auth.signUp({
+    const { data: { user, session }, error } = await supabase!.auth.signUp({
         email,
         password,
-    }, {
-        data: userData,
+        options: {
+            data: userData,
+        }
     });
 
     if (error) {
@@ -67,7 +68,7 @@ export const signup = async (name: string, email: string, password: string): Pro
 // Log in an existing user
 export const login = async (email: string, password: string): Promise<void> => {
     ensureSupabaseIsConfigured();
-    const { error } = await supabase!.auth.signIn({
+    const { error } = await supabase!.auth.signInWithPassword({
         email,
         password,
     });
@@ -98,8 +99,8 @@ export const logout = async (): Promise<void> => {
 // Listen for authentication state changes
 export const onAuthChange = (callback: (user: User | null) => void): () => void => {
     ensureSupabaseIsConfigured();
-    const { data: authListener } = supabase!.auth.onAuthStateChange(
-        (event: string, session: any | null) => {
+    const { data: { subscription } } = supabase!.auth.onAuthStateChange(
+        (_event: string, session: any | null) => {
             const supabaseUser = session?.user;
             
             if (!supabaseUser) {
@@ -146,14 +147,15 @@ export const onAuthChange = (callback: (user: User | null) => void): () => void 
                         isSubscribed = tier !== 'bronze' && hasActiveStatus && notExpired;
                     } else if (supabaseUser.email) {
                         // FIX: If no subscription is found (e.g., DB trigger failed), create a default one client-side.
+                        const newSub: Database['public']['Tables']['subscriptions']['Insert'] = {
+                            user_id: supabaseUser.id,
+                            email: supabaseUser.email,
+                            tier: 'bronze',
+                            status: 'active',
+                        };
                         const { error: insertError } = await supabase!
                             .from('subscriptions')
-                            .insert({
-                                user_id: supabaseUser.id,
-                                email: supabaseUser.email,
-                                tier: 'bronze',
-                                status: 'active',
-                            });
+                            .insert([newSub]);
                         
                         if (insertError) {
                              console.error("Failed to create default subscription for new user:", insertError.message);
@@ -178,13 +180,13 @@ export const onAuthChange = (callback: (user: User | null) => void): () => void 
             })();
         }
     );
-    return () => authListener?.unsubscribe();
+    return () => subscription?.unsubscribe();
 };
 
 // Check if the current user is an admin
 export const isCurrentUserAdmin = async (): Promise<boolean> => {
     ensureSupabaseIsConfigured();
-    const user = supabase!.auth.user();
+    const { data: { user } } = await supabase!.auth.getUser();
     return user?.email === ADMIN_EMAIL;
 };
 
@@ -193,7 +195,7 @@ export const isCurrentUserAdmin = async (): Promise<boolean> => {
 export const updateUserName = async (name: string): Promise<User> => {
     ensureSupabaseIsConfigured();
 
-    const { user: updatedUser, error } = await supabase!.auth.update({
+    const { data: { user: updatedUser }, error } = await supabase!.auth.updateUser({
         data: { name }
     });
 
@@ -206,11 +208,15 @@ export const updateUserName = async (name: string): Promise<User> => {
          throw new Error('لم يتم العثور على المستخدم لتحديثه.');
     }
 
-    const { data: subData } = await supabase!
+    const { data: subData, error: subError } = await supabase!
         .from('subscriptions')
         .select('tier, status, ends_at')
         .eq('user_id', updatedUser.id)
         .single();
+
+    if (subError && subError.code !== 'PGRST116') {
+        console.error("Error fetching subscription on name update:", subError.message);
+    }
     
     let isSubscribed = false;
     let tier: User['subscription_tier'] = 'bronze';
@@ -239,7 +245,7 @@ export const updateUserName = async (name: string): Promise<User> => {
 export const updateUserAvatar = async (avatar: string): Promise<User> => {
     ensureSupabaseIsConfigured();
 
-    const { user: updatedUser, error } = await supabase!.auth.update({
+    const { data: { user: updatedUser }, error } = await supabase!.auth.updateUser({
         data: { avatar }
     });
 
@@ -252,11 +258,15 @@ export const updateUserAvatar = async (avatar: string): Promise<User> => {
          throw new Error('لم يتم العثور على المستخدم لتحديثه.');
     }
     
-     const { data: subData } = await supabase!
+    const { data: subData, error: subError } = await supabase!
         .from('subscriptions')
         .select('tier, status, ends_at')
         .eq('user_id', updatedUser.id)
         .single();
+    
+    if (subError && subError.code !== 'PGRST116') {
+        console.error("Error fetching subscription on avatar update:", subError.message);
+    }
 
     let isSubscribed = false;
     let tier: User['subscription_tier'] = 'bronze';
@@ -285,14 +295,14 @@ export const updateUserAvatar = async (avatar: string): Promise<User> => {
 export const updateUserPassword = async (currentPassword: string, newPassword: string): Promise<void> => {
     ensureSupabaseIsConfigured();
     
-    const user = supabase!.auth.user();
+    const { data: { user } } = await supabase!.auth.getUser();
 
     if (!user) {
         throw new Error('لا يمكن التحقق من المستخدم الحالي.');
     }
     
     // We still need to verify the old password. The best way is to try signing in with it.
-    const { error: signInError } = await supabase!.auth.signIn({
+    const { error: signInError } = await supabase!.auth.signInWithPassword({
         email: user.email!,
         password: currentPassword,
     });
@@ -305,7 +315,7 @@ export const updateUserPassword = async (currentPassword: string, newPassword: s
     }
     
     // If verification is successful, update to the new password.
-    const { error: updateError } = await supabase!.auth.update({
+    const { error: updateError } = await supabase!.auth.updateUser({
         password: newPassword,
     });
 
@@ -326,8 +336,8 @@ export const setUserSubscribed = async (): Promise<User> => {
     ensureSupabaseIsConfigured();
 
     // 1. Get current user
-    const user = supabase!.auth.user();
-    if (!user) {
+    const { data: { user } } = await supabase!.auth.getUser();
+    if (!user || !user.email) {
         throw new Error("لا يمكن العثور على المستخدم الحالي أو بريده الإلكتروني لإتمام الاشتراك.");
     }
 
@@ -336,16 +346,18 @@ export const setUserSubscribed = async (): Promise<User> => {
     endsAt.setDate(endsAt.getDate() + 30);
     const newTier = 'silver';
 
+    const upsertPayload: Database['public']['Tables']['subscriptions']['Insert'] = {
+        user_id: user.id,
+        email: user.email,
+        tier: newTier,
+        status: 'active',
+        ends_at: endsAt.toISOString(),
+    };
+
     // Using upsert is safer for renewals or if an entry somehow exists
     const { error: subscriptionError } = await supabase!
         .from('subscriptions')
-        .upsert({
-            user_id: user.id,
-            email: user.email!,
-            tier: newTier,
-            status: 'active',
-            ends_at: endsAt.toISOString(),
-        }, { onConflict: 'user_id' });
+        .upsert([upsertPayload], { onConflict: 'user_id' });
 
     if (subscriptionError) {
         console.error("Supabase upsert subscription error: ", subscriptionError.message || subscriptionError);
@@ -356,7 +368,7 @@ export const setUserSubscribed = async (): Promise<User> => {
     // onAuthChange will fetch this exact data from the DB on next app load/refresh.
     return {
         id: user.id,
-        email: user.email!,
+        email: user.email,
         name: user.user_metadata.name || 'مستخدم',
         avatar: user.user_metadata.avatar || '😊',
         subscription_ends_at: endsAt.toISOString(),
@@ -368,7 +380,7 @@ export const setUserSubscribed = async (): Promise<User> => {
 export const extendSubscription = async (): Promise<User> => {
     ensureSupabaseIsConfigured();
 
-    const user = supabase!.auth.user();
+    const { data: { user } } = await supabase!.auth.getUser();
     if (!user) {
         throw new Error("No user found to extend subscription.");
     }
@@ -379,7 +391,12 @@ export const extendSubscription = async (): Promise<User> => {
         .eq('user_id', user.id)
         .single();
 
-    if (fetchError || !currentSub) {
+    if (fetchError && fetchError.code !== 'PGRST116') {
+        // If there's an actual error, throw it
+        throw new Error("Failed to fetch current subscription: " + fetchError.message);
+    }
+
+    if (!currentSub) {
         // If no subscription, treat as a new one
         return setUserSubscribed();
     }
@@ -391,12 +408,14 @@ export const extendSubscription = async (): Promise<User> => {
     const newEndDate = new Date(startDate);
     newEndDate.setDate(newEndDate.getDate() + 30); // Add 30 days
 
+    const updatePayload: Database['public']['Tables']['subscriptions']['Update'] = {
+        ends_at: newEndDate.toISOString(),
+        status: 'active'
+    };
+    
     const { error: updateError } = await supabase!
         .from('subscriptions')
-        .update({
-            ends_at: newEndDate.toISOString(),
-            status: 'active'
-        })
+        .update(updatePayload)
         .eq('user_id', user.id);
     
     if (updateError) {
@@ -440,14 +459,16 @@ export const getChatHistory = async (userId: string, languageCode: string): Prom
 export const saveChatHistory = async (userId: string, languageCode: string, messages: ChatMessage[]): Promise<void> => {
     ensureSupabaseIsConfigured();
     
+    const upsertPayload: Database['public']['Tables']['chat_history']['Insert'] = {
+        user_id: userId,
+        language_code: languageCode,
+        messages: messages as Json,
+        updated_at: new Date().toISOString()
+    };
+
     const { error } = await supabase!
         .from('chat_history')
-        .upsert({
-            user_id: userId,
-            language_code: languageCode,
-            messages: messages as Json,
-            updated_at: new Date().toISOString()
-        }, { onConflict: 'user_id, language_code' });
+        .upsert([upsertPayload], { onConflict: 'user_id, language_code' });
         
     if (error) {
         console.error('Error saving chat history:', error.message || error);
@@ -460,34 +481,33 @@ export const saveChatHistory = async (userId: string, languageCode: string, mess
 export const getFavoriteWords = async (userId: string, languageCode: string): Promise<Word[]> => {
     ensureSupabaseIsConfigured();
     
-    const { data, error } = await supabase!
+    const response = await supabase!
         .from('user_favorite_words')
         .select('word')
         .eq('user_id', userId)
         .eq('language_code', languageCode);
         
-    if (error) {
-        console.error('Error fetching favorite words:', error.message || error);
-        return [];
-    }
-
-    if (!data) {
+    if (response.error) {
+        console.error('Error fetching favorite words:', response.error.message || response.error);
         return [];
     }
     
-    return data.map(item => item.word as Word);
+    // The result from select is always an array, so response.data will not be null if there is no error.
+    return response.data.map(item => item.word as Word);
 };
 
 export const addFavoriteWord = async (userId: string, word: Word, languageCode: string): Promise<void> => {
     ensureSupabaseIsConfigured();
     
+    const insertPayload: Database['public']['Tables']['user_favorite_words']['Insert'] = {
+        user_id: userId,
+        word: word as Json,
+        language_code: languageCode
+    };
+
     const { error } = await supabase!
         .from('user_favorite_words')
-        .insert({
-            user_id: userId,
-            word: word as Json,
-            language_code: languageCode
-        });
+        .insert([insertPayload]);
         
     if (error) {
         console.error('Error adding favorite word:', error.message || error);
@@ -561,7 +581,7 @@ export const updateUserProgress = async (
     const completedSet = new Set(completed);
     completedSet.add(categoryId);
 
-    const updatedProgress = {
+    const updatedProgress: Database['public']['Tables']['user_progress']['Insert'] = {
         user_id: userId,
         language_code: languageCode,
         completed_lessons: Array.from(completedSet) as Json,
@@ -572,7 +592,7 @@ export const updateUserProgress = async (
 
     const { error: upsertError } = await supabase!
         .from('user_progress')
-        .upsert(updatedProgress, { onConflict: 'user_id, language_code' });
+        .upsert([updatedProgress], { onConflict: 'user_id, language_code' });
 
     if (upsertError) {
         console.error('Error updating user progress:', upsertError.message || upsertError);
@@ -586,7 +606,7 @@ export const updateCompletedLessons = async (
 ): Promise<void> => {
     ensureSupabaseIsConfigured();
 
-    const updatedProgress = {
+    const updatedProgress: Database['public']['Tables']['user_progress']['Insert'] = {
         user_id: userId,
         language_code: languageCode,
         completed_lessons: newlyCompleted as Json,
@@ -597,7 +617,7 @@ export const updateCompletedLessons = async (
 
     const { error: upsertError } = await supabase!
         .from('user_progress')
-        .upsert(updatedProgress, { onConflict: 'user_id, language_code' });
+        .upsert([updatedProgress], { onConflict: 'user_id, language_code' });
 
     if (upsertError) {
         console.error('Error setting user progress after placement test:', upsertError.message || upsertError);
@@ -649,7 +669,7 @@ export const updateCompletedLessons = async (
  */
 export const getLeaderboard = async (): Promise<LeaderboardEntry[]> => {
     ensureSupabaseIsConfigured();
-    const { data, error } = await supabase!.rpc('get_leaderboard');
+    const { data, error } = await (supabase!.rpc as any)('get_leaderboard');
 
     if (error) {
         console.error("Error fetching leaderboard:", error.message || error);
@@ -665,17 +685,18 @@ export const getReferredUsers = async (referrerId: string): Promise<ReferredUser
     ensureSupabaseIsConfigured();
     
     // 1. Fetch the list of referred users
-    const { data: referredUsers, error: referralError } = await supabase!
+    const referralResponse = await supabase!
         .from('referral_usage')
         .select('*')
         .eq('referrer_user_id', referrerId)
         .order('created_at', { ascending: false });
     
-    if (referralError) {
-        console.error('Error fetching referred users:', referralError.message);
+    if (referralResponse.error) {
+        console.error('Error fetching referred users:', referralResponse.error.message);
         return [];
     }
     
+    const referredUsers = referralResponse.data;
     if (!referredUsers || referredUsers.length === 0) {
         return [];
     }
@@ -684,16 +705,17 @@ export const getReferredUsers = async (referrerId: string): Promise<ReferredUser
     const referredUserIds = referredUsers.map(u => u.referred_user_id);
 
     // 3. Fetch subscriptions for all referred users in a single query
-    const { data: subscriptions, error: subscriptionError } = await supabase!
+    const subscriptionResponse = await supabase!
         .from('subscriptions')
         .select('user_id, tier')
         .in('user_id', referredUserIds);
 
-    if (subscriptionError) {
-        console.error('Error fetching subscriptions for referred users:', subscriptionError.message);
+    if (subscriptionResponse.error) {
+        console.error('Error fetching subscriptions for referred users:', subscriptionResponse.error.message);
         // Return users without plan info on error, defaulting to bronze
         return referredUsers.map(u => ({ ...u, tier: 'bronze' as const }));
     }
+    const subscriptions = subscriptionResponse.data;
 
     // 4. Create a map for quick lookup of subscription tiers
     const subscriptionMap = new Map<string, 'bronze' | 'silver' | 'gold'>();
@@ -717,7 +739,7 @@ export const getReferredUsers = async (referrerId: string): Promise<ReferredUser
 
 export const getAllSubscriptions = async (): Promise<Subscription[]> => {
     ensureSupabaseIsConfigured();
-    const { data, error } = await supabase!.rpc('get_all_subscriptions_with_details');
+    const { data, error } = await (supabase!.rpc as any)('get_all_subscriptions_with_details');
 
     if (error) {
         console.error('Error fetching all subscriptions:', error);

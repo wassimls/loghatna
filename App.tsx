@@ -1,11 +1,13 @@
 
 
+
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { CategoryId, Language, GeneratedContent, User, Word, Category, UserProgress, View } from './types.ts';
 import { CATEGORIES, LANGUAGES } from './constants.ts';
 import { getCategoryContent } from './services/dataService.ts';
 import * as userService from './services/userService.ts';
 import * as soundService from './services/soundService.ts';
+import { supabaseConfigError } from './services/supabase.ts';
 import Header from './components/Header.tsx';
 import GamesSection from './components/content/GamesSection.tsx';
 import AuthPage from './components/auth/AuthPage.tsx';
@@ -113,7 +115,7 @@ const BottomNav: React.FC<{
 }> = ({ currentView, onNavigate, className = '' }) => {
     const navItems = [
         { view: 'dashboard', icon: 'fas fa-map', label: 'الخريطة' },
-        { view: 'explore', icon: 'fas fa-book-reader', label: 'استكشف' },
+        { view: 'explore', icon: 'fas fa-book-reader', label: 'القصص' },
         { view: 'chat', icon: 'fas fa-comments', label: 'الدردشة' },
         { view: 'grammar', icon: 'fas fa-spell-check', label: 'القواعد' },
         { view: 'games', icon: 'fas fa-gamepad', label: 'الألعاب' },
@@ -145,6 +147,30 @@ const BottomNav: React.FC<{
 };
 
 const App: React.FC = () => {
+    if (supabaseConfigError) {
+        return (
+            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-space-start to-space-end p-4 text-center">
+                <div className="w-full max-w-lg bg-dark/70 backdrop-blur-md p-8 rounded-2xl shadow-lg border-2 border-red-500/50">
+                    <div className="flex justify-center items-center gap-4 mb-6">
+                        <i className="fas fa-satellite-dish text-5xl text-red-400"></i>
+                        <h1 className="text-3xl font-bold text-red-300">خطأ في الإعدادات</h1>
+                    </div>
+                    <p className="text-lg text-white mb-4">
+                        فشل التطبيق في الاتصال بخدماته الأساسية.
+                    </p>
+                    <div className="bg-dark/80 p-4 rounded-lg text-right font-mono text-sm text-red-200 border border-red-500/30">
+                        <code>
+                            {supabaseConfigError}
+                        </code>
+                    </div>
+                    <p className="text-gray-300 mt-6 text-sm">
+                        إذا كنت مطور هذا التطبيق، يرجى التأكد من تكوين متغيرات البيئة `SUPABASE_URL` و `SUPABASE_ANON_KEY` بشكل صحيح.
+                    </p>
+                </div>
+            </div>
+        );
+    }
+
     const [user, setUser] = useState<User | null>(null);
     const [selectedLanguage, setSelectedLanguage] = useState(LANGUAGES[0].code);
     const [activeCategory, setActiveCategory] = useState<CategoryId | null>(null);

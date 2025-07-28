@@ -4,12 +4,23 @@ import { Invoice } from "../types";
 // !!! ملاحظة هامة: يجب تحديث هذا الرابط !!!
 // ====================================================================================
 //
-// استبدل هذا الرابط بعنوان URL الخاص بالواجهة الخلفية (Backend) التي قمت بنشرها على render.com.
+// تم تكوين التطبيق لاستخدام متغير بيئة لجلب عنوان URL الخاص بالواجهة الخلفية.
 //
-const BACKEND_API_BASE_URL = 'https://mindlingo-payment-backend.onrender.com/api'; 
-// مثال: 'https://your-app-name.onrender.com/api'
+// **للتشغيل المحلي أو النشر:**
+// 1. قم بنشر الواجهة الخلفية (Backend) الخاصة بالدفع.
+// 2. قم بتعيين متغير البيئة التالي في بيئة تشغيل الواجهة الأمامية:
+//    - BACKEND_API_URL = "Your Backend API URL"
+//      (مثال: 'https://your-app-name.onrender.com/api')
+//
+const BACKEND_API_BASE_URL = process.env.BACKEND_API_URL;
 //
 // ====================================================================================
+
+const ensureBackendUrlIsConfigured = () => {
+    if (!BACKEND_API_BASE_URL) {
+        throw new Error("لم يتم تكوين رابط الواجهة الخلفية للدفع (BACKEND_API_URL). يرجى تكوينه كمتغير بيئة.");
+    }
+};
 
 
 /**
@@ -27,7 +38,7 @@ export const createInvoice = async (
     },
     referralCode: string | null
 ): Promise<{ payment_url: string }> => {
-    
+    ensureBackendUrlIsConfigured();
     const endpoint = `${BACKEND_API_BASE_URL}/create-invoice`;
     
     const requestBody: { [key: string]: any } = {
@@ -78,6 +89,7 @@ export const createInvoice = async (
  * @returns A promise that resolves to an object containing the payment status.
  */
 export const verifyPayment = async (invoiceId: string): Promise<{ status: string }> => {
+    ensureBackendUrlIsConfigured();
     const endpoint = `${BACKEND_API_BASE_URL}/verify-payment`;
 
     try {

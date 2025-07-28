@@ -1,9 +1,9 @@
-
-
-
-import { Type } from "@google/genai";
-import { supabase } from './supabase.ts';
+import { GoogleGenAI, Type, GenerateContentResponse } from "@google/genai";
 import { GamesCollection, ChatMessage, PlacementTestQuestion } from '../types.ts';
+
+// According to the instructions, assume process.env.API_KEY is available and secure in the execution environment.
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const GEMINI_MODEL = 'gemini-2.5-flash';
 
 /**
  * Parses a JSON string from the model response, handling potential markdown code fences.
@@ -28,26 +28,7 @@ const parseJsonResponse = <T>(jsonString: string): T | null => {
     }
 };
 
-/**
- * Invokes the serverless function that proxies requests to the Gemini API.
- * @param payload - The data to send to the Gemini API.
- * @returns The response from the Gemini API.
- */
-const invokeGeminiProxy = async (payload: any) => {
-    if (!supabase) {
-        throw new Error('Supabase client is not initialized.');
-    }
-    // The `data` returned from invoke is the parsed JSON body of the function's response.
-    const { data, error } = await supabase.functions.invoke('gemini-proxy', {
-        body: payload,
-    });
-    if (error) throw error;
-    return data;
-};
-
 export const generateGamesForLanguage = async (language: string): Promise<GamesCollection | null> => {
-    const GEMINI_MODEL = 'gemini-2.5-flash';
-
     const systemInstruction = `You are a creative game designer. Your response MUST be a single, valid, minified JSON object with a 'games' key for an Arabic-speaking audience. All titles and descriptions must be in Arabic. Adhere strictly to JSON format rules.`;
     const userPrompt = `
         Generate a collection of THREE DIFFERENT mini-games for learning "${language}".
@@ -67,19 +48,18 @@ export const generateGamesForLanguage = async (language: string): Promise<GamesC
     `;
 
     try {
-        const payload = {
+        const response: GenerateContentResponse = await ai.models.generateContent({
             model: GEMINI_MODEL,
             contents: userPrompt,
             config: {
                 systemInstruction,
                 responseMimeType: "application/json",
             }
-        };
-        const response = await invokeGeminiProxy(payload);
+        });
         const content = response.text;
         return parseJsonResponse<GamesCollection>(content);
     } catch (error) {
-        console.error("Error generating games via proxy:", error);
+        console.error("Error generating games with Gemini:", error);
         if (error instanceof Error) {
             throw new Error(`حدث خطأ أثناء الاتصال بالذكاء الاصطناعي: ${error.message}`);
         }
@@ -88,39 +68,21 @@ export const generateGamesForLanguage = async (language: string): Promise<GamesC
 };
 
 export async function* streamChatResponse(history: ChatMessage[], systemInstruction: string): AsyncGenerator<string> {
-    if (!supabase) {
-        throw new Error('Supabase client is not initialized.');
-    }
-    const contents = history.map(msg => ({
-        role: msg.role,
-        parts: [{ text: msg.text }]
-    }));
-
-    const payload = {
-        model: 'gemini-2.5-flash',
-        contents: contents,
-        config: { systemInstruction },
-        stream: true
-    };
-
     try {
-        const { data, error } = await supabase.functions.invoke('gemini-proxy', {
-            body: payload,
-            responseType: 'stream'
-        } as any);
-        if (error) throw error;
-        
-        const reader = data.getReader();
-        const decoder = new TextDecoder();
-        
-        while (true) {
-            const { value, done } = await reader.read();
-            if (done) break;
-            yield decoder.decode(value);
-        }
+        const responseStream = await ai.models.generateContentStream({
+            model: GEMINI_MODEL,
+            contents: history.map(msg => ({
+                role: msg.role,
+                parts: [{ text: msg.text }]
+            })),
+            config: { systemInstruction },
+        });
 
+        for await (const chunk of responseStream) {
+            yield chunk.text;
+        }
     } catch (error) {
-        console.error("Error streaming chat response from proxy:", error);
+        console.error("Error streaming chat response with Gemini:", error);
         if (error instanceof Error) {
             throw new Error(`حدث خطأ أثناء الدردشة مع الذكاء الاصطناعي: ${error.message}`);
         }
@@ -129,21 +91,18 @@ export async function* streamChatResponse(history: ChatMessage[], systemInstruct
 }
 
 export const translateText = async (text: string, sourceLang: string, targetLang: string): Promise<string> => {
-    const GEMINI_MODEL = 'gemini-2.5-flash';
-
     const systemInstruction = `You are an expert translator. Provide ONLY the direct translation of the user's text, with no extra commentary, explanations, or quotation marks.`;
     const userPrompt = `Translate the following text from ${sourceLang} to ${targetLang}:\n\n"${text}"`;
 
     try {
-         const payload = {
+        const response: GenerateContentResponse = await ai.models.generateContent({
             model: GEMINI_MODEL,
             contents: userPrompt,
             config: { systemInstruction }
-        };
-        const response = await invokeGeminiProxy(payload);
+        });
         return response.text.trim();
     } catch (error) {
-        console.error(`Error translating text via proxy:`, error);
+        console.error(`Error translating text with Gemini:`, error);
         if (error instanceof Error) {
            throw new Error(`حدث خطأ أثناء الترجمة: ${error.message}`);
         }
@@ -156,8 +115,6 @@ export const getPronunciationFeedback = async (
     userTranscript: string, 
     languageName: string
 ): Promise<{ score: number; feedback: string; }> => {
-    const GEMINI_MODEL = 'gemini-2.5-flash';
-
     const systemInstruction = `You are a language pronunciation coach for an Arabic-speaking user learning ${languageName}.
     Your task is to compare the user's spoken transcription to the original target sentence.
     Provide a score from 0 to 10 based on how closely the transcription matches the target sentence in terms of wording and structure.
@@ -187,7 +144,7 @@ export const getPronunciationFeedback = async (
     };
 
     try {
-        const payload = {
+        const response: GenerateContentResponse = await ai.models.generateContent({
             model: GEMINI_MODEL,
             contents: userPrompt,
             config: {
@@ -195,8 +152,7 @@ export const getPronunciationFeedback = async (
                 responseMimeType: "application/json",
                 responseSchema: schema,
             }
-        };
-        const response = await invokeGeminiProxy(payload);
+        });
         const content = response.text;
         const parsedResult = parseJsonResponse<{ score: number; feedback: string; }>(content);
 
@@ -207,7 +163,7 @@ export const getPronunciationFeedback = async (
         return parsedResult;
 
     } catch (error) {
-        console.error("Error getting pronunciation feedback from proxy:", error);
+        console.error("Error getting pronunciation feedback with Gemini:", error);
         if (error instanceof Error) {
             throw new Error(`حدث خطأ أثناء تقييم النطق: ${error.message}`);
         }
@@ -219,8 +175,6 @@ export const generateAudioStory = async (
     languageName: string,
     genre: string
 ): Promise<string | null> => {
-    const GEMINI_MODEL = 'gemini-2.5-flash';
-
     const systemInstruction = `You are a creative storyteller for language learners who are native Arabic speakers.
     Generate a short, simple story (around 100-150 words) in ${languageName}.
     The story must be easy to understand for a beginner to intermediate learner.
@@ -230,19 +184,18 @@ export const generateAudioStory = async (
     const userPrompt = `Please write a story in the "${genre}" genre.`;
 
     try {
-         const payload = {
+         const response: GenerateContentResponse = await ai.models.generateContent({
             model: GEMINI_MODEL,
             contents: userPrompt,
             config: { systemInstruction }
-        };
-        const response = await invokeGeminiProxy(payload);
+        });
         const story = response.text.trim();
         if (story && story.split(' ').length > 10) {
             return story;
         }
         return null;
     } catch (error) {
-        console.error("Error generating story via proxy:", error);
+        console.error("Error generating story with Gemini:", error);
         if (error instanceof Error) {
             throw new Error(`حدث خطأ أثناء الاتصال بالذكاء الاصطناعي: ${error.message}`);
         }
@@ -252,8 +205,6 @@ export const generateAudioStory = async (
 
 
 export const generatePlacementTest = async (language: string): Promise<PlacementTestQuestion[] | null> => {
-    const GEMINI_MODEL = 'gemini-2.5-flash';
-
     const systemInstruction = `You are an expert language test creator for Arabic-speaking users. Your entire response MUST be a single, valid, minified JSON array of objects that strictly adheres to the provided schema. Do not use markdown.`;
     
     const userPrompt = `
@@ -285,7 +236,7 @@ export const generatePlacementTest = async (language: string): Promise<Placement
     };
 
     try {
-        const payload = {
+        const response: GenerateContentResponse = await ai.models.generateContent({
             model: GEMINI_MODEL,
             contents: userPrompt,
             config: {
@@ -293,8 +244,7 @@ export const generatePlacementTest = async (language: string): Promise<Placement
                 responseMimeType: "application/json",
                 responseSchema: schema
             }
-        };
-        const response = await invokeGeminiProxy(payload);
+        });
         const questions = parseJsonResponse<PlacementTestQuestion[]>(response.text);
         if (questions && questions.length === 10 && questions.every(q => q.options.length > 1)) {
             return questions;
@@ -302,7 +252,7 @@ export const generatePlacementTest = async (language: string): Promise<Placement
         return null;
 
     } catch (error) {
-        console.error("Error generating placement test via proxy:", error);
+        console.error("Error generating placement test with Gemini:", error);
         if (error instanceof Error) {
             throw new Error(`حدث خطأ أثناء إنشاء الاختبار: ${error.message}`);
         }
@@ -314,14 +264,10 @@ export const generateVideoScript = async (
     videoId: string,
     languageName: string
 ): Promise<string[] | null> => {
-    const GEMINI_MODEL = 'gemini-2.5-flash';
-
     const systemInstruction = `You are a helpful assistant that transcribes YouTube videos for language learners.
     Given a YouTube video ID, provide a simplified transcript of the first 2-3 sentences spoken in the video in ${languageName}.
     Your response MUST be a single, valid, minified JSON array of strings, where each string is a sentence.
     If you cannot get a transcript, return an empty array. Do not use markdown.`;
-
-    const userPrompt = `Generate a simplified script for the YouTube video with ID: ${videoId}`;
 
     const schema = {
         type: Type.ARRAY,
@@ -332,7 +278,7 @@ export const generateVideoScript = async (
     };
 
     try {
-        const payload = {
+        const response: GenerateContentResponse = await ai.models.generateContent({
             model: GEMINI_MODEL,
             contents: `Create a plausible, simple 3-sentence script in ${languageName} for a video about daily life. The video ID is just a placeholder.`,
             config: {
@@ -340,8 +286,7 @@ export const generateVideoScript = async (
                 responseMimeType: "application/json",
                 responseSchema: schema
             }
-        };
-        const response = await invokeGeminiProxy(payload);
+        });
         const script = parseJsonResponse<string[]>(response.text);
         if (script && script.length > 0) {
             return script;
@@ -349,7 +294,7 @@ export const generateVideoScript = async (
         return null;
 
     } catch (error) {
-        console.error("Error generating video script via proxy:", error);
+        console.error("Error generating video script with Gemini:", error);
         if (error instanceof Error) {
             throw new Error(`حدث خطأ أثناء إنشاء النص: ${error.message}`);
         }

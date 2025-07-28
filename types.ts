@@ -306,7 +306,7 @@ export interface Database {
           created_at: string
           id: number
           language_code: string
-          messages: Json
+          messages: ChatMessage[]
           updated_at: string | null
           user_id: string
         }
@@ -314,7 +314,7 @@ export interface Database {
           created_at?: string
           id?: number
           language_code: string
-          messages: Json
+          messages: ChatMessage[]
           updated_at?: string | null
           user_id: string
         }
@@ -322,7 +322,7 @@ export interface Database {
           created_at?: string
           id?: number
           language_code?: string
-          messages?: Json
+          messages?: ChatMessage[]
           updated_at?: string | null
           user_id?: string
         }
@@ -388,21 +388,21 @@ export interface Database {
           id: number
           language_code: string
           user_id: string
-          word: Json
+          word_data: Word
         }
         Insert: {
           created_at?: string
           id?: number
           language_code: string
           user_id: string
-          word: Json
+          word_data: Word
         }
         Update: {
           created_at?: string
           id?: number
           language_code?: string
           user_id?: string
-          word?: Json
+          word_data?: Word
         }
       }
       user_progress: {
@@ -410,7 +410,7 @@ export interface Database {
             id: number
             user_id: string
             language_code: string
-            completed_lessons: Json | null
+            completed_lessons: CategoryId[] | null
             total_score: number
             total_questions_answered: number
             created_at: string
@@ -420,7 +420,7 @@ export interface Database {
             id?: number
             user_id: string
             language_code: string
-            completed_lessons?: Json | null
+            completed_lessons?: CategoryId[] | null
             total_score?: number
             total_questions_answered?: number
             created_at?: string
@@ -430,7 +430,7 @@ export interface Database {
             id?: number
             user_id?: string
             language_code?: string
-            completed_lessons?: Json | null
+            completed_lessons?: CategoryId[] | null
             total_score?: number
             total_questions_answered?: number
             created_at?: string

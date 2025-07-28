@@ -441,7 +441,7 @@ export const extendSubscription = async (): Promise<User> => {
 export const getChatHistory = async (userId: string, languageCode: string): Promise<ChatMessage[]> => {
     ensureSupabaseIsConfigured();
     
-    const { data, error }: PostgrestSingleResponse<{ messages: Json }> = await supabase!
+    const { data, error }: PostgrestSingleResponse<{ messages: ChatMessage[] }> = await supabase!
         .from('chat_history')
         .select('messages')
         .eq('user_id', userId)
@@ -453,7 +453,7 @@ export const getChatHistory = async (userId: string, languageCode: string): Prom
         return [];
     }
     
-    return (data?.messages as ChatMessage[]) || [];
+    return data?.messages || [];
 };
 
 export const saveChatHistory = async (userId: string, languageCode: string, messages: ChatMessage[]): Promise<void> => {
@@ -462,7 +462,7 @@ export const saveChatHistory = async (userId: string, languageCode: string, mess
     const upsertPayload: Database['public']['Tables']['chat_history']['Insert'] = {
         user_id: userId,
         language_code: languageCode,
-        messages: messages as Json,
+        messages: messages,
         updated_at: new Date().toISOString()
     };
 
@@ -483,7 +483,7 @@ export const getFavoriteWords = async (userId: string, languageCode: string): Pr
     
     const response = await supabase!
         .from('user_favorite_words')
-        .select('word')
+        .select('word_data')
         .eq('user_id', userId)
         .eq('language_code', languageCode);
         
@@ -493,7 +493,7 @@ export const getFavoriteWords = async (userId: string, languageCode: string): Pr
     }
     
     // The result from select is always an array, so response.data will not be null if there is no error.
-    return response.data.map(item => item.word as Word);
+    return response.data.map(item => item.word_data);
 };
 
 export const addFavoriteWord = async (userId: string, word: Word, languageCode: string): Promise<void> => {
@@ -501,7 +501,7 @@ export const addFavoriteWord = async (userId: string, word: Word, languageCode: 
     
     const insertPayload: Database['public']['Tables']['user_favorite_words']['Insert'] = {
         user_id: userId,
-        word: word as Json,
+        word_data: word,
         language_code: languageCode
     };
 
@@ -523,7 +523,7 @@ export const removeFavoriteWord = async (userId: string, wordText: string, langu
         .delete()
         .eq('user_id', userId)
         .eq('language_code', languageCode)
-        .eq('word->>word', wordText);
+        .eq('word_data->>word', wordText);
         
     if (error) {
         console.error('Error removing favorite word:', error.message || error);
@@ -584,7 +584,7 @@ export const updateUserProgress = async (
     const updatedProgress: Database['public']['Tables']['user_progress']['Insert'] = {
         user_id: userId,
         language_code: languageCode,
-        completed_lessons: Array.from(completedSet) as Json,
+        completed_lessons: Array.from(completedSet),
         total_score: (existingProgress?.total_score || 0) + score,
         total_questions_answered: (existingProgress?.total_questions_answered || 0) + totalQuestions,
         updated_at: new Date().toISOString(),
@@ -609,7 +609,7 @@ export const updateCompletedLessons = async (
     const updatedProgress: Database['public']['Tables']['user_progress']['Insert'] = {
         user_id: userId,
         language_code: languageCode,
-        completed_lessons: newlyCompleted as Json,
+        completed_lessons: newlyCompleted,
         total_score: 0,
         total_questions_answered: 0,
         updated_at: new Date().toISOString(),
@@ -669,14 +669,14 @@ export const updateCompletedLessons = async (
  */
 export const getLeaderboard = async (): Promise<LeaderboardEntry[]> => {
     ensureSupabaseIsConfigured();
-    const { data, error } = await (supabase!.rpc as any)('get_leaderboard');
+    const { data, error } = await supabase!.rpc('get_leaderboard');
 
     if (error) {
         console.error("Error fetching leaderboard:", error.message || error);
         throw new Error("فشل في جلب قائمة المتصدرين. قد تكون ميزة تجريبية وتتطلب إعدادًا إضافيًا في قاعدة البيانات.");
     }
 
-    return (data as unknown as LeaderboardEntry[]) || [];
+    return (data as LeaderboardEntry[]) || [];
 };
 
 // --- Referral Usage ---
@@ -739,7 +739,7 @@ export const getReferredUsers = async (referrerId: string): Promise<ReferredUser
 
 export const getAllSubscriptions = async (): Promise<Subscription[]> => {
     ensureSupabaseIsConfigured();
-    const { data, error } = await (supabase!.rpc as any)('get_all_subscriptions_with_details');
+    const { data, error } = await supabase!.rpc('get_all_subscriptions_with_details');
 
     if (error) {
         console.error('Error fetching all subscriptions:', error);
@@ -749,11 +749,7 @@ export const getAllSubscriptions = async (): Promise<Subscription[]> => {
     return data as unknown as Subscription[];
 };
 
-type SubscriptionUpdate = {
-    tier?: 'bronze' | 'silver' | 'gold';
-    status?: 'active' | 'canceled' | 'expired';
-    ends_at?: string | null;
-};
+type SubscriptionUpdate = Database['public']['Tables']['subscriptions']['Update'];
 
 export const updateSubscription = async (userId: string, updates: SubscriptionUpdate): Promise<void> => {
     ensureSupabaseIsConfigured();

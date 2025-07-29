@@ -1,8 +1,7 @@
-import { GoogleGenAI, Type, GenerateContentResponse } from "@google/genai";
+import { Type, GenerateContentResponse } from "@google/genai";
+import { ai } from './geminiClient.ts';
 import { GamesCollection, ChatMessage, PlacementTestQuestion } from '../types.ts';
 
-// According to the instructions, assume process.env.API_KEY is available and secure in the execution environment.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 const GEMINI_MODEL = 'gemini-2.5-flash';
 
 /**

@@ -33,7 +33,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 }) => {
     const navItems = [
         { view: 'dashboard', icon: 'fas fa-book-open', label: 'الدروس' },
-        { view: 'explore', icon: 'fas fa-book-reader', label: 'القصص' },
+        { view: 'explore', icon: 'fas fa-book-reader', label: 'استكشف' },
         { view: 'chat', icon: 'fas fa-comments', label: 'الدردشة' },
         { view: 'grammar', icon: 'fas fa-spell-check', label: 'القواعد' },
         { view: 'games', icon: 'fas fa-gamepad', label: 'الألعاب' },

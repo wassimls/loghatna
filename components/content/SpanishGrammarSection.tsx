@@ -1,80 +1,6 @@
+
 import React, { useState } from 'react';
 import { speak } from '../../services/audioService';
-import * as soundService from '../../services/soundService';
-
-// --- Exercise Component ---
-const Exercise: React.FC<{
-    question: string;
-    options: string[];
-    correctAnswer: string;
-}> = ({ question, options, correctAnswer }) => {
-    const [selectedOption, setSelectedOption] = useState<string | null>(null);
-    const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
-
-    const handleOptionClick = (option: string) => {
-        if (selectedOption) return;
-        setSelectedOption(option);
-        if (option === correctAnswer) {
-            setFeedback('correct');
-            soundService.playCorrectSound();
-        } else {
-            setFeedback('incorrect');
-            soundService.playIncorrectSound();
-        }
-    };
-
-    const resetExercise = () => {
-        setSelectedOption(null);
-        setFeedback(null);
-        soundService.playGenericClick();
-    };
-
-    const getOptionClass = (option: string) => {
-        if (!selectedOption) {
-            return 'bg-dark/70 hover:bg-primary/70';
-        }
-        if (option === correctAnswer) {
-            return 'bg-green-500/80';
-        }
-        if (option === selectedOption && option !== correctAnswer) {
-            return 'bg-red-500/80';
-        }
-        return 'bg-dark/50 opacity-60';
-    };
-
-    return (
-        <div className="mt-8 pt-6 border-t-2 border-dashed border-white/10">
-            <h4 className="text-xl font-bold text-secondary mb-4 text-center">
-                <i className="fas fa-question-circle mr-2"></i>
-                اختبر فهمك
-            </h4>
-            <div className="bg-dark/70 p-6 rounded-lg text-center mb-4">
-                <p className="text-lg text-white font-semibold dir-ltr">{question}</p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {options.map((option, index) => (
-                    <button
-                        key={index}
-                        onClick={() => handleOptionClick(option)}
-                        disabled={!!selectedOption}
-                        className={`p-4 rounded-lg text-white font-bold transition-colors duration-300 ${getOptionClass(option)}`}
-                    >
-                        {option}
-                    </button>
-                ))}
-            </div>
-            {selectedOption && (
-                <div className="text-center mt-4">
-                    <button onClick={resetExercise} className="btn bg-secondary text-dark py-2 px-6 rounded-full font-bold">
-                        <i className="fas fa-sync-alt mr-2"></i>
-                        حاول مرة أخرى
-                    </button>
-                </div>
-            )}
-        </div>
-    );
-};
-
 
 // --- Data for the component ---
 const spanishGrammarContent = {
@@ -93,12 +19,7 @@ const spanishGrammarContent = {
                         { en: 'un chico', ar: 'ولد (مذكر)' },
                         { en: 'una chica', ar: 'بنت (مؤنث)' },
                     ],
-                    tip: 'هناك استثناءات، مثل "el problema" (مذكر) أو "la mano" (مؤنث). الحفظ والممارسة هما المفتاح.',
-                     exercise: {
-                        question: 'كلمة "silla" (كرسي) هي:',
-                        options: ['مذكر', 'مؤنث', 'محايد'],
-                        correctAnswer: 'مؤنث',
-                    }
+                    tip: 'هناك استثناءات، مثل "el problema" (مذكر) أو "la mano" (مؤنث). الحفظ والممارسة هما المفتاح.'
                 },
                 {
                     title: 'أدوات التعريف المعرفة (Los Artículos Definidos)',
@@ -110,12 +31,7 @@ const spanishGrammarContent = {
                         { en: 'los libros', ar: 'الكتب (المحددة)' },
                         { en: 'las flores', ar: 'الزهور (المحددة)' },
                     ],
-                    tip: 'استخدم "el" مع الأسماء المؤنثة المفردة التي تبدأ بـ a أو ha مشددة، مثل "el agua".',
-                    exercise: {
-                        question: 'اختر الأداة الصحيحة: ___ coches son rápidos.',
-                        options: ['el', 'la', 'los', 'las'],
-                        correctAnswer: 'los',
-                    }
+                    tip: 'استخدم "el" مع الأسماء المؤنثة المفردة التي تبدأ بـ a أو ha مشددة، مثل "el agua".'
                 },
                 {
                     title: 'أدوات التعريف النكرة (Los Artículos Indefinidos)',
@@ -126,12 +42,7 @@ const spanishGrammarContent = {
                         { en: 'Ella es una doctora.', ar: 'هي طبيبة.' },
                         { en: 'Compré unos zapatos.', ar: 'اشتريت أحذية.' },
                     ],
-                    tip: 'تستخدم "unos" و "unas" لتعني "بعض" أو "حوالي".',
-                     exercise: {
-                        question: 'اختر الأداة الصحيحة: Necesito ___ idea.',
-                        options: ['un', 'una', 'unos', 'unas'],
-                        correctAnswer: 'una',
-                    }
+                    tip: 'تستخدم "unos" و "unas" لتعني "بعض" أو "حوالي".'
                 },
             ]
         },
@@ -149,12 +60,7 @@ const spanishGrammarContent = {
                         { en: 'Estoy en casa.', ar: 'أنا في المنزل. (Estar)' },
                         { en: 'Ella está cansada.', ar: 'هي متعبة. (Estar)' },
                     ],
-                    tip: 'تذكر: "How you feel and where you are, that is when you use estar."',
-                    exercise: {
-                        question: 'أكمل الجملة: El café ___ caliente.',
-                        options: ['es', 'está', 'soy', 'estoy'],
-                        correctAnswer: 'está',
-                    }
+                    tip: 'تذكر: "How you feel and where you are, that is when you use estar."'
                 },
                 {
                     title: 'المضارع (Presente de Indicativo)',
@@ -165,12 +71,7 @@ const spanishGrammarContent = {
                         { en: 'Tú comes mucho.', ar: 'أنت تأكل كثيراً.' },
                         { en: 'Él vive en Madrid.', ar: 'هو يعيش في مدريد.' },
                     ],
-                    tip: 'انتبه للأفعال الشاذة في المضارع مثل tener (tengo), ir (voy), ser (soy).',
-                     exercise: {
-                        question: 'أكمل الجملة: Nosotros ___ en un apartamento.',
-                        options: ['vivo', 'vives', 'vive', 'vivimos'],
-                        correctAnswer: 'vivimos',
-                    }
+                    tip: 'انتبه للأفعال الشاذة في المضارع مثل tener (tengo), ir (voy), ser (soy).'
                 },
                 {
                     title: 'الماضي البسيط (Pretérito Indefinido)',
@@ -181,12 +82,7 @@ const spanishGrammarContent = {
                         { en: 'Ella fue al mercado.', ar: 'هي ذهبت إلى السوق.' },
                         { en: 'Compramos una casa el año pasado.', ar: 'اشترينا منزلاً العام الماضي.' },
                     ],
-                    tip: 'هناك العديد من الأفعال الشاذة في هذا الزمن، مثل ir/ser (fui, fuiste...) و tener (tuve, tuviste...).',
-                    exercise: {
-                        question: 'أكمل الجملة: Anoche, yo ___ una película.',
-                        options: ['vi', 'vio', 'viste', 'vimos'],
-                        correctAnswer: 'vi',
-                    }
+                    tip: 'هناك العديد من الأفعال الشاذة في هذا الزمن، مثل ir/ser (fui, fuiste...) و tener (tuve, tuviste...).'
                 }
             ]
         },
@@ -202,12 +98,7 @@ const spanishGrammarContent = {
                         { en: 'No hablo japonés.', ar: 'أنا لا أتحدث اليابانية.' },
                         { en: 'Ella no quiere café.', ar: 'هي لا تريد قهوة.' },
                     ],
-                    tip: 'للنفي المزدوج (لا أحد، لا شيء)، تضع "no" قبل الفعل وكلمة النفي الأخرى بعده (No veo a nadie - لا أرى أحداً).',
-                    exercise: {
-                        question: 'حوّل الجملة إلى النفي: "Tengo un coche."',
-                        options: ['No tengo un coche.', 'Tengo no un coche.', 'Tengo un no coche.', 'No un coche tengo.'],
-                        correctAnswer: 'No tengo un coche.',
-                    }
+                    tip: 'للنفي المزدوج (لا أحد، لا شيء)، تضع "no" قبل الفعل وكلمة النفي الأخرى بعده (No veo a nadie - لا أرى أحداً).'
                 },
                 {
                     title: 'الصفات (Los Adjetivos)',
@@ -218,12 +109,7 @@ const spanishGrammarContent = {
                         { en: 'la casa blanca', ar: 'المنزل الأبيض' },
                         { en: 'chicos inteligentes', ar: 'أولاد أذكياء' },
                     ],
-                    tip: 'بعض الصفات مثل "bueno" و "malo" يمكن أن تأتي قبل الاسم، وقد يتغير شكلها (buen día).',
-                    exercise: {
-                        question: 'اختر الصيغة الصحيحة: "Una mujer ___"',
-                        options: ['alto', 'alta', 'altos', 'altas'],
-                        correctAnswer: 'alta',
-                    }
+                    tip: 'بعض الصفات مثل "bueno" و "malo" يمكن أن تأتي قبل الاسم، وقد يتغير شكلها (buen día).'
                 }
             ]
         }
@@ -266,14 +152,6 @@ const TopicContent: React.FC<{ topic: Topic }> = ({ topic }) => (
                 <p className="text-yellow-300 font-bold flex items-center gap-2"><i className="fas fa-star"></i>نصيحة:</p>
                 <p className="text-gray-300 mt-2">{topic.tip}</p>
             </div>
-        )}
-        
-        {topic.exercise && (
-            <Exercise
-                question={topic.exercise.question}
-                options={topic.exercise.options}
-                correctAnswer={topic.exercise.correctAnswer}
-            />
         )}
     </div>
 );

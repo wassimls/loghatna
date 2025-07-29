@@ -1,79 +1,6 @@
+
 import React, { useState } from 'react';
 import { speak } from '../../services/audioService';
-import * as soundService from '../../services/soundService';
-
-// --- Exercise Component ---
-const Exercise: React.FC<{
-    question: string;
-    options: string[];
-    correctAnswer: string;
-}> = ({ question, options, correctAnswer }) => {
-    const [selectedOption, setSelectedOption] = useState<string | null>(null);
-    const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
-
-    const handleOptionClick = (option: string) => {
-        if (selectedOption) return;
-        setSelectedOption(option);
-        if (option === correctAnswer) {
-            setFeedback('correct');
-            soundService.playCorrectSound();
-        } else {
-            setFeedback('incorrect');
-            soundService.playIncorrectSound();
-        }
-    };
-
-    const resetExercise = () => {
-        setSelectedOption(null);
-        setFeedback(null);
-        soundService.playGenericClick();
-    };
-
-    const getOptionClass = (option: string) => {
-        if (!selectedOption) {
-            return 'bg-dark/70 hover:bg-primary/70';
-        }
-        if (option === correctAnswer) {
-            return 'bg-green-500/80';
-        }
-        if (option === selectedOption && option !== correctAnswer) {
-            return 'bg-red-500/80';
-        }
-        return 'bg-dark/50 opacity-60';
-    };
-
-    return (
-        <div className="mt-8 pt-6 border-t-2 border-dashed border-white/10">
-            <h4 className="text-xl font-bold text-secondary mb-4 text-center">
-                <i className="fas fa-question-circle mr-2"></i>
-                اختبر فهمك
-            </h4>
-            <div className="bg-dark/70 p-6 rounded-lg text-center mb-4">
-                <p className="text-lg text-white font-semibold dir-ltr">{question}</p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {options.map((option, index) => (
-                    <button
-                        key={index}
-                        onClick={() => handleOptionClick(option)}
-                        disabled={!!selectedOption}
-                        className={`p-4 rounded-lg text-white font-bold transition-colors duration-300 ${getOptionClass(option)}`}
-                    >
-                        {option}
-                    </button>
-                ))}
-            </div>
-            {selectedOption && (
-                <div className="text-center mt-4">
-                    <button onClick={resetExercise} className="btn bg-secondary text-dark py-2 px-6 rounded-full font-bold">
-                        <i className="fas fa-sync-alt mr-2"></i>
-                        حاول مرة أخرى
-                    </button>
-                </div>
-            )}
-        </div>
-    );
-};
 
 // --- Data for the component ---
 const grammarContent = {
@@ -91,12 +18,7 @@ const grammarContent = {
                         { en: 'The sun rises in the east.', ar: 'الشمس تشرق من الشرق.' },
                         { en: 'She works as a teacher.', ar: 'هي تعمل كمعلمة.' },
                     ],
-                    tip: 'لا تنسَ إضافة -s للفعل مع الضمائر he, she, it.',
-                     exercise: {
-                        question: 'She ___ coffee every morning.',
-                        options: ['drink', 'drinks', 'is drinking', 'drank'],
-                        correctAnswer: 'drinks',
-                    }
+                    tip: 'لا تنسَ إضافة -s للفعل مع الضمائر he, she, it.'
                 },
                 {
                     title: 'المضارع المستمر (Present Continuous)',
@@ -107,12 +29,7 @@ const grammarContent = {
                         { en: 'They are playing football.', ar: 'هم يلعبون كرة القدم.' },
                         { en: 'She is meeting her friends tomorrow.', ar: 'هي ستقابل أصدقائها غداً.' },
                     ],
-                    tip: 'بعض الأفعال (مثل know, love, want) لا تستخدم عادةً في صيغة المضارع المستمر.',
-                     exercise: {
-                        question: 'Look! The dog ___ in the garden.',
-                        options: ['play', 'plays', 'is playing', 'played'],
-                        correctAnswer: 'is playing',
-                    }
+                    tip: 'بعض الأفعال (مثل know, love, want) لا تستخدم عادةً في صيغة المضارع المستمر.'
                 },
                  {
                     title: 'الماضي البسيط (Past Simple)',
@@ -123,12 +40,7 @@ const grammarContent = {
                         { en: 'We watched a movie last night.', ar: 'شاهدنا فيلماً الليلة الماضية.' },
                         { en: 'He went to the library.', ar: 'هو ذهب إلى المكتبة.' },
                     ],
-                    tip: 'انتبه للأفعال الشاذة (Irregular Verbs) التي لا تتبع قاعدة -ed مثل go -> went.',
-                    exercise: {
-                        question: 'We ___ to the cinema last weekend.',
-                        options: ['go', 'goes', 'went', 'are going'],
-                        correctAnswer: 'went',
-                    }
+                    tip: 'انتبه للأفعال الشاذة (Irregular Verbs) التي لا تتبع قاعدة -ed مثل go -> went.'
                 },
                 {
                     title: 'الماضي المستمر (Past Continuous)',
@@ -138,12 +50,7 @@ const grammarContent = {
                         { en: 'I was watching TV when you called.', ar: 'كنت أشاهد التلفاز عندما اتصلت.' },
                         { en: 'They were sleeping at 10 PM.', ar: 'كانوا نائمين الساعة 10 مساءً.' },
                     ],
-                    tip: 'يستخدم غالباً مع الماضي البسيط لبيان تزامن حدثين.',
-                     exercise: {
-                        question: 'She was cooking when the phone ___.',
-                        options: ['ring', 'rang', 'is ringing', 'rings'],
-                        correctAnswer: 'rang',
-                    }
+                    tip: 'يستخدم غالباً مع الماضي البسيط لبيان تزامن حدثين.'
                 },
                 {
                     title: 'المستقبل البسيط (Future Simple)',
@@ -153,12 +60,7 @@ const grammarContent = {
                         { en: 'I will call you later.', ar: 'سأتصل بك لاحقاً.' },
                         { en: 'It will probably rain tomorrow.', ar: 'من المحتمل أن تمطر غداً.' },
                     ],
-                    tip: 'يمكن استخدام "be going to" للتعبير عن خطط مستقبلية مؤكدة أو نوايا. (I am going to travel next week)',
-                    exercise: {
-                        question: 'I think it ___ rain tomorrow.',
-                        options: ['will', 'is', 'goes', 'are'],
-                        correctAnswer: 'will',
-                    }
+                    tip: 'يمكن استخدام "be going to" للتعبير عن خطط مستقبلية مؤكدة أو نوايا. (I am going to travel next week)'
                 },
                 {
                     title: 'المضارع التام (Present Perfect)',
@@ -168,12 +70,7 @@ const grammarContent = {
                         { en: 'I have finished my homework.', ar: 'لقد أنهيت واجبي (الواجب منتهي الآن).' },
                         { en: 'She has lived here for three years.', ar: 'هي تعيش هنا منذ ثلاث سنوات (وما زالت).' },
                     ],
-                    tip: 'استخدم "for" للإشارة إلى مدة زمنية (for two years)، و "since" للإشارة إلى نقطة بداية (since 2020).',
-                     exercise: {
-                        question: 'He ___ never been to Japan.',
-                        options: ['has', 'have', 'is', 'was'],
-                        correctAnswer: 'has',
-                    }
+                    tip: 'استخدم "for" للإشارة إلى مدة زمنية (for two years)، و "since" للإشارة إلى نقطة بداية (since 2020).'
                 },
             ]
         },
@@ -189,12 +86,7 @@ const grammarContent = {
                         { en: 'The "dog" is playing in the "park".', ar: 'الـ "كلب" يلعب في الـ "حديقة".' },
                         { en: 'We need "water" and "food".', ar: 'نحتاج "ماء" و "طعام".' },
                     ],
-                    tip: 'الأسماء غير المعدودة (Uncountable) ليس لها صيغة جمع وتعامل معاملة المفرد.',
-                     exercise: {
-                        question: 'Which of the following is an uncountable noun?',
-                        options: ['apple', 'chair', 'information', 'car'],
-                        correctAnswer: 'information',
-                    }
+                    tip: 'الأسماء غير المعدودة (Uncountable) ليس لها صيغة جمع وتعامل معاملة المفرد.'
                 },
                 {
                     title: 'الأفعال (Verbs)',
@@ -204,12 +96,7 @@ const grammarContent = {
                         { en: 'He "runs" every day.', ar: 'هو "يجري" كل يوم.' },
                         { en: 'She "is" a doctor.', ar: 'هي "تكون" طبيبة.' },
                     ],
-                    tip: 'لكل زمن (tense) تصريف مختلف للفعل يجب الانتباه له.',
-                     exercise: {
-                        question: 'In the sentence "She seems happy," what type of verb is "seems"?',
-                        options: ['Action verb', 'Linking verb', 'Helping verb', 'Modal verb'],
-                        correctAnswer: 'Linking verb',
-                    }
+                    tip: 'لكل زمن (tense) تصريف مختلف للفعل يجب الانتباه له.'
                 },
                 {
                     title: 'الصفات (Adjectives)',
@@ -219,12 +106,7 @@ const grammarContent = {
                         { en: 'It is a "sunny" day.', ar: 'إنه يوم "مشمس".' },
                         { en: 'The soup is "hot".', ar: 'الحساء "ساخن".' },
                     ],
-                    tip: 'في الإنجليزية، الصفة تأتي دائماً قبل الاسم الذي تصفه.',
-                    exercise: {
-                        question: 'Choose the correct sentence:',
-                        options: ['She has a car red.', 'He is a man tall.', 'It is a beautiful day.', 'The house big is old.'],
-                        correctAnswer: 'It is a beautiful day.',
-                    }
+                    tip: 'في الإنجليزية، الصفة تأتي دائماً قبل الاسم الذي تصفه.'
                 },
                 {
                     title: 'الظروف (Adverbs)',
@@ -234,12 +116,7 @@ const grammarContent = {
                         { en: 'She speaks "slowly".', ar: 'هي تتحدث "ببطء".' },
                         { en: 'I will see you "tomorrow".', ar: 'سأراك "غداً".' },
                     ],
-                    tip: 'العديد من الظروف تنتهي بـ "-ly" (e.g., quick -> quickly) ولكن ليس جميعها.',
-                    exercise: {
-                        question: 'Which word is the adverb in "He drove carefully"?',
-                        options: ['He', 'drove', 'carefully', 'none'],
-                        correctAnswer: 'carefully',
-                    }
+                    tip: 'العديد من الظروف تنتهي بـ "-ly" (e.g., quick -> quickly) ولكن ليس جميعها.'
                 },
                  {
                     title: 'أدوات التعريف والتنكير (Articles)',
@@ -250,12 +127,7 @@ const grammarContent = {
                         { en: 'The cat was black.', ar: 'القطة كانت سوداء (القطة التي رأيتها).' },
                         { en: 'She is "an" honest person.', ar: 'هي شخص أمين.' },
                     ],
-                    tip: 'لا تستخدم أدوات مع الأسماء العامة والجمع (e.g., I like music).',
-                     exercise: {
-                        question: 'I need to buy ___ new umbrella.',
-                        options: ['a', 'an', 'the', 'no article'],
-                        correctAnswer: 'a',
-                    }
+                    tip: 'لا تستخدم أدوات مع الأسماء العامة والجمع (e.g., I like music).'
                 },
                 {
                     title: ' حروف الجر (Prepositions)',
@@ -266,12 +138,7 @@ const grammarContent = {
                         { en: 'The meeting is "at" 3 PM.', ar: 'الاجتماع الساعة 3 مساءً.' },
                         { en: 'I live "in" Cairo.', ar: 'أنا أعيش في القاهرة.' },
                     ],
-                    tip: 'لكل حرف جر استخدامات متعددة، والممارسة هي أفضل طريقة لتعلمها.',
-                    exercise: {
-                        question: 'My birthday is ___ June.',
-                        options: ['at', 'on', 'in', 'for'],
-                        correctAnswer: 'in',
-                    }
+                    tip: 'لكل حرف جر استخدامات متعددة، والممارسة هي أفضل طريقة لتعلمها.'
                 }
             ]
         },
@@ -287,12 +154,7 @@ const grammarContent = {
                         { en: 'Active: The boy broke the window.', ar: 'معلوم: الولد كسر النافذة.' },
                         { en: 'Passive: The window was broken by the boy.', ar: 'مجهول: النافذة كُسرت بواسطة الولد.' },
                     ],
-                    tip: 'المبني للمجهول شائع جداً في الكتابة الأكاديمية والرسمية.',
-                     exercise: {
-                        question: 'Change to passive: "Someone stole my car."',
-                        options: ['My car stole someone.', 'My car was stolen.', 'My car is stealing.', 'Someone was stolen my car.'],
-                        correctAnswer: 'My car was stolen.',
-                    }
+                    tip: 'المبني للمجهول شائع جداً في الكتابة الأكاديمية والرسمية.'
                 },
                 {
                     title: 'الجمل الشرطية (Conditionals)',
@@ -303,12 +165,7 @@ const grammarContent = {
                         { en: 'If I have time, I will help you.', ar: 'إذا كان لدي وقت، سأساعدك. (ممكن)' },
                         { en: 'If I were you, I would apologize.', ar: 'لو كنت مكانك، لاعتذرت. (غير واقعي)' },
                     ],
-                    tip: 'انتبه لزمن الفعل في كل جزء من الجملة الشرطية.',
-                     exercise: {
-                        question: 'If I ___ rich, I would travel the world.',
-                        options: ['am', 'was', 'were', 'will be'],
-                        correctAnswer: 'were',
-                    }
+                    tip: 'انتبه لزمن الفعل في كل جزء من الجملة الشرطية.'
                 },
                  {
                     title: 'صيغ المقارنة والتفضيل (Comparatives & Superlatives)',
@@ -319,12 +176,7 @@ const grammarContent = {
                         { en: 'This book is "more interesting".', ar: 'هذا الكتاب أكثر إثارة للاهتمام.' },
                         { en: 'She is "the tallest" girl in the class.', ar: 'هي أطول فتاة في الفصل.' },
                     ],
-                    tip: 'الصفات القصيرة (مقطع واحد) تأخذ -er/-est. الصفات الطويلة (مقطعين أو أكثر) تأخذ more/most.',
-                     exercise: {
-                        question: 'This is the ___ movie I have ever seen.',
-                        options: ['good', 'better', 'best', 'most good'],
-                        correctAnswer: 'best',
-                    }
+                    tip: 'الصفات القصيرة (مقطع واحد) تأخذ -er/-est. الصفات الطويلة (مقطعين أو أكثر) تأخذ more/most.'
                 },
                 {
                     title: 'الكلام المنقول (Reported Speech)',
@@ -334,12 +186,7 @@ const grammarContent = {
                         { en: 'Direct: "I will come tomorrow," she said.', ar: 'مباشر: قالت "سآتي غداً".' },
                         { en: 'Reported: She said that she would come the next day.', ar: 'منقول: قالت إنها ستأتي في اليوم التالي.' },
                     ],
-                    tip: 'عند نقل الكلام، عادةً ما نعود بزمن الفعل خطوة إلى الوراء (e.g., present -> past).',
-                    exercise: {
-                        question: 'Direct: "I am studying." He said ___.',
-                        options: ['he is studying', 'he was studying', 'I am studying', 'I was studying'],
-                        correctAnswer: 'he was studying',
-                    }
+                    tip: 'عند نقل الكلام، عادةً ما نعود بزمن الفعل خطوة إلى الوراء (e.g., present -> past).'
                 }
             ]
         }
@@ -382,14 +229,6 @@ const TopicContent: React.FC<{ topic: Topic }> = ({ topic }) => (
                 <p className="text-yellow-300 font-bold flex items-center gap-2"><i className="fas fa-star"></i>نصيحة:</p>
                 <p className="text-gray-300 mt-2">{topic.tip}</p>
             </div>
-        )}
-
-        {topic.exercise && (
-            <Exercise
-                question={topic.exercise.question}
-                options={topic.exercise.options}
-                correctAnswer={topic.exercise.correctAnswer}
-            />
         )}
     </div>
 );

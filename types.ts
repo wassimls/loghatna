@@ -294,8 +294,8 @@ export type Json =
   | number
   | boolean
   | null
-  | { [key: string]: any }
-  | any[];
+  | { [key: string]: Json | undefined }
+  | Json[];
 
 /** The schema definition for the Supabase database. */
 export interface Database {
@@ -306,7 +306,7 @@ export interface Database {
           created_at: string
           id: number
           language_code: string
-          messages: ChatMessage[]
+          messages: Json
           updated_at: string | null
           user_id: string
         }
@@ -314,7 +314,7 @@ export interface Database {
           created_at?: string
           id?: number
           language_code: string
-          messages: ChatMessage[]
+          messages: Json
           updated_at?: string | null
           user_id: string
         }
@@ -322,10 +322,11 @@ export interface Database {
           created_at?: string
           id?: number
           language_code?: string
-          messages?: ChatMessage[]
+          messages?: Json
           updated_at?: string | null
           user_id?: string
         }
+        Relationships: []
       }
       referral_usage: {
         Row: {
@@ -352,6 +353,7 @@ export interface Database {
           referred_user_name?: string | null
           referred_user_email?: string | null
         }
+        Relationships: []
       }
       subscriptions: {
         Row: {
@@ -359,8 +361,8 @@ export interface Database {
           created_at: string
           user_id: string
           email: string | null
-          tier: 'bronze' | 'silver' | 'gold'
-          status: 'active' | 'canceled' | 'expired' | null
+          tier: string
+          status: string | null
           ends_at: string | null
         }
         Insert: {
@@ -368,8 +370,8 @@ export interface Database {
           created_at?: string
           user_id: string
           email?: string | null
-          tier: 'bronze' | 'silver' | 'gold'
-          status?: 'active' | 'canceled' | 'expired' | null
+          tier: string
+          status?: string | null
           ends_at?: string | null
         }
         Update: {
@@ -377,10 +379,11 @@ export interface Database {
           created_at?: string
           user_id?: string
           email?: string | null
-          tier?: 'bronze' | 'silver' | 'gold'
-          status?: 'active' | 'canceled' | 'expired' | null
+          tier?: string
+          status?: string | null
           ends_at?: string | null
         }
+        Relationships: []
       }
       user_favorite_words: {
         Row: {
@@ -388,29 +391,30 @@ export interface Database {
           id: number
           language_code: string
           user_id: string
-          word_data: Word
+          word: Json
         }
         Insert: {
           created_at?: string
           id?: number
           language_code: string
           user_id: string
-          word_data: Word
+          word: Json
         }
         Update: {
           created_at?: string
           id?: number
           language_code?: string
           user_id?: string
-          word_data?: Word
+          word?: Json
         }
+        Relationships: []
       }
       user_progress: {
         Row: {
             id: number
             user_id: string
             language_code: string
-            completed_lessons: CategoryId[] | null
+            completed_lessons: Json | null
             total_score: number
             total_questions_answered: number
             created_at: string
@@ -420,7 +424,7 @@ export interface Database {
             id?: number
             user_id: string
             language_code: string
-            completed_lessons?: CategoryId[] | null
+            completed_lessons?: Json | null
             total_score?: number
             total_questions_answered?: number
             created_at?: string
@@ -430,12 +434,13 @@ export interface Database {
             id?: number
             user_id?: string
             language_code?: string
-            completed_lessons?: CategoryId[] | null
+            completed_lessons?: Json | null
             total_score?: number
             total_questions_answered?: number
             created_at?: string
             updated_at?: string | null
         }
+        Relationships: []
       }
     }
     Views: {
@@ -456,8 +461,8 @@ export interface Database {
             id: number
             user_id: string
             email: string
-            tier: "bronze" | "silver" | "gold"
-            status: "active" | "canceled" | "expired" | null
+            tier: string
+            status: string | null
             ends_at: string | null
             created_at: string
         }[]

@@ -301,8 +301,8 @@ const ExploreSection: React.FC<ExploreSectionProps> = ({ language, userTier, use
             return (
                 <>
                     <header className="text-center mb-8 md:mb-12">
-                        <h1 className="text-3xl md:text-4xl font-extrabold text-white">القصص</h1>
-                        <p className="text-base md:text-lg text-gray-300 mt-2">اختر نوعاً واستمع لقصص باللغة {language.name} مولدة بالذكاء الاصطناعي.</p>
+                        <h1 className="text-3xl md:text-4xl font-extrabold text-white">الكتب الصوتية</h1>
+                        <p className="text-base md:text-lg text-gray-300 mt-2">اختر نوعاً واستمع لقصص قصيرة باللغة {language.name} مولدة بالذكاء الاصطناعي.</p>
                     </header>
                     
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">

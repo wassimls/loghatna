@@ -1,80 +1,6 @@
+
 import React, { useState } from 'react';
 import { speak } from '../../services/audioService';
-import * as soundService from '../../services/soundService';
-
-// --- Exercise Component ---
-const Exercise: React.FC<{
-    question: string;
-    options: string[];
-    correctAnswer: string;
-}> = ({ question, options, correctAnswer }) => {
-    const [selectedOption, setSelectedOption] = useState<string | null>(null);
-    const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
-
-    const handleOptionClick = (option: string) => {
-        if (selectedOption) return;
-        setSelectedOption(option);
-        if (option === correctAnswer) {
-            setFeedback('correct');
-            soundService.playCorrectSound();
-        } else {
-            setFeedback('incorrect');
-            soundService.playIncorrectSound();
-        }
-    };
-
-    const resetExercise = () => {
-        setSelectedOption(null);
-        setFeedback(null);
-        soundService.playGenericClick();
-    };
-
-    const getOptionClass = (option: string) => {
-        if (!selectedOption) {
-            return 'bg-dark/70 hover:bg-primary/70';
-        }
-        if (option === correctAnswer) {
-            return 'bg-green-500/80';
-        }
-        if (option === selectedOption && option !== correctAnswer) {
-            return 'bg-red-500/80';
-        }
-        return 'bg-dark/50 opacity-60';
-    };
-
-    return (
-        <div className="mt-8 pt-6 border-t-2 border-dashed border-white/10">
-            <h4 className="text-xl font-bold text-secondary mb-4 text-center">
-                <i className="fas fa-question-circle mr-2"></i>
-                اختبر فهمك
-            </h4>
-            <div className="bg-dark/70 p-6 rounded-lg text-center mb-4">
-                <p className="text-lg text-white font-semibold dir-ltr">{question}</p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {options.map((option, index) => (
-                    <button
-                        key={index}
-                        onClick={() => handleOptionClick(option)}
-                        disabled={!!selectedOption}
-                        className={`p-4 rounded-lg text-white font-bold transition-colors duration-300 ${getOptionClass(option)}`}
-                    >
-                        {option}
-                    </button>
-                ))}
-            </div>
-            {selectedOption && (
-                <div className="text-center mt-4">
-                    <button onClick={resetExercise} className="btn bg-secondary text-dark py-2 px-6 rounded-full font-bold">
-                        <i className="fas fa-sync-alt mr-2"></i>
-                        حاول مرة أخرى
-                    </button>
-                </div>
-            )}
-        </div>
-    );
-};
-
 
 // --- Data for the component ---
 const germanGrammarContent = {
@@ -92,12 +18,7 @@ const germanGrammarContent = {
                         { en: 'die Frau', ar: 'المرأة (مؤنث)' },
                         { en: 'das Kind', ar: 'الطفل (محايد)' },
                     ],
-                    tip: 'لا توجد قاعدة صارمة لتحديد جنس الاسم دائمًا، لذا من الأفضل حفظ كل اسم مع أداته.',
-                     exercise: {
-                        question: 'اختر الأداة الصحيحة لكلمة "Tisch" (طاولة):',
-                        options: ['der', 'die', 'das'],
-                        correctAnswer: 'der',
-                    }
+                    tip: 'لا توجد قاعدة صارمة لتحديد جنس الاسم دائمًا، لذا من الأفضل حفظ كل اسم مع أداته.'
                 },
                 {
                     title: 'أدوات التعريف النكرة (Ein, Eine)',
@@ -108,12 +29,7 @@ const germanGrammarContent = {
                         { en: 'eine Lampe', ar: 'مصباح (مؤنث)' },
                         { en: 'ein Buch', ar: 'كتاب (محايد)' },
                     ],
-                    tip: 'في حالة النفي، نستخدم "kein" للمذكر والمحايد، و "keine" للمؤنث والجمع.',
-                     exercise: {
-                        question: 'اختر الأداة الصحيحة لكلمة "Katze" (قطة):',
-                        options: ['ein', 'eine', 'einen'],
-                        correctAnswer: 'eine',
-                    }
+                    tip: 'في حالة النفي، نستخدم "kein" للمذكر والمحايد، و "keine" للمؤنث والجمع.'
                 },
             ]
         },
@@ -129,12 +45,7 @@ const germanGrammarContent = {
                         { en: 'Der Hund schläft.', ar: 'الكلبُ ينام. (من ينام؟ الكلب)' },
                         { en: 'Das Auto ist neu.', ar: 'السيارةُ جديدة. (ما هو الجديد؟ السيارة)' },
                     ],
-                    tip: 'فاعل الجملة دائمًا في حالة الرفع.',
-                     exercise: {
-                        question: 'في جملة "Die Frau liest"، كلمة "Die Frau" في أي حالة؟',
-                        options: ['Nominativ', 'Akkusativ', 'Dativ'],
-                        correctAnswer: 'Nominativ',
-                    }
+                    tip: 'فاعل الجملة دائمًا في حالة الرفع.'
                 },
                  {
                     title: 'حالة النصب (Akkusativ)',
@@ -144,12 +55,7 @@ const germanGrammarContent = {
                         { en: 'Ich sehe den Hund.', ar: 'أنا أرى الكلبَ. (ماذا أرى؟ الكلب)' },
                         { en: 'Sie kauft eine Tasche.', ar: 'هي تشتري حقيبةً.' },
                     ],
-                    tip: 'التغيير الأوضح يحدث في الأدوات المذكرة: "der" تصبح "den"، و "ein" تصبح "einen". المؤنث والمحايد لا يتغيران في حالة النصب.',
-                    exercise: {
-                        question: 'أكمل الجملة: "Ich habe ___ Stift." (قلم)',
-                        options: ['ein', 'eine', 'einen'],
-                        correctAnswer: 'einen',
-                    }
+                    tip: 'التغيير الأوضح يحدث في الأدوات المذكرة: "der" تصبح "den"، و "ein" تصبح "einen". المؤنث والمحايد لا يتغيران في حالة النصب.'
                 }
             ]
         },
@@ -166,12 +72,7 @@ const germanGrammarContent = {
                         { en: 'Du lernst Deutsch.', ar: 'أنت تتعلم الألمانية.' },
                         { en: 'Wir wohnen in Berlin.', ar: 'نحن نسكن في برلين.' },
                     ],
-                    tip: 'انتبه للأفعال الشاذة القوية التي يتغير فيها حرف العلة في الجذر مع الضمائر "du" و "er/sie/es" (مثال: ich fahre, du fährst).',
-                    exercise: {
-                        question: 'اختر التصريف الصحيح للفعل "sprechen" مع "er":',
-                        options: ['spreche', 'sprichst', 'spricht', 'sprechen'],
-                        correctAnswer: 'spricht',
-                    }
+                    tip: 'انتبه للأفعال الشاذة القوية التي يتغير فيها حرف العلة في الجذر مع الضمائر "du" و "er/sie/es" (مثال: ich fahre, du fährst).'
                 },
                 {
                     title: 'الفعل في المرتبة الثانية (Verb-Zweit-Stellung)',
@@ -181,12 +82,7 @@ const germanGrammarContent = {
                         { en: 'Ich lerne heute Deutsch.', ar: 'أنا أتعلم اليوم الألمانية.' },
                         { en: 'Heute lerne ich Deutsch.', ar: 'اليوم أتعلم أنا الألمانية. (الفعل "lerne" بقي في المرتبة الثانية)' },
                     ],
-                    tip: 'هذه واحدة من أهم قواعد بناء الجملة في اللغة الألمانية. حتى لو بدأت الجملة بظرف زمان أو مكان، الفعل يبقى ثانيًا.',
-                    exercise: {
-                        question: 'أي جملة صحيحة نحوياً؟',
-                        options: ['Morgen ich gehe ins Kino.', 'Ich gehe morgen ins Kino.', 'Ins Kino ich gehe morgen.'],
-                        correctAnswer: 'Ich gehe morgen ins Kino.',
-                    }
+                    tip: 'هذه واحدة من أهم قواعد بناء الجملة في اللغة الألمانية. حتى لو بدأت الجملة بظرف زمان أو مكان، الفعل يبقى ثانيًا.'
                 }
             ]
         }
@@ -229,14 +125,6 @@ const TopicContent: React.FC<{ topic: Topic }> = ({ topic }) => (
                 <p className="text-yellow-300 font-bold flex items-center gap-2"><i className="fas fa-star"></i>نصيحة:</p>
                 <p className="text-gray-300 mt-2">{topic.tip}</p>
             </div>
-        )}
-        
-        {topic.exercise && (
-            <Exercise
-                question={topic.exercise.question}
-                options={topic.exercise.options}
-                correctAnswer={topic.exercise.correctAnswer}
-            />
         )}
     </div>
 );

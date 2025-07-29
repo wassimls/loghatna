@@ -1,8 +1,37 @@
-import { Type, GenerateContentResponse } from "@google/genai";
-import { ai } from './geminiClient.ts';
+
+import { GoogleGenAI, Type, GenerateContentResponse } from "@google/genai";
 import { GamesCollection, ChatMessage, PlacementTestQuestion } from '../types.ts';
 
-const GEMINI_MODEL = 'gemini-2.5-flash';
+// State for round-robin key selection.
+// In a client-side context, this state persists for the duration of the user's session in the browser tab.
+let keyIndex = 0;
+
+/**
+ * Selects an API key from a comma-separated list in environment variables
+ * using a round-robin strategy and initializes a Gemini client.
+ * @returns {GoogleGenAI} An initialized GoogleGenAI client instance.
+ */
+const getAiClient = (): GoogleGenAI => {
+    // 1. Get API keys from environment variables.
+    const geminiApiKeys = process.env.API_KEY!;
+    if (!geminiApiKeys) {
+        throw new Error('لم يتم العثور على متغير بيئة مفتاح API. الرجاء التأكد من تكوينه.');
+    }
+    
+    // 2. Split the string into an array of keys, trimming whitespace and removing empty entries.
+    const keys = geminiApiKeys.split(',').map(k => k.trim()).filter(Boolean);
+    if (keys.length === 0) {
+        throw new Error('لم يتم العثور على مفاتيح API صالحة في متغير البيئة.');
+    }
+
+    // 3. Select an API key using a round-robin strategy.
+    const apiKey = keys[keyIndex];
+    keyIndex = (keyIndex + 1) % keys.length; // Move to the next key for the subsequent call.
+
+    // 4. Initialize and return the Gemini AI client with the selected key.
+    return new GoogleGenAI({ apiKey });
+};
+
 
 /**
  * Parses a JSON string from the model response, handling potential markdown code fences.
@@ -28,6 +57,9 @@ const parseJsonResponse = <T>(jsonString: string): T | null => {
 };
 
 export const generateGamesForLanguage = async (language: string): Promise<GamesCollection | null> => {
+    const ai = getAiClient(); // Get a client for this request
+    const GEMINI_MODEL = 'gemini-2.5-flash';
+
     const systemInstruction = `You are a creative game designer. Your response MUST be a single, valid, minified JSON object with a 'games' key for an Arabic-speaking audience. All titles and descriptions must be in Arabic. Adhere strictly to JSON format rules.`;
     const userPrompt = `
         Generate a collection of THREE DIFFERENT mini-games for learning "${language}".
@@ -47,7 +79,7 @@ export const generateGamesForLanguage = async (language: string): Promise<GamesC
     `;
 
     try {
-        const response: GenerateContentResponse = await ai.models.generateContent({
+        const response = await ai.models.generateContent({
             model: GEMINI_MODEL,
             contents: userPrompt,
             config: {
@@ -55,6 +87,7 @@ export const generateGamesForLanguage = async (language: string): Promise<GamesC
                 responseMimeType: "application/json",
             }
         });
+        
         const content = response.text;
         return parseJsonResponse<GamesCollection>(content);
     } catch (error) {
@@ -67,21 +100,25 @@ export const generateGamesForLanguage = async (language: string): Promise<GamesC
 };
 
 export async function* streamChatResponse(history: ChatMessage[], systemInstruction: string): AsyncGenerator<string> {
+    const ai = getAiClient(); // Get a client for this request
+    const contents = history.map(msg => ({
+        role: msg.role,
+        parts: [{ text: msg.text }]
+    }));
+
     try {
         const responseStream = await ai.models.generateContentStream({
-            model: GEMINI_MODEL,
-            contents: history.map(msg => ({
-                role: msg.role,
-                parts: [{ text: msg.text }]
-            })),
+            model: 'gemini-2.5-flash',
+            contents: contents,
             config: { systemInstruction },
         });
 
         for await (const chunk of responseStream) {
             yield chunk.text;
         }
+
     } catch (error) {
-        console.error("Error streaming chat response with Gemini:", error);
+        console.error("Error streaming chat response from Gemini:", error);
         if (error instanceof Error) {
             throw new Error(`حدث خطأ أثناء الدردشة مع الذكاء الاصطناعي: ${error.message}`);
         }
@@ -90,15 +127,19 @@ export async function* streamChatResponse(history: ChatMessage[], systemInstruct
 }
 
 export const translateText = async (text: string, sourceLang: string, targetLang: string): Promise<string> => {
+    const ai = getAiClient(); // Get a client for this request
+    const GEMINI_MODEL = 'gemini-2.5-flash';
+
     const systemInstruction = `You are an expert translator. Provide ONLY the direct translation of the user's text, with no extra commentary, explanations, or quotation marks.`;
     const userPrompt = `Translate the following text from ${sourceLang} to ${targetLang}:\n\n"${text}"`;
 
     try {
-        const response: GenerateContentResponse = await ai.models.generateContent({
+        const response = await ai.models.generateContent({
             model: GEMINI_MODEL,
             contents: userPrompt,
             config: { systemInstruction }
         });
+        
         return response.text.trim();
     } catch (error) {
         console.error(`Error translating text with Gemini:`, error);
@@ -114,6 +155,9 @@ export const getPronunciationFeedback = async (
     userTranscript: string, 
     languageName: string
 ): Promise<{ score: number; feedback: string; }> => {
+    const ai = getAiClient(); // Get a client for this request
+    const GEMINI_MODEL = 'gemini-2.5-flash';
+
     const systemInstruction = `You are a language pronunciation coach for an Arabic-speaking user learning ${languageName}.
     Your task is to compare the user's spoken transcription to the original target sentence.
     Provide a score from 0 to 10 based on how closely the transcription matches the target sentence in terms of wording and structure.
@@ -143,7 +187,7 @@ export const getPronunciationFeedback = async (
     };
 
     try {
-        const response: GenerateContentResponse = await ai.models.generateContent({
+        const response = await ai.models.generateContent({
             model: GEMINI_MODEL,
             contents: userPrompt,
             config: {
@@ -152,6 +196,7 @@ export const getPronunciationFeedback = async (
                 responseSchema: schema,
             }
         });
+
         const content = response.text;
         const parsedResult = parseJsonResponse<{ score: number; feedback: string; }>(content);
 
@@ -162,7 +207,7 @@ export const getPronunciationFeedback = async (
         return parsedResult;
 
     } catch (error) {
-        console.error("Error getting pronunciation feedback with Gemini:", error);
+        console.error("Error getting pronunciation feedback from Gemini:", error);
         if (error instanceof Error) {
             throw new Error(`حدث خطأ أثناء تقييم النطق: ${error.message}`);
         }
@@ -174,6 +219,9 @@ export const generateAudioStory = async (
     languageName: string,
     genre: string
 ): Promise<string | null> => {
+    const ai = getAiClient(); // Get a client for this request
+    const GEMINI_MODEL = 'gemini-2.5-flash';
+
     const systemInstruction = `You are a creative storyteller for language learners who are native Arabic speakers.
     Generate a short, simple story (around 100-150 words) in ${languageName}.
     The story must be easy to understand for a beginner to intermediate learner.
@@ -183,11 +231,12 @@ export const generateAudioStory = async (
     const userPrompt = `Please write a story in the "${genre}" genre.`;
 
     try {
-         const response: GenerateContentResponse = await ai.models.generateContent({
+        const response = await ai.models.generateContent({
             model: GEMINI_MODEL,
             contents: userPrompt,
             config: { systemInstruction }
         });
+        
         const story = response.text.trim();
         if (story && story.split(' ').length > 10) {
             return story;
@@ -204,6 +253,9 @@ export const generateAudioStory = async (
 
 
 export const generatePlacementTest = async (language: string): Promise<PlacementTestQuestion[] | null> => {
+    const ai = getAiClient(); // Get a client for this request
+    const GEMINI_MODEL = 'gemini-2.5-flash';
+
     const systemInstruction = `You are an expert language test creator for Arabic-speaking users. Your entire response MUST be a single, valid, minified JSON array of objects that strictly adheres to the provided schema. Do not use markdown.`;
     
     const userPrompt = `
@@ -235,7 +287,7 @@ export const generatePlacementTest = async (language: string): Promise<Placement
     };
 
     try {
-        const response: GenerateContentResponse = await ai.models.generateContent({
+        const response = await ai.models.generateContent({
             model: GEMINI_MODEL,
             contents: userPrompt,
             config: {
@@ -244,6 +296,7 @@ export const generatePlacementTest = async (language: string): Promise<Placement
                 responseSchema: schema
             }
         });
+        
         const questions = parseJsonResponse<PlacementTestQuestion[]>(response.text);
         if (questions && questions.length === 10 && questions.every(q => q.options.length > 1)) {
             return questions;
@@ -263,10 +316,15 @@ export const generateVideoScript = async (
     videoId: string,
     languageName: string
 ): Promise<string[] | null> => {
+    const ai = getAiClient(); // Get a client for this request
+    const GEMINI_MODEL = 'gemini-2.5-flash';
+
     const systemInstruction = `You are a helpful assistant that transcribes YouTube videos for language learners.
     Given a YouTube video ID, provide a simplified transcript of the first 2-3 sentences spoken in the video in ${languageName}.
     Your response MUST be a single, valid, minified JSON array of strings, where each string is a sentence.
     If you cannot get a transcript, return an empty array. Do not use markdown.`;
+
+    const userPrompt = `Generate a simplified script for the YouTube video with ID: ${videoId}`;
 
     const schema = {
         type: Type.ARRAY,
@@ -277,7 +335,7 @@ export const generateVideoScript = async (
     };
 
     try {
-        const response: GenerateContentResponse = await ai.models.generateContent({
+        const response = await ai.models.generateContent({
             model: GEMINI_MODEL,
             contents: `Create a plausible, simple 3-sentence script in ${languageName} for a video about daily life. The video ID is just a placeholder.`,
             config: {
@@ -286,6 +344,7 @@ export const generateVideoScript = async (
                 responseSchema: schema
             }
         });
+
         const script = parseJsonResponse<string[]>(response.text);
         if (script && script.length > 0) {
             return script;

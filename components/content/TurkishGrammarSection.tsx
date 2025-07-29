@@ -1,80 +1,6 @@
+
 import React, { useState } from 'react';
 import { speak } from '../../services/audioService';
-import * as soundService from '../../services/soundService';
-
-// --- Exercise Component ---
-const Exercise: React.FC<{
-    question: string;
-    options: string[];
-    correctAnswer: string;
-}> = ({ question, options, correctAnswer }) => {
-    const [selectedOption, setSelectedOption] = useState<string | null>(null);
-    const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
-
-    const handleOptionClick = (option: string) => {
-        if (selectedOption) return;
-        setSelectedOption(option);
-        if (option === correctAnswer) {
-            setFeedback('correct');
-            soundService.playCorrectSound();
-        } else {
-            setFeedback('incorrect');
-            soundService.playIncorrectSound();
-        }
-    };
-
-    const resetExercise = () => {
-        setSelectedOption(null);
-        setFeedback(null);
-        soundService.playGenericClick();
-    };
-
-    const getOptionClass = (option: string) => {
-        if (!selectedOption) {
-            return 'bg-dark/70 hover:bg-primary/70';
-        }
-        if (option === correctAnswer) {
-            return 'bg-green-500/80';
-        }
-        if (option === selectedOption && option !== correctAnswer) {
-            return 'bg-red-500/80';
-        }
-        return 'bg-dark/50 opacity-60';
-    };
-
-    return (
-        <div className="mt-8 pt-6 border-t-2 border-dashed border-white/10">
-            <h4 className="text-xl font-bold text-secondary mb-4 text-center">
-                <i className="fas fa-question-circle mr-2"></i>
-                اختبر فهمك
-            </h4>
-            <div className="bg-dark/70 p-6 rounded-lg text-center mb-4">
-                <p className="text-lg text-white font-semibold dir-ltr">{question}</p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {options.map((option, index) => (
-                    <button
-                        key={index}
-                        onClick={() => handleOptionClick(option)}
-                        disabled={!!selectedOption}
-                        className={`p-4 rounded-lg text-white font-bold transition-colors duration-300 ${getOptionClass(option)}`}
-                    >
-                        {option}
-                    </button>
-                ))}
-            </div>
-            {selectedOption && (
-                <div className="text-center mt-4">
-                    <button onClick={resetExercise} className="btn bg-secondary text-dark py-2 px-6 rounded-full font-bold">
-                        <i className="fas fa-sync-alt mr-2"></i>
-                        حاول مرة أخرى
-                    </button>
-                </div>
-            )}
-        </div>
-    );
-};
-
 
 // --- Data for the component ---
 const turkishGrammarContent = {
@@ -92,12 +18,7 @@ const turkishGrammarContent = {
                         { en: 'okul-da (في المدرسة)', ar: 'okul (u خلفي) -> da (a خلفي)' },
                         { en: 'göz-lük (نظارات)', ar: 'göz (ö أمامي) -> lük (ü أمامي)' },
                     ],
-                    tip: 'إتقان الانسجام الصوتي هو مفتاح التحدث باللغة التركية بشكل طبيعي وصحيح.',
-                    exercise: {
-                        question: 'أي لاحقة جمع تناسب كلمة "araba" (سيارة)؟',
-                        options: ['-ler', '-lar'],
-                        correctAnswer: '-lar',
-                    }
+                    tip: 'إتقان الانسجام الصوتي هو مفتاح التحدث باللغة التركية بشكل طبيعي وصحيح.'
                 },
                 {
                     title: 'الإلصاق (Ekler - Agglutination)',
@@ -109,12 +30,7 @@ const turkishGrammarContent = {
                         { en: 'gözlük-çü (بائع نظارات)', ar: 'لاحقة المهنة' },
                         { en: 'gözlükçü-lük (مهنة بيع النظارات)', ar: 'لاحقة اسم المهنة' },
                     ],
-                    tip: 'فهم وظيفة كل لاحقة يساعدك على تفكيك وفهم الكلمات الطويلة والمعقدة.',
-                     exercise: {
-                        question: 'ما هو جذر كلمة "kitaplarım" (كتبي)؟',
-                        options: ['kitaplar', 'kitap', 'larım', 'kitapları'],
-                        correctAnswer: 'kitap',
-                    }
+                    tip: 'فهم وظيفة كل لاحقة يساعدك على تفكيك وفهم الكلمات الطويلة والمعقدة.'
                 },
             ]
         },
@@ -132,12 +48,7 @@ const turkishGrammarContent = {
                         { en: 'ev -> evler', ar: 'منزل -> منازل' },
                         { en: 'göz -> gözler', ar: 'عين -> عيون' },
                     ],
-                    tip: 'عند استخدام أرقام مع الأسماء، لا يتم استخدام لاحقة الجمع. مثال: "üç kitap" (ثلاثة كتب) وليس "üç kitaplar".',
-                     exercise: {
-                        question: 'كيف تقول "ثلاثة رجال" بالتركية؟',
-                        options: ['üç adamlar', 'üç adam', 'üç adams'],
-                        correctAnswer: 'üç adam',
-                    }
+                    tip: 'عند استخدام أرقام مع الأسماء، لا يتم استخدام لاحقة الجمع. مثال: "üç kitap" (ثلاثة كتب) وليس "üç kitaplar".'
                 },
                 {
                     title: 'حالات الأسماء (İsmin Hâlleri)',
@@ -149,12 +60,7 @@ const turkishGrammarContent = {
                         { en: 'Kitab-ı okudum.', ar: 'قرأتُ الكتاب. (-ı: المفعول به المحدد)' },
                         { en: 'Okul-dan geliyorum.', ar: 'أنا قادم من المدرسة. (-dan: من)' },
                     ],
-                    tip: 'انتبه لتغير الحرف الساكن الأخير (k, t, ç, p) عند إضافة لاحقة تبدأ بحرف علة.',
-                    exercise: {
-                        question: 'اختر اللاحقة الصحيحة: "Ben İstanbul___ yaşıyorum." (أنا أعيش في اسطنبول)',
-                        options: ['-a', '-dan', '-ı', '-da'],
-                        correctAnswer: '-da',
-                    }
+                    tip: 'انتبه لتغير الحرف الساكن الأخير (k, t, ç, p) عند إضافة لاحقة تبدأ بحرف علة.'
                 }
             ]
         },
@@ -171,12 +77,7 @@ const turkishGrammarContent = {
                         { en: 'O okuyor.', ar: 'هو يقرأ.' },
                         { en: 'Biz çalışıyoruz.', ar: 'نحن نعمل.' },
                     ],
-                    tip: 'الفعل في المصدر ينتهي بـ -mak أو -mek. نحذفها قبل إضافة لاحقة الزمن.',
-                     exercise: {
-                        question: 'كيف تقول "أنت تأتي" بالتركية؟',
-                        options: ['geliyorum', 'geliyor', 'geliyorsun', 'geliyoruz'],
-                        correctAnswer: 'geliyorsun',
-                    }
+                    tip: 'الفعل في المصدر ينتهي بـ -mak أو -mek. نحذفها قبل إضافة لاحقة الزمن.'
                 },
                 {
                     title: 'الماضي المعرف (Geçmiş Zaman)',
@@ -187,12 +88,7 @@ const turkishGrammarContent = {
                         { en: 'O gördü.', ar: 'هو رأى.' },
                         { en: 'Biz konuştuk.', ar: 'نحن تحدثنا.' },
                     ],
-                    tip: 'انتبه لقاعدة "fıstıkçı şahap" حيث تتحول d إلى t بعد الحروف الساكنة (f, s, t, k, ç, ş, h, p).',
-                     exercise: {
-                        question: 'ما هو تصريف الفعل "yapmak" (يفعل) في الماضي مع "onlar" (هم)؟',
-                        options: ['yaptı', 'yaptım', 'yaptılar', 'yaptık'],
-                        correctAnswer: 'yaptılar',
-                    }
+                    tip: 'انتبه لقاعدة "fıstıkçı şahap" حيث تتحول d إلى t بعد الحروف الساكنة (f, s, t, k, ç, ş, h, p).'
                 },
                  {
                     title: 'المستقبل (Gelecek Zaman)',
@@ -203,12 +99,7 @@ const turkishGrammarContent = {
                         { en: 'O gelecek.', ar: 'هو سيأتي.' },
                         { en: 'Biz göreceğiz.', ar: 'سوف نرى.' },
                     ],
-                    tip: 'حرف "k" في اللاحقة يخفف إلى "ğ" عندما يليه حرف علة في ضمائر "أنا" و "نحن".',
-                     exercise: {
-                        question: 'كيف تقول "سوف تذهب" (أنت)؟',
-                        options: ['gideceğim', 'gidecek', 'gideceksin', 'gideceğiz'],
-                        correctAnswer: 'gideceksin',
-                    }
+                    tip: 'حرف "k" في اللاحقة يخفف إلى "ğ" عندما يليه حرف علة في ضمائر "أنا" و "نحن".'
                 },
             ]
         }
@@ -251,14 +142,6 @@ const TopicContent: React.FC<{ topic: Topic }> = ({ topic }) => (
                 <p className="text-yellow-300 font-bold flex items-center gap-2"><i className="fas fa-star"></i>نصيحة:</p>
                 <p className="text-gray-300 mt-2">{topic.tip}</p>
             </div>
-        )}
-        
-        {topic.exercise && (
-            <Exercise
-                question={topic.exercise.question}
-                options={topic.exercise.options}
-                correctAnswer={topic.exercise.correctAnswer}
-            />
         )}
     </div>
 );

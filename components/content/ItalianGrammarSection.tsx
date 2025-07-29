@@ -1,80 +1,6 @@
+
 import React, { useState } from 'react';
 import { speak } from '../../services/audioService';
-import * as soundService from '../../services/soundService';
-
-// --- Exercise Component ---
-const Exercise: React.FC<{
-    question: string;
-    options: string[];
-    correctAnswer: string;
-}> = ({ question, options, correctAnswer }) => {
-    const [selectedOption, setSelectedOption] = useState<string | null>(null);
-    const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
-
-    const handleOptionClick = (option: string) => {
-        if (selectedOption) return;
-        setSelectedOption(option);
-        if (option === correctAnswer) {
-            setFeedback('correct');
-            soundService.playCorrectSound();
-        } else {
-            setFeedback('incorrect');
-            soundService.playIncorrectSound();
-        }
-    };
-
-    const resetExercise = () => {
-        setSelectedOption(null);
-        setFeedback(null);
-        soundService.playGenericClick();
-    };
-
-    const getOptionClass = (option: string) => {
-        if (!selectedOption) {
-            return 'bg-dark/70 hover:bg-primary/70';
-        }
-        if (option === correctAnswer) {
-            return 'bg-green-500/80';
-        }
-        if (option === selectedOption && option !== correctAnswer) {
-            return 'bg-red-500/80';
-        }
-        return 'bg-dark/50 opacity-60';
-    };
-
-    return (
-        <div className="mt-8 pt-6 border-t-2 border-dashed border-white/10">
-            <h4 className="text-xl font-bold text-secondary mb-4 text-center">
-                <i className="fas fa-question-circle mr-2"></i>
-                اختبر فهمك
-            </h4>
-            <div className="bg-dark/70 p-6 rounded-lg text-center mb-4">
-                <p className="text-lg text-white font-semibold dir-ltr">{question}</p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {options.map((option, index) => (
-                    <button
-                        key={index}
-                        onClick={() => handleOptionClick(option)}
-                        disabled={!!selectedOption}
-                        className={`p-4 rounded-lg text-white font-bold transition-colors duration-300 ${getOptionClass(option)}`}
-                    >
-                        {option}
-                    </button>
-                ))}
-            </div>
-            {selectedOption && (
-                <div className="text-center mt-4">
-                    <button onClick={resetExercise} className="btn bg-secondary text-dark py-2 px-6 rounded-full font-bold">
-                        <i className="fas fa-sync-alt mr-2"></i>
-                        حاول مرة أخرى
-                    </button>
-                </div>
-            )}
-        </div>
-    );
-};
-
 
 // --- Data for the component ---
 const italianGrammarContent = {
@@ -93,12 +19,7 @@ const italianGrammarContent = {
                         { en: 'un ragazzo', ar: 'ولد (مذكر)' },
                         { en: 'una ragazza', ar: 'بنت (مؤنث)' },
                     ],
-                    tip: 'هناك استثناءات، مثل "il problema" (مذكر) أو "la mano" (مؤنث). الحفظ والممارسة هما المفتاح.',
-                     exercise: {
-                        question: 'كلمة "tavolo" (طاولة) هي:',
-                        options: ['مذكر', 'مؤنث', 'محايد'],
-                        correctAnswer: 'مذكر',
-                    }
+                    tip: 'هناك استثناءات، مثل "il problema" (مذكر) أو "la mano" (مؤنث). الحفظ والممارسة هما المفتاح.'
                 },
                 {
                     title: 'أدوات التعريف المعرفة (Gli Articoli Determinativi)',
@@ -112,12 +33,7 @@ const italianGrammarContent = {
                         { en: 'gli alberi', ar: 'الأشجار' },
                         { en: 'le case', ar: 'المنازل' },
                     ],
-                    tip: 'استخدم "lo" و "gli" مع الأسماء المذكرة التي تبدأ بـ s + ساكن, z, y, ps, gn.',
-                    exercise: {
-                        question: 'اختر الأداة الصحيحة لكلمة "zaino" (حقيبة ظهر):',
-                        options: ['il', 'l\'', 'lo', 'i'],
-                        correctAnswer: 'lo',
-                    }
+                    tip: 'استخدم "lo" و "gli" مع الأسماء المذكرة التي تبدأ بـ s + ساكن, z, y, ps, gn.'
                 },
                 {
                     title: 'أدوات التعريف النكرة (Gli Articoli Indeterminativi)',
@@ -129,12 +45,7 @@ const italianGrammarContent = {
                         { en: 'C\'è uno zaino.', ar: 'هناك حقيبة ظهر.' },
                         { en: 'È un\'idea interessante.', ar: 'إنها فكرة مثيرة للاهتمام.' },
                     ],
-                    tip: 'استخدم "uno" قبل الأسماء المذكرة التي تبدأ بـ s + ساكن, z, y, ps, gn، و "un\'" قبل الأسماء المؤنثة التي تبدأ بحرف علة.',
-                     exercise: {
-                        question: 'اختر الأداة الصحيحة لكلمة "amica" (صديقة):',
-                        options: ['un', 'una', 'un\'', 'uno'],
-                        correctAnswer: 'un\'',
-                    }
+                    tip: 'استخدم "uno" قبل الأسماء المذكرة التي تبدأ بـ s + ساكن, z, y, ps, gn، و "un\'" قبل الأسماء المؤنثة التي تبدأ بحرف علة.'
                 },
             ]
         },
@@ -151,12 +62,7 @@ const italianGrammarContent = {
                         { en: 'Tu leggi un libro.', ar: 'أنت تقرأ كتاباً.' },
                         { en: 'Lei dorme.', ar: 'هي تنام.' },
                     ],
-                    tip: 'تعلم تصريفات الأفعال الشاذة الشائعة (essere, avere, andare, fare) هو أمر أساسي ومهم جداً.',
-                    exercise: {
-                        question: 'أكمل الجملة: Noi ___ a Roma.',
-                        options: ['andiamo', 'andate', 'vado', 'va'],
-                        correctAnswer: 'andiamo',
-                    }
+                    tip: 'تعلم تصريفات الأفعال الشاذة الشائعة (essere, avere, andare, fare) هو أمر أساسي ومهم جداً.'
                 },
                 {
                     title: 'الماضي القريب (Passato Prossimo)',
@@ -167,12 +73,7 @@ const italianGrammarContent = {
                         { en: 'Lei è andata al cinema.', ar: 'هي ذهبت إلى السينما.' },
                         { en: 'Abbiamo visto un film.', ar: 'شاهدنا فيلماً.' },
                     ],
-                    tip: 'معظم الأفعال تستخدم "avere" كفعل مساعد. الأفعال التي تصف الحركة أو تغير الحالة تستخدم "essere" ويتطابق اسم المفعول مع الفاعل في الجنس والعدد.',
-                    exercise: {
-                        question: 'أكمل الجملة: Ieri, io ___ un libro.',
-                        options: ['ho letto', 'sono letto', 'hai letto', 'sei letto'],
-                        correctAnswer: 'ho letto',
-                    }
+                    tip: 'معظم الأفعال تستخدم "avere" كفعل مساعد. الأفعال التي تصف الحركة أو تغير الحالة تستخدم "essere" ويتطابق اسم المفعول مع الفاعل في الجنس والعدد.'
                 },
                 {
                     title: 'المستقبل البسيط (Futuro Semplice)',
@@ -182,12 +83,7 @@ const italianGrammarContent = {
                         { en: 'Domani visiterò il museo.', ar: 'غداً، سأزور المتحف.' },
                         { en: 'Finiremo questo progetto.', ar: 'سوف ننهي هذا المشروع.' },
                     ],
-                    tip: 'هناك بعض الأفعال الشاذة في المستقبل مثل essere (sar-), avere (avr-), andare (andr-), fare (far-).',
-                     exercise: {
-                        question: 'أكمل الجملة: L\'anno prossimo, lui ___ in Italia.',
-                        options: ['viaggerà', 'viaggia', 'ha viaggiato', 'viaggiava'],
-                        correctAnswer: 'viaggerà',
-                    }
+                    tip: 'هناك بعض الأفعال الشاذة في المستقبل مثل essere (sar-), avere (avr-), andare (andr-), fare (far-).'
                 },
             ]
         },
@@ -203,12 +99,7 @@ const italianGrammarContent = {
                         { en: 'Io non parlo tedesco.', ar: 'أنا لا أتحدث الألمانية.' },
                         { en: 'Lui non ama il caffè.', ar: 'هو لا يحب القهوة.' },
                     ],
-                    tip: 'بسيطة ومباشرة، "non" هي الكلمة الأساسية للنفي.',
-                    exercise: {
-                        question: 'حوّل الجملة إلى النفي: "Mi piace la pasta."',
-                        options: ['Non mi piace la pasta.', 'Mi non piace la pasta.', 'Mi piace non la pasta.', 'La pasta non mi piace.'],
-                        correctAnswer: 'Non mi piace la pasta.',
-                    }
+                    tip: 'بسيطة ومباشرة، "non" هي الكلمة الأساسية للنفي.'
                 },
                 {
                     title: 'الصفات (Gli Aggettivi)',
@@ -219,12 +110,7 @@ const italianGrammarContent = {
                         { en: 'una macchina rossa', ar: 'سيارة حمراء' },
                         { en: 'libri interessanti', ar: 'كتب مثيرة للاهتمام' },
                     ],
-                    tip: 'بعض الصفات الشائعة (مثل bello, grande, piccolo, buono) يمكن أن تأتي قبل الاسم.',
-                     exercise: {
-                        question: 'اختر الصيغة الصحيحة: "Ho una casa ___."',
-                        options: ['grande', 'grandi', 'granda', 'grando'],
-                        correctAnswer: 'grande',
-                    }
+                    tip: 'بعض الصفات الشائعة (مثل bello, grande, piccolo, buono) يمكن أن تأتي قبل الاسم.'
                 }
             ]
         }
@@ -267,14 +153,6 @@ const TopicContent: React.FC<{ topic: Topic }> = ({ topic }) => (
                 <p className="text-yellow-300 font-bold flex items-center gap-2"><i className="fas fa-star"></i>نصيحة:</p>
                 <p className="text-gray-300 mt-2">{topic.tip}</p>
             </div>
-        )}
-        
-        {topic.exercise && (
-            <Exercise
-                question={topic.exercise.question}
-                options={topic.exercise.options}
-                correctAnswer={topic.exercise.correctAnswer}
-            />
         )}
     </div>
 );

@@ -1,80 +1,6 @@
+
 import React, { useState } from 'react';
 import { speak } from '../../services/audioService';
-import * as soundService from '../../services/soundService';
-
-// --- Exercise Component ---
-const Exercise: React.FC<{
-    question: string;
-    options: string[];
-    correctAnswer: string;
-}> = ({ question, options, correctAnswer }) => {
-    const [selectedOption, setSelectedOption] = useState<string | null>(null);
-    const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
-
-    const handleOptionClick = (option: string) => {
-        if (selectedOption) return;
-        setSelectedOption(option);
-        if (option === correctAnswer) {
-            setFeedback('correct');
-            soundService.playCorrectSound();
-        } else {
-            setFeedback('incorrect');
-            soundService.playIncorrectSound();
-        }
-    };
-
-    const resetExercise = () => {
-        setSelectedOption(null);
-        setFeedback(null);
-        soundService.playGenericClick();
-    };
-
-    const getOptionClass = (option: string) => {
-        if (!selectedOption) {
-            return 'bg-dark/70 hover:bg-primary/70';
-        }
-        if (option === correctAnswer) {
-            return 'bg-green-500/80';
-        }
-        if (option === selectedOption && option !== correctAnswer) {
-            return 'bg-red-500/80';
-        }
-        return 'bg-dark/50 opacity-60';
-    };
-
-    return (
-        <div className="mt-8 pt-6 border-t-2 border-dashed border-white/10">
-            <h4 className="text-xl font-bold text-secondary mb-4 text-center">
-                <i className="fas fa-question-circle mr-2"></i>
-                اختبر فهمك
-            </h4>
-            <div className="bg-dark/70 p-6 rounded-lg text-center mb-4">
-                <p className="text-lg text-white font-semibold dir-ltr">{question}</p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {options.map((option, index) => (
-                    <button
-                        key={index}
-                        onClick={() => handleOptionClick(option)}
-                        disabled={!!selectedOption}
-                        className={`p-4 rounded-lg text-white font-bold transition-colors duration-300 ${getOptionClass(option)}`}
-                    >
-                        {option}
-                    </button>
-                ))}
-            </div>
-            {selectedOption && (
-                <div className="text-center mt-4">
-                    <button onClick={resetExercise} className="btn bg-secondary text-dark py-2 px-6 rounded-full font-bold">
-                        <i className="fas fa-sync-alt mr-2"></i>
-                        حاول مرة أخرى
-                    </button>
-                </div>
-            )}
-        </div>
-    );
-};
-
 
 // --- Data for the component ---
 const koreanGrammarContent = {
@@ -92,12 +18,7 @@ const koreanGrammarContent = {
                         { en: 'ㅏ, ㅑ, ㅓ, ㅕ, ㅗ...', ar: 'الحروف المتحركة' },
                         { en: '안 (an) + 녕 (nyeong) = 안녕 (annyeong)', ar: 'مرحباً' },
                     ],
-                    tip: 'تعلم هانغل أولاً سيجعل قراءة ونطق الكلمات الكورية أسهل بكثير.',
-                     exercise: {
-                        question: 'كيف تكتب مقطع "ga" بالهانغل؟',
-                        options: ['가', '나', '다', '라'],
-                        correctAnswer: '가',
-                    }
+                    tip: 'تعلم هانغل أولاً سيجعل قراءة ونطق الكلمات الكورية أسهل بكثير.'
                 },
                 {
                     title: 'بنية الجملة (SOV)',
@@ -107,12 +28,7 @@ const koreanGrammarContent = {
                         { en: '저는 밥을 먹어요. (jeoneun bab-eul meog-eoyo)', ar: 'أنا الأرز آكل. (أنا آكل الأرز)' },
                         { en: '그녀는 책을 읽어요. (geunyeoneun chaeg-eul ilg-eoyo)', ar: 'هي الكتاب تقرأ. (هي تقرأ الكتاب)' },
                     ],
-                    tip: 'تذكر دائماً أن الفعل يأتي في نهاية الجملة. هذا هو أهم اختلاف هيكلي يجب التعود عليه.',
-                    exercise: {
-                        question: 'أي جملة تتبع بنية SOV الصحيحة؟',
-                        options: ['저는 먹어요 밥을.', '밥을 저는 먹어요.', '저는 밥을 먹어요.'],
-                        correctAnswer: '저는 밥을 먹어요.',
-                    }
+                    tip: 'تذكر دائماً أن الفعل يأتي في نهاية الجملة. هذا هو أهم اختلاف هيكلي يجب التعود عليه.'
                 },
                  {
                     title: 'اللاحقات (조사 - Josa)',
@@ -122,12 +38,7 @@ const koreanGrammarContent = {
                         { en: '사과가 맛있어요. (sagwa-ga masisseoyo)', ar: 'التفاح لذيذ. (가: فاعل)' },
                         { en: '저는 사과를 먹어요. (jeoneun sagwa-reul meogeoyo)', ar: 'أنا آكل التفاح. (를: مفعول به)' },
                     ],
-                    tip: 'اختيار اللاحقة (مثلاً 은 أو 는) يعتمد على ما إذا كانت الكلمة التي تسبقها تنتهي بحرف ساكن أو علة.',
-                     exercise: {
-                        question: 'اختر اللاحقة الصحيحة للمفعول به: "책___ 읽어요."',
-                        options: ['이', '가', '은', '을'],
-                        correctAnswer: '을',
-                    }
+                    tip: 'اختيار اللاحقة (مثلاً 은 أو 는) يعتمد على ما إذا كانت الكلمة التي تسبقها تنتهي بحرف ساكن أو علة.'
                 },
             ]
         },
@@ -144,12 +55,7 @@ const koreanGrammarContent = {
                         { en: '먹다 (meokda) -> 먹어요 (meogeoyo)', ar: 'يأكل -> آكل/تأكل/يأكل' },
                         { en: '예쁘다 (yeppeuda) -> 예뻐요 (yeppeoyo)', ar: 'جميل -> جميلة هي' },
                     ],
-                    tip: 'اختيار -아요 أو -어요 يعتمد على آخر حرف علة في جذر الفعل.',
-                    exercise: {
-                        question: 'ما هو التصريف الصحيح للفعل "마시다" (يشرب)؟',
-                        options: ['마시요', '마셔요', '마사요', '마서요'],
-                        correctAnswer: '마셔요',
-                    }
+                    tip: 'اختيار -아요 أو -어요 يعتمد على آخر حرف علة في جذر الفعل.'
                 },
                 {
                     title: 'مستويات الاحترام (존댓말)',
@@ -159,12 +65,7 @@ const koreanGrammarContent = {
                         { en: '고마워 (gomawo)', ar: 'شكراً (للأصدقاء)' },
                         { en: '고맙습니다 (gomapseumnida)', ar: 'شكراً (بشكل رسمي جداً)' },
                     ],
-                    tip: 'عندما تكون في شك، استخدم دائمًا الصيغة الرسمية المهذبة (المنتهية بـ -요 أو -ㅂ니다).',
-                    exercise: {
-                        question: 'أي صيغة هي الأكثر رسمية لقول "شكراً"؟',
-                        options: ['고마워', '고마워요', '감사합니다'],
-                        correctAnswer: '감사합니다',
-                    }
+                    tip: 'عندما تكون في شك، استخدم دائمًا الصيغة الرسمية المهذبة (المنتهية بـ -요 أو -ㅂ니다).'
                 },
             ]
         }
@@ -207,14 +108,6 @@ const TopicContent: React.FC<{ topic: Topic }> = ({ topic }) => (
                 <p className="text-yellow-300 font-bold flex items-center gap-2"><i className="fas fa-star"></i>نصيحة:</p>
                 <p className="text-gray-300 mt-2">{topic.tip}</p>
             </div>
-        )}
-
-        {topic.exercise && (
-            <Exercise
-                question={topic.exercise.question}
-                options={topic.exercise.options}
-                correctAnswer={topic.exercise.correctAnswer}
-            />
         )}
     </div>
 );
